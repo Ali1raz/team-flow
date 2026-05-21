@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createWorkspaceSchema, CreateWorkspaceType } from "../schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { tryCatch } from "@/lib/try-catch";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 
 export function CreateWorkspaceDialog() {
+  const [open, setOpen] = useState(false);
   const form = useForm<CreateWorkspaceType>({
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
@@ -55,13 +56,14 @@ export function CreateWorkspaceDialog() {
         return;
       }
 
+      setOpen(false);
       toast.success(result.data?.name + " workspace created successfully");
       router.refresh();
     });
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Create Workspace</Button>
       </DialogTrigger>
