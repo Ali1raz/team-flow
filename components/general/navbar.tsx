@@ -90,7 +90,7 @@ const Navbar = () => {
             <div className="flex flex-row gap-4">
               {data?.session && (
                 <>
-                  <Link href={"#"} className={buttonVariants({})}>
+                  <Link href="/workspaces" className={buttonVariants()}>
                     Dasboard
                   </Link>
                   <Button variant="outline" onClick={handleSignOut}>
@@ -158,7 +158,6 @@ const Navbar = () => {
             >
               <div className="flex flex-col gap-2 rounded-2xl border border-border bg-background/95 p-4 backdrop-blur-xl">
                 <motion.div
-                  key={""}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.2, delay: 0.05 }}
@@ -166,7 +165,7 @@ const Navbar = () => {
                   {data?.session ? (
                     <>
                       <Link
-                        href={"#"}
+                        href={"/workspaces"}
                         className="flex flex-row items-center justify-between rounded px-4 py-3 font-medium transition-colors hover:bg-muted"
                       >
                         Dasboard

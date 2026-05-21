@@ -38,18 +38,18 @@ const Hero = () => {
           alt="Hero"
           width={1200}
           height={800}
-          className="w-full max-w-7xl h-auto rounded-xl lg:rounded-[2.5rem] dark:flex hidden"
+          className="w-full max-w-7xl aspect-video object-top-left rounded-xl lg:rounded-[2.5rem] dark:flex hidden"
           priority
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+          // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
         />
         <Image
           src={DashboardImageLight}
           alt="Hero"
           width={1200}
           height={800}
-          className="w-full max-w-7xl h-auto rounded-xl lg:rounded-[2.5rem] flex dark:hidden"
+          className="w-full max-w-7xl aspect-video object-top-left rounded-xl lg:rounded-[2.5rem] flex dark:hidden"
           priority
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+          // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
         />
         <div className="max-md:hidden absolute bottom-0 left-0 h-12 lg:h-24 w-full dark:bg-linear-to-b from-transparent to-background" />
       </div>

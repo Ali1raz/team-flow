@@ -49,7 +49,7 @@ const logos = [
   },
   {
     label: "Prisma",
-    icon: <Prisma className="invert dark:invert-0 size-16" />,
+    icon: <Prisma className="invert dark:invert-0 size-12 sm:size-16" />,
   },
   {
     label: "TailwindCSS",
@@ -71,7 +71,7 @@ export function LogoCloud() {
         {logos.map((logo) => (
           <div
             key={logo.label}
-            className="flex size-20 items-center justify-center py-3"
+            className="flex sm:size-20 size-14 items-center justify-center py-3"
           >
             {logo.icon}
           </div>
