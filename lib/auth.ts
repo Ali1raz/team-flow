@@ -1,11 +1,38 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
+import { organization } from "better-auth/plugins";
+import { ac, roles } from "./permissions";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          // Implement your custom logic to set initial active organization
+          // const organization = await getInitialOrganization(session.userId);
+          return {
+            data: {
+              ...session,
+              // activeOrganizationId: organization?.id,
+            },
+          };
+        },
+      },
+    },
+  },
+  baseURL: {
+    allowedHosts: [
+      process.env.NEXT_PUBLIC_BETTER_AUTH_URL!,
+      "*.vercel.app", // All Vercel previews
+      "localhost:*", // Local development all ports
+    ],
+    fallback: "localhost:3000",
+    protocol: process.env.NODE_ENV === "development" ? "http" : "https",
+  },
 
   socialProviders: {
     github: {
@@ -14,4 +41,15 @@ export const auth = betterAuth({
       prompt: "select_account",
     },
   },
+  plugins: [
+    organization({
+      allowUserToCreateOrganization: true,
+      ac,
+      roles,
+    }),
+  ],
 });
+
+export type Session = typeof auth.$Infer.Session;
+export type User = typeof auth.$Infer.Session.user;
+export type FullOrg = typeof auth.$Infer.ActiveOrganization;
