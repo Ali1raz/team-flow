@@ -8,22 +8,6 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  databaseHooks: {
-    session: {
-      create: {
-        before: async (session) => {
-          // Implement your custom logic to set initial active organization
-          // const organization = await getInitialOrganization(session.userId);
-          return {
-            data: {
-              ...session,
-              // activeOrganizationId: organization?.id,
-            },
-          };
-        },
-      },
-    },
-  },
   baseURL: {
     allowedHosts: [
       process.env.NEXT_PUBLIC_BETTER_AUTH_URL!,

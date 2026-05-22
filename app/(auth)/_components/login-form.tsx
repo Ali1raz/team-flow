@@ -13,18 +13,22 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [pending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("from") ?? "/";
 
   function loginWithGitHub() {
     startTransition(async () => {
       await authClient.signIn.social({
         provider: "github",
-        callbackURL: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}`,
+        // Send the user back to the page they originally tried to access.
+        callbackURL: callbackUrl,
         fetchOptions: {
           onSuccess: () => {
             toast.success("Logged in successfully! Redirecting...");
