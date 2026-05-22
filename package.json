@@ -19,6 +19,7 @@
     "postinstall": "pnpm db:generate"
   },
   "dependencies": {
+    "@arcjet/next": "^1.4.0",
     "@hookform/resolvers": "^5.2.2",
     "@orpc/client": "^1.14.3",
     "@orpc/server": "^1.14.3",

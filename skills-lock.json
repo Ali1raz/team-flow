@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "arcjet": {
+      "source": "arcjet/skills",
+      "sourceType": "github",
+      "skillPath": "arcjet/SKILL.md",
+      "computedHash": "a8206f25940508eaad6b2fba6ef7993617545a0e596866b252b9be94a4ad1b44"
+    },
     "prisma-client-api": {
       "source": "prisma/skills",
       "sourceType": "github",

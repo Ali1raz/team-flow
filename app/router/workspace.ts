@@ -6,6 +6,8 @@ import { requireAuthMiddleware } from "../middlewares/auth";
 import { createWorkspaceSchema } from "../(workspace)/workspaces/schema";
 import { createAvatarUrl, createSlug } from "@/lib/utils";
 import { errorMessage } from "@/lib/error-message";
+import { standardsecurityMiddleware } from "../middlewares/arcjet/standard";
+import { heavyWritesecurityMiddleware } from "../middlewares/arcjet/heavy-write-middleware";
 
 export const listWorkspaces = base
   .use(requireAuthMiddleware)
@@ -50,6 +52,8 @@ export const listWorkspaces = base
 
 export const createWorkspace = base
   .use(requireAuthMiddleware)
+  .use(standardsecurityMiddleware)
+  .use(heavyWritesecurityMiddleware)
   .route({
     method: "POST",
     path: "/workspace",

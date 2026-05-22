@@ -56,7 +56,7 @@ export function CreateWorkspaceDialog() {
       },
       onError: (error) => {
         toast.error("Something bad happened, please try again!", {
-          description: error instanceof Error ? error.message : "Unknown error",
+          description: error instanceof Error ? error.message : null,
         });
       },
     })
