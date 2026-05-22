@@ -9,15 +9,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { createWorkspaceSchema, CreateWorkspaceType } from "../schema";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { tryCatch } from "@/lib/try-catch";
-import { authClient } from "@/lib/auth-client";
+import { useState } from "react";
+import { createSlug } from "@/lib/utils";
 import {
   Field,
   FieldError,
@@ -26,6 +24,8 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { orpc } from "@/lib/orpc";
 
 export function CreateWorkspaceDialog() {
   const [open, setOpen] = useState(false);
@@ -33,33 +33,37 @@ export function CreateWorkspaceDialog() {
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
       name: "",
-      slug: "",
     },
     mode: "onChange",
   });
 
-  const [pending, startTransition] = useTransition();
-  const router = useRouter();
+  const workspaceName = useWatch({
+    control: form.control,
+    name: "name",
+  });
+  const slug = createSlug(workspaceName ?? "");
+  const queryClient = useQueryClient();
+
+  const createWorkspaceMutation = useMutation(
+    orpc.workspace.create.mutationOptions({
+      onSuccess: (workspace) => {
+        toast.success(`${workspace.name} workspace created successfully`);
+        queryClient.invalidateQueries({
+          queryKey: orpc.workspace.list.queryKey(),
+        });
+        setOpen(false);
+        form.reset();
+      },
+      onError: (error) => {
+        toast.error("Something bad happened, please try again!", {
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
+      },
+    })
+  );
 
   function onSubmit(values: CreateWorkspaceType) {
-    startTransition(async () => {
-      const { data: result, error } = await tryCatch(
-        authClient.organization.create({
-          name: values.name,
-          slug: values.slug,
-          keepCurrentActiveOrganization: false,
-        })
-      );
-
-      if (error) {
-        toast.error("Something bad happened");
-        return;
-      }
-
-      setOpen(false);
-      toast.success(result.data?.name + " workspace created successfully");
-      router.refresh();
-    });
+    createWorkspaceMutation.mutate(values);
   }
 
   return (
@@ -92,30 +96,21 @@ export function CreateWorkspaceDialog() {
                 </Field>
               )}
             />
-            <Controller
-              name="slug"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Slug</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    aria-invalid={fieldState.invalid && fieldState.isTouched}
-                    autoComplete="slug"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+            <Field>
+              {/* Show the derived slug so users can preview what will be created. */}
+              <FieldLabel htmlFor="slug">Slug</FieldLabel>
+              <Input id="slug" value={slug} readOnly />
+            </Field>
           </FieldGroup>
         </form>
 
         <Field className="mt-4">
-          <Button disabled={pending} type="submit" form="workspace-form">
-            {pending ? (
+          <Button
+            disabled={createWorkspaceMutation.isPending}
+            type="submit"
+            form="workspace-form"
+          >
+            {createWorkspaceMutation.isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" /> Creating
                 workspace...
