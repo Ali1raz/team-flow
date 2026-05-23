@@ -65,24 +65,25 @@ export function AppSidebar({
                   <CollapsibleContent className="h-full overflow-hidden">
                     <ScrollArea className="h-full">
                       <SidebarMenuSub>
-                        {channels?.map((ch) => (
-                          <SidebarMenuSubItem key={ch.id}>
-                            <SidebarMenuSubButton
-                              asChild
-                              className={cn(
-                                activeTeamId === ch.id &&
-                                  "bg-accent text-accent-foreground"
-                              )}
-                            >
-                              <Link
-                                href="#"
-                                className="flex items-center gap-2 truncate"
+                        {channels &&
+                          channels.map((ch) => (
+                            <SidebarMenuSubItem key={ch.id}>
+                              <SidebarMenuSubButton
+                                asChild
+                                className={cn(
+                                  activeTeamId === ch.id &&
+                                    "bg-accent text-accent-foreground"
+                                )}
                               >
-                                <Hash className="size-4" /> {ch.name}
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
+                                <Link
+                                  href={`/workspaces/${organizationId}/channel/${ch.id}`}
+                                  className="flex items-center gap-2 truncate"
+                                >
+                                  <Hash className="size-4" /> {ch.name}
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
                       </SidebarMenuSub>
                     </ScrollArea>
                   </CollapsibleContent>
