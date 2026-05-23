@@ -7,14 +7,16 @@ interface iAppProps {
     value: string;
     onChange: (value: string) => void;
   };
+  onSubmit: () => void;
+  isSubmitting?: boolean;
 }
 
-export function Messagecomponser({ field }: iAppProps) {
+export function Messagecomponser({ field, onSubmit, isSubmitting }: iAppProps) {
   return (
     <Editor
       field={{ value: field.value, onChange: field.onChange }}
       sendButton={
-        <Button size="sm">
+        <Button disabled={isSubmitting} size="sm" onClick={onSubmit}>
           <Send className="size-4" /> Send
         </Button>
       }

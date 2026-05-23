@@ -1,36 +1,43 @@
 import { formatLocalDateTime } from "@/lib/utils";
 import Image from "next/image";
+import Logo from "@/public/team-flow.png";
+import { RenderJSONtoHTML } from "@/components/editor/render-content";
 
 interface iAppProps {
   message: {
-    id: number;
-    message: string;
-    date: Date;
+    id: string;
+    content: string;
+    createdAt: Date;
+    imageUrl?: string | null;
     user: {
+      id: string;
       name: string;
-      image: string;
+      image: string | null;
     };
   };
 }
 
 export function MessageItem({ message }: iAppProps) {
   return (
-    <div className="flex gap-3 items-center rounded-md hover:bg-muted p-3">
+    <div className="flex gap-3 items-start rounded-md hover:bg-muted/70 p-3">
       <Image
-        src={message.user.image}
+        src={message.user.image || Logo}
         alt={message.user.name}
         width={40}
         height={40}
         className="size-8 rounded-full"
       />
       <div className="flex flex-col gap-2 *:leading-none">
-        <div className="flex gap-2 items-center justify-center">
+        <div className="flex gap-2 items-center">
           <p className="font-medium">{message.user.name}</p>
           <p className="text-sm text-muted-foreground">
-            {formatLocalDateTime(message.date)}
+            {formatLocalDateTime(message.createdAt)}
           </p>
         </div>
-        <p className="text-sm wrap-break-word max-w-none">{message.message}</p>
+        <RenderJSONtoHTML
+          content={JSON.parse(message.content)}
+          className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
+        />
       </div>
     </div>
   );
