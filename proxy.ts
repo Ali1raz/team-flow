@@ -34,6 +34,5 @@ export const config = {
 };
 
 export default function proxy(request: NextRequest) {
-  console.log("Auth middleware triggered for:", request.nextUrl.pathname);
   return authMiddleware(request);
 }

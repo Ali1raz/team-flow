@@ -22,6 +22,7 @@ model User {
   invitations Invitation[]
 
   teammembers TeamMember[]
+  messages    Message[]
 
   @@map("user")
 }
@@ -127,6 +128,7 @@ model Invitation {
   user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
   teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([email])
@@ -136,12 +138,14 @@ model Invitation {
 model Team {
   id             String       @id @default(uuid())
   name           String
-  slug           String       @unique
+  slug           String
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt      DateTime
   updatedAt      DateTime?    @updatedAt
   teammembers    TeamMember[]
+  invitations    Invitation[]
+  messages       Message[]
 
   @@unique([organizationId, slug]) // Ensure slug is unique within the organization
   @@index([organizationId])
@@ -160,4 +164,22 @@ model TeamMember {
   @@index([teamId])
   @@index([userId])
   @@map("teamMember")
+}
+
+model Message {
+  id       String  @id @default(uuid())
+  content  String
+  imageUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([userId])
+  @@map("message")
 }

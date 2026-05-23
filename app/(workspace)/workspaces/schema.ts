@@ -1,10 +1,7 @@
 import z from "zod";
 
 export const createWorkspaceSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Workspace name is required"),
+  name: z.string().trim().min(1, "Workspace name is required"),
 });
 
 export type CreateWorkspaceType = z.infer<typeof createWorkspaceSchema>;
@@ -18,3 +15,11 @@ export const createChannelSchema = z.object({
 });
 
 export type CreateChannelType = z.infer<typeof createChannelSchema>;
+
+export const createMessageSchema = z.object({
+  content: z.string().trim().min(1, "Message content is required"),
+  channelId: z.string(),
+  imageUrl: z.url().optional(),
+});
+
+export type CreateMessageType = z.infer<typeof createMessageSchema>;
