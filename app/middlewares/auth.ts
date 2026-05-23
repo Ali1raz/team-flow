@@ -1,27 +1,33 @@
-import { auth, User } from "@/lib/auth";
+import { auth, Session, User } from "@/lib/auth";
 import { base } from "./bast";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+type SessionOnly = typeof auth.$Infer.Session.session;
+
 export const requireAuthMiddleware = base
   .$context<{
-    session?: { user?: User };
+    user?: User;
+    session?: SessionOnly;
   }>()
   .middleware(async ({ context, next }) => {
-    const session = context.session ?? (await getSession());
+    const sessionData = context.user
+      ? { user: context.user, session: context.session }
+      : await getSession();
 
-    if (!session || !session.user) {
+    if (!sessionData?.user) {
       return redirect("/login");
     }
     return next({
-      context: { user: session.user },
+      context: {
+        user: sessionData.user, // access context.user
+        session: sessionData.session, // access context.session.activeTeamId etc
+      },
     });
   });
 
 const getSession = async () => {
-  const session = await auth.api.getSession({
+  return await auth.api.getSession({
     headers: await headers(),
   });
-
-  return session;
 };
