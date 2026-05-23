@@ -34,9 +34,11 @@ import {
 } from "@/app/(workspace)/workspaces/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
+import { useRouter } from "next/navigation";
 
 export function CreateTeamDialog() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   const form = useForm<CreateChannelType>({
     resolver: zodResolver(createChannelSchema),
     defaultValues: {
@@ -64,6 +66,9 @@ export function CreateTeamDialog() {
           }),
         });
         setOpen(false);
+        router.push(
+          `/workspaces/${newChannel.organizationId}/channel/${newChannel.id}`
+        );
       },
       onError: (error) => {
         toast.error("Something bad happened, please try again!", {

@@ -1,3 +1,4 @@
+import arcjet, { createMiddleware, detectBot } from "@arcjet/next";
 import { getSessionCookie } from "better-auth/cookies";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -29,10 +30,31 @@ async function authMiddleware(request: NextRequest) {
   return NextResponse.next();
 }
 
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  rules: [
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      // Block all bots except the following
+      allow: [
+        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+        "CATEGORY:MONITOR",
+        "CATEGORY:PREVIEW",
+        "STRIPE_WEBHOOK",
+        // See the full list at https://arcjet.com/bot-list
+        "CATEGORY:MONITOR", // Uptime monitoring services
+        "CATEGORY:PREVIEW", // Link previews e.g. Slack, Discord
+        "VERCEL_MONITOR_PREVIEW", // Vercel's bot for preview deployments
+      ],
+    }),
+  ],
+});
+
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth|/rpc).*)"],
 };
 
-export default function proxy(request: NextRequest) {
+// Pass any existing middleware with the optional existingMiddleware prop
+export const proxy = createMiddleware(aj, async (request: NextRequest) => {
   return authMiddleware(request);
-}
+});

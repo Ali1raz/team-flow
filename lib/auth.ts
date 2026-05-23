@@ -8,6 +8,26 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          const firstMember = await prisma.member.findFirst({
+            where: { userId: session.userId },
+            orderBy: { createdAt: "asc" },
+            select: { organizationId: true },
+          });
+
+          return {
+            data: {
+              ...session,
+              activeOrganizationId: firstMember?.organizationId ?? null,
+            },
+          };
+        },
+      },
+    },
+  },
   baseURL: {
     allowedHosts: [
       process.env.NEXT_PUBLIC_BETTER_AUTH_URL!,
