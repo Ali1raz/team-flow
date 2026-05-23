@@ -8,12 +8,15 @@ import { Messagecomponser } from "./message-omposer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface IAppPops {
   channelId: string;
 }
 
 export function MessageInput({ channelId }: IAppPops) {
+  const [editorKey, setEditorKey] = useState(0);
+
   const form = useForm<CreateMessageType>({
     resolver: zodResolver(createMessageSchema),
     defaultValues: {
@@ -30,7 +33,8 @@ export function MessageInput({ channelId }: IAppPops) {
     orpc.message.create.mutationOptions({
       onSuccess: () => {
         toast.success("Message sent successfully");
-        form.reset();
+        form.reset({ channelId: "", content: "" });
+        setEditorKey((prev) => prev + 1);
         queryclient.invalidateQueries({
           queryKey: orpc.message.list.queryKey({ input: { channelId } }),
         });
@@ -56,6 +60,7 @@ export function MessageInput({ channelId }: IAppPops) {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <Messagecomponser
+                key={editorKey}
                 field={field}
                 onSubmit={form.handleSubmit(onSubmit)}
                 isSubmitting={createMessageMutation.isPending}
