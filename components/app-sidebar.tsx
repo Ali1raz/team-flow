@@ -1,7 +1,6 @@
 "use client";
 import * as React from "react";
 
-import { CreateTeamDialog } from "@/components/create-tem-dialog";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import {
   Sidebar,
@@ -23,11 +22,14 @@ import {
 } from "./ui/collapsible";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
-import { ChevronRight, Hash } from "lucide-react";
+import { Check, ChevronRight, Hash } from "lucide-react";
 import { UserImage } from "./general/user-avatar";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ScrollArea } from "./ui/scroll-area";
+import { useParams } from "next/navigation";
+import { Badge } from "./ui/badge";
+import { CreateTeamDialog } from "./create-tem-dialog";
 
 export function AppSidebar({
   organizationId,
@@ -38,6 +40,8 @@ export function AppSidebar({
   } = useSuspenseQuery(
     orpc.channel.list.queryOptions({ input: { organizationId } })
   );
+
+  const { channelId } = useParams<{ channelId: string }>();
 
   return (
     <Sidebar {...props}>
@@ -71,16 +75,27 @@ export function AppSidebar({
                               <SidebarMenuSubButton
                                 asChild
                                 className={cn(
-                                  activeTeamId === ch.id &&
+                                  "text-muted-foreground hover:bg-muted",
+                                  channelId === ch.id &&
                                     "bg-accent text-accent-foreground"
                                 )}
                               >
-                                <Link
-                                  href={`/workspaces/${organizationId}/channel/${ch.id}`}
-                                  className="flex items-center gap-2 truncate"
-                                >
-                                  <Hash className="size-4" /> {ch.name}
-                                </Link>
+                                <p className="flex items-center gap-2 justify-between">
+                                  <Link
+                                    href={`/workspaces/${organizationId}/channel/${ch.id}`}
+                                    className={cn(
+                                      "flex items-center gap-2 truncate",
+                                      channelId === ch.id && "font-medium"
+                                    )}
+                                  >
+                                    <Hash className="size-4" /> {ch.name}
+                                  </Link>
+                                  {activeTeamId === ch.id && (
+                                    <Badge variant="outline">
+                                      <Check className="size-3" />
+                                    </Badge>
+                                  )}
+                                </p>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           ))}
