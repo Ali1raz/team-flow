@@ -72,6 +72,7 @@ export const createWorkspace = base
   )
   .handler(async ({ context, input, errors }) => {
     const slug = createSlug(input.name);
+    console.log("Creating workspace with slug:", slug);
 
     let data;
 

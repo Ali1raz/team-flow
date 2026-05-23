@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { createWorkspaceSchema, CreateWorkspaceType } from "../schema";
 import { toast } from "sonner";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { createSlug } from "@/lib/utils";
 import {
   Field,
@@ -27,7 +27,7 @@ import { Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 
-export function CreateWorkspaceDialog() {
+export function CreateWorkspaceDialog({ children }: { children?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const form = useForm<CreateWorkspaceType>({
     resolver: zodResolver(createWorkspaceSchema),
@@ -69,7 +69,7 @@ export function CreateWorkspaceDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Create Workspace</Button>
+        {children ?? <Button>Create Workspace</Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>

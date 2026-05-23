@@ -14,7 +14,7 @@ export const auth = betterAuth({
       "*.vercel.app", // All Vercel previews
       "localhost:*", // Local development all ports
     ],
-    fallback: "localhost:3000",
+    fallback: "http://localhost:3000",
     protocol: process.env.NODE_ENV === "development" ? "http" : "https",
   },
 
@@ -27,6 +27,21 @@ export const auth = betterAuth({
   },
   plugins: [
     organization({
+      schema: {
+        team: {
+          additionalFields: {
+            slug: {
+              type: "string",
+              required: true,
+              input: true,
+            },
+          },
+        },
+      },
+      teams: {
+        enabled: true,
+        allowRemovingAllTeams: true,
+      },
       allowUserToCreateOrganization: true,
       ac,
       roles,
