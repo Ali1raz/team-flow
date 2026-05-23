@@ -12,7 +12,6 @@ import {
   Undo2,
 } from "lucide-react";
 import { useEditorState } from "@tiptap/react";
-import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 
@@ -47,13 +46,10 @@ export function Menubar({ editor }: iAppProps) {
           <TooltipTrigger asChild>
             <Toggle
               size="sm"
-              pressed={editorState?.isBold}
+              pressed={editorState?.isBold ?? false}
               onPressedChange={() => editor?.chain().focus().toggleBold().run()}
-              className={cn(
-                editorState?.isBold && "bg-muted text-muted-foreground"
-              )}
             >
-              <Bold className="size-4" />
+              <Bold />
             </Toggle>
           </TooltipTrigger>
           <TooltipContent>
@@ -65,15 +61,12 @@ export function Menubar({ editor }: iAppProps) {
           <TooltipTrigger asChild>
             <Toggle
               size="sm"
-              pressed={editorState?.isItalic}
+              pressed={editorState?.isItalic ?? false}
               onPressedChange={() =>
                 editor?.chain().focus().toggleItalic().run()
               }
-              className={cn(
-                editorState?.isItalic && "bg-muted text-muted-foreground"
-              )}
             >
-              <Italic className="size-4" />
+              <Italic />
             </Toggle>
           </TooltipTrigger>
           <TooltipContent>
@@ -85,15 +78,12 @@ export function Menubar({ editor }: iAppProps) {
           <TooltipTrigger asChild>
             <Toggle
               size="sm"
-              pressed={editorState?.isStrike}
+              pressed={editorState?.isStrike ?? false}
               onPressedChange={() =>
                 editor?.chain().focus().toggleStrike().run()
               }
-              className={cn(
-                editorState?.isStrike && "bg-muted text-muted-foreground"
-              )}
             >
-              <Strikethrough className="size-4" />
+              <Strikethrough />
             </Toggle>
           </TooltipTrigger>
           <TooltipContent>
@@ -104,16 +94,12 @@ export function Menubar({ editor }: iAppProps) {
           <TooltipTrigger asChild>
             <Toggle
               size="sm"
-              pressed={editorState?.CodeBlockLowlight}
+              pressed={editorState?.CodeBlockLowlight ?? false}
               onPressedChange={() =>
                 editor?.chain().focus().toggleCodeBlock().run()
               }
-              className={cn(
-                editorState?.CodeBlockLowlight &&
-                  "bg-muted text-muted-foreground"
-              )}
             >
-              <Code className="size-4" />
+              <Code />
             </Toggle>
           </TooltipTrigger>
           <TooltipContent>
@@ -132,15 +118,12 @@ export function Menubar({ editor }: iAppProps) {
           <TooltipTrigger asChild>
             <Toggle
               size="sm"
-              pressed={editorState?.bulletList}
+              pressed={editorState?.bulletList ?? false}
               onPressedChange={() =>
                 editor?.chain().focus().toggleBulletList().run()
               }
-              className={cn(
-                editorState?.bulletList && "bg-muted text-muted-foreground"
-              )}
             >
-              <List className="size-4" />
+              <List />
             </Toggle>
           </TooltipTrigger>
           <TooltipContent>
@@ -152,15 +135,12 @@ export function Menubar({ editor }: iAppProps) {
           <TooltipTrigger asChild>
             <Toggle
               size="sm"
-              pressed={editorState?.orderedList}
+              pressed={editorState?.orderedList ?? false}
               onPressedChange={() =>
                 editor?.chain().focus().toggleOrderedList().run()
               }
-              className={cn(
-                editorState?.orderedList && "bg-muted text-muted-foreground"
-              )}
             >
-              <ListOrdered className="size-4" />
+              <ListOrdered />
             </Toggle>
           </TooltipTrigger>
           <TooltipContent>
@@ -182,11 +162,8 @@ export function Menubar({ editor }: iAppProps) {
               type="button"
               disabled={!editorState?.canUndo}
               onClick={() => editor?.chain().focus().undo().run()}
-              className={cn(
-                editorState?.canUndo && "bg-muted text-muted-foreground"
-              )}
             >
-              <Undo2 className="size-4" />
+              <Undo2 />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -200,13 +177,10 @@ export function Menubar({ editor }: iAppProps) {
               size="sm"
               variant="ghost"
               type="button"
-              onClick={() => editor?.chain().focus().redo().run()}
               disabled={!editorState?.canRedo}
-              className={cn(
-                editorState?.canRedo && "bg-muted text-muted-foreground"
-              )}
+              onClick={() => editor?.chain().focus().redo().run()}
             >
-              <Redo2 className="size-4" />
+              <Redo2 />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
