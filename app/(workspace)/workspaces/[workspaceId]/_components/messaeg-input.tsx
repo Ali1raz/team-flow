@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { createMessageSchema, CreateMessageType } from "../../schema";
 import { Messagecomponser } from "./message-omposer";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
 
@@ -24,11 +24,16 @@ export function MessageInput({ channelId }: IAppPops) {
     mode: "onChange",
   });
 
+  const queryclient = useQueryClient();
+
   const createMessageMutation = useMutation(
     orpc.message.create.mutationOptions({
       onSuccess: () => {
         toast.success("Message sent successfully");
         form.reset();
+        queryclient.invalidateQueries({
+          queryKey: orpc.message.list.queryKey({ input: { channelId } }),
+        });
       },
       onError: (error) => {
         toast.error("Something bad happened, please try again!", {
@@ -43,14 +48,18 @@ export function MessageInput({ channelId }: IAppPops) {
   }
 
   return (
-    <form id="message-form" onSubmit={form.handleSubmit(onSubmit)}>
+    <form id="message-form">
       <FieldGroup>
         <Controller
           control={form.control}
           name="content"
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <Messagecomponser field={field} />
+              <Messagecomponser
+                field={field}
+                onSubmit={form.handleSubmit(onSubmit)}
+                isSubmitting={createMessageMutation.isPending}
+              />
             </Field>
           )}
         />
