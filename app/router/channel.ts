@@ -56,7 +56,12 @@ export const createChannel = base
 export const listChannels = base
   .use(requireAuthMiddleware)
   .use(requireworkspaceMiddleware)
-  .route({ method: "GET", path: "/channel", tags: ["channel"] })
+  .route({
+    method: "GET",
+    path: "/channel",
+    summary: "List all channels",
+    tags: ["channel"],
+  })
   .input(
     z.object({
       organizationId: z.string(),
@@ -89,6 +94,9 @@ export const listChannels = base
       prisma.team.findMany({
         where: {
           organizationId: input.organizationId,
+        },
+        orderBy: {
+          createdAt: "desc", // newest channels first
         },
         select: {
           id: true,
