@@ -5,10 +5,11 @@ import { standardsecurityMiddleware } from "../middlewares/arcjet/standard";
 import { requireAuthMiddleware } from "../middlewares/auth";
 import { base } from "../middlewares/bast";
 import { requireworkspaceMiddleware } from "../middlewares/workspace";
-import { auth } from "@/lib/auth";
+import { auth, type User } from "@/lib/auth";
 import { createSlug } from "@/lib/utils";
 import { errorMessage } from "@/lib/error-message";
 import { prisma } from "@/lib/prisma";
+import { readsecurityMiddleware } from "../middlewares/arcjet/read";
 
 export const createChannel = base
   .use(requireAuthMiddleware)
@@ -125,5 +126,46 @@ export const listChannels = base
       channels,
       members: teamMembers.map((m) => m.user),
       activeTeamId,
+    };
+  });
+
+export const getChannel = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .use(readsecurityMiddleware)
+  .use(standardsecurityMiddleware)
+  .route({
+    method: "GET",
+    path: "/channel/:channelId",
+    summary: "Get a channel",
+    tags: ["channel"],
+  })
+  .input(
+    z.object({
+      channelId: z.string(),
+    })
+  )
+  .output(
+    z.object({
+      channel: z.string(),
+      currentUser: z.custom<User>(),
+    })
+  )
+  .handler(async ({ input, context, errors }) => {
+    console.log("[channel.get]: called for", input.channelId);
+    const channel = await prisma.team.findUnique({
+      where: { id: input.channelId },
+      select: {
+        name: true,
+      },
+    });
+
+    if (!channel) {
+      throw errors.NOT_FOUND({ message: "Channel not found" });
+    }
+
+    return {
+      channel: channel.name,
+      currentUser: context.user,
     };
   });
