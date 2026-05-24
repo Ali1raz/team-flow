@@ -7,15 +7,13 @@ export default async function ChannelIdPAge(
   const { params } = props;
   const { channelId } = await params;
   return (
-    <section className="h-screen flex w-full">
-      <div className="flex flex-col flex-1">
-        <div className="flex-1 overflow-hidden mb-4">
-          <MessageList />
-        </div>
+    <section className="flex w-full flex-col">
+      <div className="flex-1 my-4 px-4 min-h-0">
+        <MessageList />
+      </div>
 
-        <div className="border-t bg-background p-4">
-          <MessageInput channelId={channelId} />
-        </div>
+      <div className="sticky bottom-0 shrink-0 bg-background p-4 pb-3 pt-0">
+        <MessageInput channelId={channelId} />
       </div>
     </section>
   );
