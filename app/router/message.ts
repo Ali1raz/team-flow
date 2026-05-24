@@ -115,7 +115,7 @@ export const listMessages = base
         teamId: channel.id,
       },
       orderBy: {
-        createdAt: "desc", // latest messages first
+        createdAt: "asc",
       },
       select: {
         id: true,
