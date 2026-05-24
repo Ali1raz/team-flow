@@ -77,23 +77,28 @@ export const listMessages = base
   .input(
     z.object({
       channelId: z.string(),
+      limit: z.number().min(1).max(100).default(30).optional(),
+      cursor: z.string().optional(),
     })
   )
   .output(
-    z.array(
-      z.object({
-        id: z.string(),
-        content: z.string(),
-        imageUrl: z.string().nullable().optional(),
-        createdAt: z.date(),
-        user: z.object({
+    z.object({
+      messages: z.array(
+        z.object({
           id: z.string(),
-          name: z.string(),
-          email: z.string(),
-          image: z.string().nullable(),
-        }),
-      })
-    )
+          content: z.string(),
+          imageUrl: z.string().nullable().optional(),
+          createdAt: z.date(),
+          user: z.object({
+            id: z.string(),
+            name: z.string(),
+            email: z.string(),
+            image: z.string().nullable(),
+          }),
+        })
+      ),
+      nextCursor: z.string().nullable(),
+    })
   )
   .handler(async ({ context, errors, input }) => {
     const channel = await prisma.team.findFirst({
@@ -110,13 +115,29 @@ export const listMessages = base
       throw errors.FORBIDDEN();
     }
 
+    const limit = input.limit;
+
+    console.log("===\n[listMessages]:", { limit, cursor: input.cursor });
+
     const messages = await prisma.message.findMany({
       where: {
         teamId: channel.id,
       },
-      orderBy: {
-        createdAt: "asc",
-      },
+      ...(input.cursor
+        ? {
+            cursor: {
+              id: input.cursor,
+            },
+            skip: 1,
+          }
+        : {}),
+      take: limit,
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+        { id: "desc" },
+      ],
       select: {
         id: true,
         content: true,
@@ -132,5 +153,12 @@ export const listMessages = base
         },
       },
     });
-    return messages;
+
+    const nextCursor =
+      messages.length === limit ? messages[messages.length - 1].id : null;
+
+    return {
+      messages: messages,
+      nextCursor,
+    };
   });
