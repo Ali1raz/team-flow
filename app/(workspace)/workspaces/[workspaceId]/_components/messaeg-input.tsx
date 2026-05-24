@@ -49,13 +49,11 @@ export function MessageInput({ channelId }: IAppPops) {
 
   const queryclient = useQueryClient();
 
+  // Use workspace.list (already prefetched in the layout) instead of channel.get
+  // to avoid a duplicate network request just for the current user's info.
   const {
-    data: { currentUser },
-  } = useSuspenseQuery(
-    orpc.channel.get.queryOptions({
-      input: { channelId },
-    })
-  );
+    data: { user: currentUser },
+  } = useSuspenseQuery(orpc.workspace.list.queryOptions());
 
   const createMessageMutation = useMutation(
     orpc.message.create.mutationOptions({
