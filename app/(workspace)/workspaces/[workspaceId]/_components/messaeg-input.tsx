@@ -40,7 +40,10 @@ export function MessageInput({ channelId }: IAppPops) {
         form.setValue("imageUrl", undefined);
         setEditorKey((prev) => prev + 1);
         queryclient.invalidateQueries({
-          queryKey: orpc.message.list.queryKey({ input: { channelId } }),
+          queryKey: orpc.message.list.key({
+            type: "infinite",
+            input: { channelId },
+          }),
         });
       },
       onError: (error) => {

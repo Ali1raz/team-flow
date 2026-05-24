@@ -5,7 +5,7 @@ import { getQueryClient, HydrateClient } from "@/lib/query/hydration";
 import { ReactNode } from "react";
 import { WokrspaceHeader } from "./_components/workspace-header";
 
-export default async function Layout({
+export default async function WorkspaceLayout({
   children,
   params,
 }: {
@@ -25,11 +25,9 @@ export default async function Layout({
       <HydrateClient client={queryClient}>
         <AppSidebar organizationId={workspaceId} />
       </HydrateClient>
-      <SidebarInset>
+      <SidebarInset className="h-screen flex flex-col overflow-hidden">
         <WokrspaceHeader />
-        <main className="flex flex-1 h-screen flex-col gap-4 p-4">
-          {children}
-        </main>
+        <main className="flex flex-1 flex-col min-h-0">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
