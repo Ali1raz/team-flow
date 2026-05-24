@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/incompatible-library */
 "use client";
 
 import { Field, FieldGroup } from "@/components/ui/field";
@@ -27,13 +28,16 @@ export function MessageInput({ channelId }: IAppPops) {
     mode: "onChange",
   });
 
+  const imageUrl = form.watch("imageUrl");
+
   const queryclient = useQueryClient();
 
   const createMessageMutation = useMutation(
     orpc.message.create.mutationOptions({
       onSuccess: () => {
         toast.success("Message sent successfully");
-        form.reset({ channelId: "", content: "" });
+        form.reset({ channelId, content: "", imageUrl: undefined });
+        form.setValue("imageUrl", undefined);
         setEditorKey((prev) => prev + 1);
         queryclient.invalidateQueries({
           queryKey: orpc.message.list.queryKey({ input: { channelId } }),
@@ -48,7 +52,10 @@ export function MessageInput({ channelId }: IAppPops) {
   );
 
   function onSubmit(values: CreateMessageType) {
-    createMessageMutation.mutate(values);
+    createMessageMutation.mutate({
+      ...values,
+      imageUrl: imageUrl ?? undefined,
+    });
   }
 
   return (
@@ -62,6 +69,8 @@ export function MessageInput({ channelId }: IAppPops) {
               <Messagecomponser
                 key={editorKey}
                 field={field}
+                imageUrl={imageUrl}
+                onImageChange={(url) => form.setValue("imageUrl", url)}
                 onSubmit={form.handleSubmit(onSubmit)}
                 isSubmitting={createMessageMutation.isPending}
               />

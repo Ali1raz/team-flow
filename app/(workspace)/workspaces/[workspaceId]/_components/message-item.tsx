@@ -38,6 +38,18 @@ export function MessageItem({ message }: iAppProps) {
           content={JSON.parse(message.content)}
           className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
         />
+
+        {message.imageUrl && (
+          <div>
+            <Image
+              src={message.imageUrl}
+              alt="uploaded image"
+              width={512}
+              height={512}
+              className="object-cover rounded max-h-75 w-auto"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
