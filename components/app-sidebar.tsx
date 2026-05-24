@@ -75,27 +75,29 @@ export function AppSidebar({
                               <SidebarMenuSubButton
                                 asChild
                                 className={cn(
-                                  "text-muted-foreground hover:bg-muted",
+                                  "text-muted-foreground hover:bg-muted cursor-pointer",
                                   channelId === ch.id &&
                                     "bg-accent text-accent-foreground"
                                 )}
                               >
-                                <p className="flex items-center gap-2 justify-between">
-                                  <Link
-                                    href={`/workspaces/${organizationId}/channel/${ch.id}`}
-                                    className={cn(
-                                      "flex items-center gap-2 truncate",
-                                      channelId === ch.id && "font-medium"
-                                    )}
-                                  >
-                                    <Hash className="size-4" /> {ch.name}
-                                  </Link>
+                                <Link
+                                  href={`/workspaces/${organizationId}/channel/${ch.id}`}
+                                  className={cn(
+                                    "flex items-center justify-between",
+                                    channelId === ch.id && "font-medium"
+                                  )}
+                                  title={ch.name}
+                                >
+                                  <p className="flex items-center w-[15ch] gap-2">
+                                    <Hash className="size-4 shrink-0" />
+                                    <span className="truncate">{ch.name}</span>
+                                  </p>
                                   {activeTeamId === ch.id && (
                                     <Badge variant="outline">
                                       <Check className="size-3" />
                                     </Badge>
                                   )}
-                                </p>
+                                </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           ))}
