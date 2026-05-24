@@ -1,6 +1,6 @@
 "use client";
-import * as React from "react";
-import { ChevronDown } from "lucide-react";
+
+import { ChevronsUpDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,7 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Badge } from "./ui/badge";
+import { useState } from "react";
 
 export function WorkspaceSwitcher() {
   const queryClient = useQueryClient();
@@ -33,7 +34,9 @@ export function WorkspaceSwitcher() {
     data: { workspaces, currentWorkspace },
   } = useSuspenseQuery(orpc.workspace.list.queryOptions());
 
-  const [activeId, setActiveId] = React.useState(currentWorkspace?.id ?? null);
+  const [activeId, setActiveId] = useState<string | null>(
+    currentWorkspace?.id ?? null
+  );
 
   // Always derive from state so UI updates immediately
   const activeWorkspace =
@@ -80,7 +83,7 @@ export function WorkspaceSwitcher() {
               <span className="truncate font-medium line-clamp-1">
                 {activeWorkspace.name}
               </span>
-              <ChevronDown className="opacity-50 ml-auto" />
+              <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
@@ -88,7 +91,7 @@ export function WorkspaceSwitcher() {
             className="w-64 rounded-lg"
             align="start"
             side="bottom"
-            sideOffset={4}
+            sideOffset={8}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Your Workspaces
