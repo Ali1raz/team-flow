@@ -3,6 +3,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { organization } from "better-auth/plugins";
 import { ac, roles } from "./permissions";
+import { SendEmail } from "@/app/action";
+import { createSlug } from "./utils";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -61,6 +63,36 @@ export const auth = betterAuth({
       teams: {
         enabled: true,
         allowRemovingAllTeams: true,
+      },
+      async sendInvitationEmail(data) {
+        const {
+          email,
+          organization: { name },
+          inviter: {
+            user: { name: inviterName },
+          },
+          role,
+        } = data;
+        const message = `You have been invited to join ${name} as a ${role} by ${inviterName}. click the link below to accept.`;
+
+        await SendEmail({
+          to: email,
+          subject: `Invitation to join ${name}`,
+          meta: {
+            description: message,
+            link: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invite/${data.id}`,
+          },
+        });
+      },
+      organizationHooks: {
+        beforeCreateTeam: async ({ team, user, organization }) => {
+          return {
+            data: {
+              ...team,
+              slug: createSlug(team.name),
+            },
+          };
+        },
       },
       allowUserToCreateOrganization: true,
       ac,

@@ -1,3 +1,4 @@
+import { MembershipRole } from "@/generated/prisma/enums";
 import z from "zod";
 
 export const createWorkspaceSchema = z.object({
@@ -23,3 +24,13 @@ export const createMessageSchema = z.object({
 });
 
 export type CreateMessageType = z.infer<typeof createMessageSchema>;
+
+export const inviteMemberSchema = z.object({
+  email: z.email("Invalid email address"),
+  role: z.enum(MembershipRole),
+  organizationId: z.string(),
+  resend: z.boolean(),
+  teamId: z.string().nullable(),
+});
+
+export type InviteMemberSchemaType = z.infer<typeof inviteMemberSchema>;

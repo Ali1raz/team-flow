@@ -26,7 +26,9 @@ export default async function WorkspaceLayout({
         <AppSidebar organizationId={workspaceId} />
       </HydrateClient>
       <SidebarInset className="h-screen flex flex-col overflow-hidden">
-        <WokrspaceHeader />
+        <HydrateClient client={queryClient}>
+          <WokrspaceHeader />
+        </HydrateClient>
         <main className="flex flex-1 flex-col min-h-0">{children}</main>
       </SidebarInset>
     </SidebarProvider>
