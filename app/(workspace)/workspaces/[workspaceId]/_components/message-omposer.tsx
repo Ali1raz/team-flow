@@ -26,7 +26,12 @@ export function Messagecomponser({
     <Editor
       field={{ value: field.value, onChange: field.onChange }}
       sendButton={
-        <Button disabled={isSubmitting} type="button" size="sm" onClick={onSubmit}>
+        <Button
+          disabled={isSubmitting}
+          type="button"
+          size="sm"
+          onClick={onSubmit}
+        >
           <Send data-icon="inline-start" /> Send
         </Button>
       }

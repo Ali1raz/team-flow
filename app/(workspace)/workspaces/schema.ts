@@ -34,3 +34,10 @@ export const inviteMemberSchema = z.object({
 });
 
 export type InviteMemberSchemaType = z.infer<typeof inviteMemberSchema>;
+
+export const updateMessageSchema = z.object({
+  messageId: z.string(),
+  content: z.string().trim().min(1, "content is required"),
+});
+
+export type UpdateMessageSchemaType = z.infer<typeof updateMessageSchema>;
