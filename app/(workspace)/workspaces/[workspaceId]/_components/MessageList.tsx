@@ -1,17 +1,10 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { MessageItem } from "./message-item";
 import { orpc } from "@/lib/orpc";
 import { useParams } from "next/navigation";
-import {
-  Ban,
-  ChevronDownIcon,
-  ChevronLeftCircle,
-  ChevronsDownIcon,
-  Divide,
-  FolderCode,
-} from "lucide-react";
+import { Ban, ChevronDownIcon, ChevronsDownIcon } from "lucide-react";
 import {
   Empty,
   EmptyDescription,
@@ -51,19 +44,12 @@ export function MessageList() {
     }),
   });
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error,
-    isFetching,
-  } = useInfiniteQuery({
-    ...infiniteOptions,
-    staleTime: 30_000, // 30 seconds
-    refetchOnWindowFocus: false,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+    useInfiniteQuery({
+      ...infiniteOptions,
+      staleTime: 30_000, // 30 seconds
+      refetchOnWindowFocus: false,
+    });
 
   const isNearBottom = (el: HTMLDivElement) =>
     el.scrollHeight - el.scrollTop - el.clientHeight <= 80;

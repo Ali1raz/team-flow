@@ -1,8 +1,6 @@
 "use client";
 
 import { useSuspenseQuery } from "@tanstack/react-query";
-import Image from "next/image";
-import Link from "next/link";
 import { orpc } from "@/lib/orpc";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,22 +45,25 @@ export function WorkspaceList() {
     },
   });
 
+  console.log("===\n=====Current workspace", currentWorkspace?.id);
+
   const router = useRouter();
 
   async function onSubmit(values: SchemaType) {
-    const { data, error } = await authClient.organization.setActive({
-      organizationId: values.workspaceId,
-    });
-
-    if (error) {
-      toast.error("Failed to switch workspace", {
-        description: error.message ?? "Unknown error",
+    startTransition(async () => {
+      const { data, error } = await authClient.organization.setActive({
+        organizationId: values.workspaceId,
       });
-      return;
-    }
 
-    toast.success("Switched workspace successfully");
-    startTransition(() => {
+      if (error) {
+        toast.error("Failed to switch workspace", {
+          description: error.message ?? "Unknown error",
+        });
+        return;
+      }
+
+      toast.success("Switched workspace successfully");
+      console.log("----\n-----setting active workspace", data.id);
       router.push(`/workspaces/${data.id}`);
     });
   }
