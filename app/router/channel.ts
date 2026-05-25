@@ -10,6 +10,8 @@ import { createSlug } from "@/lib/utils";
 import { errorMessage } from "@/lib/error-message";
 import { prisma } from "@/lib/prisma";
 import { readsecurityMiddleware } from "../middlewares/arcjet/read";
+import { headers } from "next/headers";
+import { MembershipRole } from "@/generated/prisma/enums";
 
 export const createChannel = base
   .use(requireAuthMiddleware)
@@ -43,13 +45,13 @@ export const createChannel = base
           slug,
           organizationId: context.workspace.id,
         },
+        headers: await headers(),
       });
     } catch (error: unknown) {
       throw errors.BAD_REQUEST({
         message: errorMessage(error, "Failed to create channel"),
       });
     }
-    console.log(context.user.name);
 
     return { ...data, updatedAt: data.updatedAt ?? null };
   });
@@ -85,12 +87,12 @@ export const listChannels = base
           name: z.string(),
           email: z.string(),
           image: z.string().nullable(),
+          role: z.enum([...Object.values(MembershipRole)]),
         })
       ),
-      activeTeamId: z.string().nullable(),
     })
   )
-  .handler(async ({ context, input }) => {
+  .handler(async ({ input }) => {
     const [channels] = await Promise.all([
       prisma.team.findMany({
         where: {
@@ -109,23 +111,28 @@ export const listChannels = base
       }),
     ]);
 
-    const activeTeamId = context?.session?.activeTeamId ?? null;
+    const teamMembers = await auth.api.listMembers({
+      query: {
+        organizationId: input.organizationId,
+      },
+      headers: await headers(),
+    });
 
-    const teamMembers = activeTeamId
-      ? await prisma.teamMember.findMany({
-          where: { teamId: activeTeamId },
-          select: {
-            user: {
-              select: { id: true, name: true, email: true, image: true },
-            },
-          },
-        })
-      : [];
+    const rawMembers = Array.isArray(teamMembers)
+      ? []
+      : (teamMembers.members ?? []);
+
+    const members = rawMembers.map((member) => ({
+      id: member.userId,
+      name: member.user.name,
+      email: member.user.email,
+      image: member.user.image ?? null,
+      role: member.role as MembershipRole,
+    }));
 
     return {
       channels,
-      members: teamMembers.map((m) => m.user),
-      activeTeamId,
+      members,
     };
   });
 
