@@ -4,7 +4,14 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { MessageItem } from "./message-item";
 import { orpc } from "@/lib/orpc";
 import { useParams } from "next/navigation";
-import { ChevronLeftCircle, ChevronsDownIcon, FolderCode } from "lucide-react";
+import {
+  Ban,
+  ChevronDownIcon,
+  ChevronLeftCircle,
+  ChevronsDownIcon,
+  Divide,
+  FolderCode,
+} from "lucide-react";
 import {
   Empty,
   EmptyDescription,
@@ -30,6 +37,7 @@ export function MessageList() {
       cursor: pageParams,
       limit: 30,
     }),
+    queryKey: ["message.list", channelId],
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     select: (data) => ({
@@ -78,7 +86,11 @@ export function MessageList() {
         el.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop;
       });
     }
-    setIsAtBottom(isNearBottom(el));
+    const atBottom = isNearBottom(el);
+    setIsAtBottom(atBottom);
+    // Clear the new-messages flag as soon as the user reaches the bottom,
+    // so the button doesn't ghost-reappear on the next scroll tick.
+    if (atBottom) setNewMessages(false);
   };
 
   const messages = useMemo(() => {
@@ -89,12 +101,54 @@ export function MessageList() {
     if (messages.length && !hasInitialScrolled) {
       const el = ref.current;
       if (el) {
-        el.scrollTop = el.scrollHeight;
+        bottomRef.current?.scrollIntoView({ block: "end" });
         setHasInitialScrolled(true);
         setIsAtBottom(true);
       }
     }
   }, [messages.length, hasInitialScrolled]);
+
+  // keep view pinned to bottom on late content load (images):
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const scrolltoBottomIfNeeded = () => {
+      if (isAtBottom || !hasInitialScrolled) {
+        requestAnimationFrame(() => {
+          bottomRef.current?.scrollIntoView({ block: "end" });
+        });
+      }
+    };
+
+    const onImageLoad = (e: Event) => {
+      if (e.target instanceof HTMLImageElement) {
+        scrolltoBottomIfNeeded();
+      }
+    };
+
+    el.addEventListener("load", onImageLoad, true);
+
+    const resizeObserver = new ResizeObserver(() => {
+      scrolltoBottomIfNeeded();
+    });
+    resizeObserver.observe(el);
+
+    const mutationObserver = new MutationObserver(() => {
+      scrolltoBottomIfNeeded();
+    });
+    mutationObserver.observe(el, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true,
+    });
+
+    return () => {
+      mutationObserver.disconnect();
+      el.removeEventListener("load", onImageLoad, true);
+      resizeObserver.disconnect();
+    };
+  }, [isAtBottom, hasInitialScrolled]);
 
   useEffect(() => {
     if (!messages.length) return;
@@ -121,7 +175,7 @@ export function MessageList() {
     const el = ref.current;
 
     if (el) {
-      el.scrollTop = el.scrollHeight;
+      bottomRef.current?.scrollIntoView({ block: "end" });
       setNewMessages(false);
       setIsAtBottom(true);
     }
@@ -129,20 +183,25 @@ export function MessageList() {
 
   if ((!messages || messages?.length === 0) && !isFetching) {
     return (
-      <Empty className="h-full bg-muted/40 my-4">
-        <EmptyHeader>
-          <EmptyMedia variant="icon" className="bg-muted rounded-full size-28">
-            <FolderCode className="size-14" />
-          </EmptyMedia>
-          <EmptyTitle className="sm:text-4xl sm:mt-8 mt-4 text-2xl">
-            No messages
-          </EmptyTitle>
-          <EmptyDescription className="w-xl sm:text-lg text-xs">
-            There are no messages in this channel yet. Start the conversation by
-            sending a message!
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <div className="flex items-center justify-center h-full p-4">
+        <Empty className="h-full bg-muted/40">
+          <EmptyHeader>
+            <EmptyMedia
+              variant="icon"
+              className="bg-muted rounded-full size-28"
+            >
+              <Ban className="sm:size-14 size-8" />
+            </EmptyMedia>
+            <EmptyTitle className="sm:text-4xl sm:mt-6 mt-4 text-2xl">
+              No messages
+            </EmptyTitle>
+            <EmptyDescription className="w-xl sm:text-lg text-xs">
+              There are no messages in this channel yet. Start the conversation
+              by sending a new message!
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
     );
   }
 
@@ -155,15 +214,28 @@ export function MessageList() {
         <div ref={bottomRef} />
       </div>
 
-      {newMessages && !isAtBottom && (
-        <Button
-          type="button"
-          onClick={scrollToBottom}
-          className="absolute bottom-4 right-4 rounded-full shadow-md"
-        >
-          <ChevronsDownIcon className="size-4" /> New messages
-        </Button>
-      )}
+      <div className="flex gap-2 absolute bottom-4 right-4 z-20">
+        {!isAtBottom && (
+          <Button
+            type="button"
+            size="sm"
+            className="size-8 rounded-full hover:shadow-xl transition-all duration-100"
+            onClick={scrollToBottom}
+          >
+            <ChevronDownIcon className="size-4" />
+          </Button>
+        )}
+
+        {newMessages && !isAtBottom && (
+          <Button
+            type="button"
+            onClick={scrollToBottom}
+            className="rounded-full shadow-md"
+          >
+            <ChevronsDownIcon className="size-4" /> New messages
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

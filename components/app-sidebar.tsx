@@ -22,21 +22,21 @@ import {
 } from "./ui/collapsible";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
-import { Check, ChevronRight, Hash } from "lucide-react";
+import { ChevronRight, Hash } from "lucide-react";
 import { UserImage } from "./general/user-avatar";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ScrollArea } from "./ui/scroll-area";
 import { useParams } from "next/navigation";
-import { Badge } from "./ui/badge";
 import { CreateTeamDialog } from "./create-tem-dialog";
+import { Badge } from "./ui/badge";
 
 export function AppSidebar({
   organizationId,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { organizationId: string }) {
   const {
-    data: { members, channels, activeTeamId },
+    data: { members, channels },
   } = useSuspenseQuery(
     orpc.channel.list.queryOptions({ input: { organizationId } })
   );
@@ -49,7 +49,7 @@ export function AppSidebar({
         <WorkspaceSwitcher />
         <CreateTeamDialog />
       </SidebarHeader>
-      <SidebarContent className="flex flex-col overflow-hidden h-full">
+      <SidebarContent className="flex fflexlex-col overflow-hidden h-full">
         {/* Channels */}
         <SidebarGroup className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <SidebarMenu className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -92,11 +92,6 @@ export function AppSidebar({
                                     <Hash className="size-4 shrink-0" />
                                     <span className="truncate">{ch.name}</span>
                                   </p>
-                                  {activeTeamId === ch.id && (
-                                    <Badge variant="outline">
-                                      <Check className="size-3" />
-                                    </Badge>
-                                  )}
                                 </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
@@ -127,16 +122,29 @@ export function AppSidebar({
                       {members?.map((user) => (
                         <SidebarMenuSubItem
                           key={user.id}
-                          className="flex items-center gap-3 py-1 rounded-md hover:bg-accent truncate"
+                          className="flex items-start gap-3 p-2 rounded-md hover:bg-accent truncate"
                         >
                           <UserImage
                             name={user.name}
                             image={user.image}
                             className="size-8 object-cover"
                           />
-                          <div className="flex flex-col flex-1 gap-1">
-                            <span className="leading-none">{user.name}</span>
-                            <span className="text-sm leading-none text-muted-foreground">
+                          <div className="flex flex-col flex-1 max-w-[15ch] gap-1">
+                            <span className="leading-none">
+                              {user.name}
+                              <Badge
+                                variant={
+                                  user.role === "owner"
+                                    ? "default"
+                                    : user.role === "admin"
+                                      ? "outline"
+                                      : "ghost"
+                                }
+                              >
+                                {user.role}
+                              </Badge>
+                            </span>
+                            <span className="text-sm leading-none truncate text-muted-foreground">
                               {user.email}
                             </span>
                           </div>
