@@ -32,6 +32,7 @@ export function Menubar({ editor }: iAppProps) {
         isItalic: editor.isActive("italic"),
         isStrike: editor.isActive("strike"),
         CodeBlockLowlight: editor.isActive("codeBlock"),
+        // Track blockquote active state for the toggle button
         isBlockquote: editor.isActive("blockquote"),
         bulletList: editor.isActive("bulletList"),
         orderedList: editor.isActive("orderedList"),
@@ -43,7 +44,51 @@ export function Menubar({ editor }: iAppProps) {
 
   return (
     <div className="flex w-full flex-wrap items-center gap-1 sm:p-2 bg-card border-input border-b rounded-t-md p-2">
-      <div className="flex gap-1 items-center flex-wrap">
+      {/* Undo/Redo — always visible on all screen sizes so mobile users retain history controls */}
+      <div className="flex gap-1 items-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              type="button"
+              disabled={!editorState?.canUndo}
+              onClick={() => editor?.chain().focus().undo().run()}
+            >
+              <Undo2 className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Undo</p>
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              type="button"
+              disabled={!editorState?.canRedo}
+              onClick={() => editor?.chain().focus().redo().run()}
+            >
+              <Redo2 className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Redo</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+
+      {/* Separator only makes sense when the formatting buttons are visible */}
+      <Separator
+        orientation="vertical"
+        className="data-vertical:h-4 data-vertical:self-auto hidden sm:block"
+      />
+
+      {/* Formatting buttons — desktop (sm+) only; on mobile the BubbleMenu covers these */}
+      <div className="hidden sm:flex gap-1 items-center flex-wrap">
         <Tooltip>
           <TooltipTrigger asChild>
             <Toggle
@@ -92,6 +137,7 @@ export function Menubar({ editor }: iAppProps) {
             <p>Strike</p>
           </TooltipContent>
         </Tooltip>
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Toggle
@@ -130,10 +176,11 @@ export function Menubar({ editor }: iAppProps) {
 
       <Separator
         orientation="vertical"
-        className="data-vertical:h-4 data-vertical:self-auto"
+        className="data-vertical:h-4 data-vertical:self-auto hidden sm:block"
       />
 
-      <div className="flex gap-1 items-center flex-wrap">
+      {/* List buttons — desktop only, same reasoning as the formatting group above */}
+      <div className="hidden sm:flex gap-1 items-center flex-wrap">
         <Tooltip>
           <TooltipTrigger asChild>
             <Toggle
@@ -165,46 +212,6 @@ export function Menubar({ editor }: iAppProps) {
           </TooltipTrigger>
           <TooltipContent>
             <p>Ordered List</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-
-      <Separator
-        orientation="vertical"
-        className="data-vertical:h-4 data-vertical:self-auto"
-      />
-      <div className="flex gap-1 items-center flex-wrap">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="sm"
-              variant="ghost"
-              type="button"
-              disabled={!editorState?.canUndo}
-              onClick={() => editor?.chain().focus().undo().run()}
-            >
-              <Undo2 />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Undo</p>
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="sm"
-              variant="ghost"
-              type="button"
-              disabled={!editorState?.canRedo}
-              onClick={() => editor?.chain().focus().redo().run()}
-            >
-              <Redo2 />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Redo</p>
           </TooltipContent>
         </Tooltip>
       </div>

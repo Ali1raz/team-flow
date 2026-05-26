@@ -2,6 +2,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import { baseExtensions } from "./extensions";
 import { Menubar } from "./menubar";
+import { EditorBubbleMenu } from "./bubble-menu";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +45,7 @@ export function Editor({ field, sendButton, footerLeft }: iAppProps) {
   return (
     <div className="relative w-full border border-input rounded-md overflow-hidden dark:bg-input/30 flex flex-col">
       <Menubar editor={editor} />
+      <EditorBubbleMenu editor={editor} />
       <EditorContent editor={editor} className="p-4 max-h-50 overflow-y-auto" />
       <div className="p-4 py-2 border-t flex items-center justify-between bg-card">
         {footerLeft}
