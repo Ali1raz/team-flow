@@ -10,6 +10,7 @@ const lowlight = createLowlight(all);
 export const extensions = [
   StarterKit.configure({
     codeBlock: false,
+    blockquote: false,
     undoRedo: {
       depth: 10,
     },
