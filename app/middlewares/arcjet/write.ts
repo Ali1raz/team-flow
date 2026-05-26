@@ -2,6 +2,7 @@ import arcjet, { detectBot, slidingWindow } from "@/lib/arcjet";
 import { base } from "../bast";
 import { User } from "@/lib/auth";
 import { formatLocalDateTime } from "@/lib/utils";
+import { ArcjetNextRequest } from "@arcjet/next";
 
 const standardAj = () =>
   arcjet
@@ -25,7 +26,7 @@ const standardAj = () =>
 
 export const writesecurityMiddleware = base
   .$context<{
-    request: Request;
+    request: Request | ArcjetNextRequest;
     user: User;
   }>()
   .middleware(async ({ context, next, errors }) => {

@@ -1,17 +1,10 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { MessageItem } from "./message-item";
 import { orpc } from "@/lib/orpc";
 import { useParams } from "next/navigation";
-import {
-  Ban,
-  ChevronDownIcon,
-  ChevronLeftCircle,
-  ChevronsDownIcon,
-  Divide,
-  FolderCode,
-} from "lucide-react";
+import { Ban, ChevronDownIcon, ChevronsDownIcon } from "lucide-react";
 import {
   Empty,
   EmptyDescription,
@@ -21,6 +14,7 @@ import {
 } from "@/components/ui/empty";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function MessageList() {
   const { channelId } = useParams<{ channelId: string }>();
@@ -56,14 +50,17 @@ export function MessageList() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,
-    error,
     isFetching,
+    isLoading,
   } = useInfiniteQuery({
     ...infiniteOptions,
     staleTime: 30_000, // 30 seconds
     refetchOnWindowFocus: false,
   });
+
+  const {
+    data: { user },
+  } = useSuspenseQuery(orpc.workspace.list.queryOptions());
 
   const isNearBottom = (el: HTMLDivElement) =>
     el.scrollHeight - el.scrollTop - el.clientHeight <= 80;
@@ -195,7 +192,7 @@ export function MessageList() {
             <EmptyTitle className="sm:text-4xl sm:mt-6 mt-4 text-2xl">
               No messages
             </EmptyTitle>
-            <EmptyDescription className="w-xl sm:text-lg text-xs">
+            <EmptyDescription className="sm:w-xl w-sm sm:text-lg text-xs">
               There are no messages in this channel yet. Start the conversation
               by sending a new message!
             </EmptyDescription>
@@ -205,11 +202,33 @@ export function MessageList() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 w-full h-full">
+        {[...Array(10)].map((_, i) => (
+          <div key={i} className="flex px-4 items-start gap-2 w-full">
+            <Skeleton className="rounded-full size-10" />
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex mb-4 items-center gap-4">
+                <Skeleton className="w-28 h-4" />
+                <Skeleton className="w-34 h-4" />
+              </div>
+              <Skeleton className="w-5/6 h-4" />
+              <Skeleton className="w-3/4 h-4" />
+              <Skeleton className="w-4/5 h-4" />
+              <Skeleton className="w-4/5 h-4" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-full">
       <div ref={ref} onScroll={handleScroll} className="h-full overflow-y-auto">
         {messages?.map((msg) => (
-          <MessageItem key={msg.id} message={msg} />
+          <MessageItem key={msg.id} message={msg} currentUserId={user.id} />
         ))}
         <div ref={bottomRef} />
       </div>

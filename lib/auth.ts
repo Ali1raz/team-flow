@@ -85,7 +85,7 @@ export const auth = betterAuth({
         });
       },
       organizationHooks: {
-        beforeCreateTeam: async ({ team, user, organization }) => {
+        beforeCreateTeam: async ({ team }) => {
           return {
             data: {
               ...team,

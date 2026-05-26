@@ -19,6 +19,7 @@ import Link from "next/link";
 import { formatLocalDateTime } from "@/lib/utils";
 import Error from "@/app/error";
 import { Loader2 } from "lucide-react";
+import { RejectButton } from "./_components/reject-button";
 
 export default function AcceptInvitePage() {
   const { id } = useParams<{ id: string }>();
@@ -106,7 +107,10 @@ export default function AcceptInvitePage() {
                 </span>
               </div>
             </div>
-            <AcceptButton id={id} />
+            <div className="flex items-center justify-between w-full">
+              <AcceptButton id={id} />
+              <RejectButton id={id} />
+            </div>
           </CardContent>
         </Card>
       </div>

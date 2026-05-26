@@ -78,6 +78,7 @@ export function WorkspaceSwitcher() {
                   width={20}
                   height={20}
                   unoptimized
+                  className="w-full object-cover rounded"
                 />
               </div>
               <span className="truncate font-medium line-clamp-1">
@@ -114,6 +115,7 @@ export function WorkspaceSwitcher() {
                       width={20}
                       height={20}
                       unoptimized
+                      className="w-full object-cover rounded"
                     />
                   </div>
                   {org.name}
