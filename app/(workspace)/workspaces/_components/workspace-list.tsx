@@ -1,6 +1,6 @@
 "use client";
 
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +25,7 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import z from "zod/v3";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 const schema = z.object({
   workspaceId: z.string().min(1, "Please select a workspace"),
@@ -34,14 +34,25 @@ type SchemaType = z.infer<typeof schema>;
 
 export function WorkspaceList() {
   const [isPending, startTransition] = useTransition();
+
   const {
     data: { workspaces, currentWorkspace },
   } = useSuspenseQuery(orpc.workspace.list.queryOptions());
 
+  const [activeId, setActiveId] = useState<string | null>(
+    currentWorkspace?.id ?? null
+  );
+
+  const queryClient = useQueryClient();
+
+  // Always derive from state so UI updates immediately
+  const activeWorkspace =
+    workspaces.find((w) => w.id === activeId) ?? currentWorkspace;
+
   const form = useForm<SchemaType>({
     resolver: zodResolver(schema),
     defaultValues: {
-      workspaceId: currentWorkspace?.id ?? "",
+      workspaceId: activeWorkspace?.id ?? "",
     },
   });
 
@@ -56,14 +67,15 @@ export function WorkspaceList() {
       });
 
       if (error) {
-        toast.error("Failed to switch workspace", {
+        toast.error("Failed to switch workspace!", {
           description: error.message ?? "Unknown error",
         });
         return;
       }
 
-      toast.success("Switched workspace successfully");
-      console.log("----\n-----setting active workspace", data.id);
+      setActiveId(data.id);
+      toast.success(`Switched to ${data.name} workspace successfully!`);
+      await queryClient.invalidateQueries(orpc.workspace.list.queryOptions());
       router.push(`/workspaces/${data.id}`);
     });
   }
