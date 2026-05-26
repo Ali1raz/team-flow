@@ -11,7 +11,6 @@ import {
 } from "../(workspace)/workspaces/schema";
 import { Message } from "@/generated/prisma/client";
 import { readsecurityMiddleware } from "../middlewares/arcjet/read";
-import { errorMessage } from "@/lib/error-message";
 
 export const createMessage = base
   .use(requireAuthMiddleware)

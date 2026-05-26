@@ -7,6 +7,7 @@ import {
   Italic,
   List,
   ListOrdered,
+  Quote,
   Redo2,
   Strikethrough,
   Undo2,
@@ -31,6 +32,7 @@ export function Menubar({ editor }: iAppProps) {
         isItalic: editor.isActive("italic"),
         isStrike: editor.isActive("strike"),
         CodeBlockLowlight: editor.isActive("codeBlock"),
+        isBlockquote: editor.isActive("blockquote"),
         bulletList: editor.isActive("bulletList"),
         orderedList: editor.isActive("orderedList"),
         canUndo: editor.can().chain().focus().undo().run(),
@@ -104,6 +106,24 @@ export function Menubar({ editor }: iAppProps) {
           </TooltipTrigger>
           <TooltipContent>
             <p>Code Block</p>
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Blockquote toggle — uses the Blockquote extension already registered in extensions.ts */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Toggle
+              size="sm"
+              pressed={editorState?.isBlockquote ?? false}
+              onPressedChange={() =>
+                editor?.chain().focus().toggleBlockquote().run()
+              }
+            >
+              <Quote />
+            </Toggle>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Blockquote</p>
           </TooltipContent>
         </Tooltip>
       </div>
