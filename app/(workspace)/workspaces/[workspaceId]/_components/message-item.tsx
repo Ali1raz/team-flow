@@ -4,11 +4,14 @@ import { formatLocalDateTime } from "@/lib/utils";
 import Image from "next/image";
 import Logo from "@/public/team-flow.png";
 import { RenderJSONtoHTML } from "@/components/editor/render-content";
-import { Edit2 } from "lucide-react";
+import { Edit2, MessagesSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditMessageForm } from "./edit-message-form";
-import { useState } from "react";
-import { client } from "@/lib/orpc";
+import { useCallback, useState } from "react";
+import { client, orpc } from "@/lib/orpc";
+import { useSidebarWithSide } from "@/components/ui/sidebar";
+import { useThread } from "@/components/thread-sidebar/thread-context";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type messageType = Awaited<
   ReturnType<typeof client.message.list>
@@ -22,6 +25,28 @@ export function MessageItem({
   currentUserId: string;
 }) {
   const [isEditing, setIsEditing] = useState(false);
+
+  // Access thread context and right sidebar so the replies button can open the
+  // thread panel in the same way the MessagesSquare action button does.
+  const { setThreadId } = useThread();
+  const { setOpen } = useSidebarWithSide("right");
+
+  /** Opens the right sidebar and loads this message's thread. */
+  function openThread() {
+    setThreadId(message.id);
+    setOpen(true);
+  }
+
+  const queryClinet = useQueryClient();
+
+  const prefetchThread = useCallback(() => {
+    const options = orpc.message.threads.list.queryOptions({
+      input: { threadId: message.id },
+    });
+    queryClinet
+      .prefetchQuery({ ...options, staleTime: 60_000 })
+      .catch(() => {});
+  }, [queryClinet, message.id]);
 
   return (
     <div className="flex relative group gap-3 items-start rounded-md hover:bg-muted/70 p-3">
@@ -63,11 +88,26 @@ export function MessageItem({
                 />
               </div>
             )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={openThread}
+              className="flex items-center gap-1"
+              onMouseEnter={prefetchThread}
+              onFocus={prefetchThread}
+            >
+              <MessagesSquare className="size-3.5" />
+              {message._count.replies || 0}{" "}
+              {message._count.replies <= 1 ? "reply" : "replies"}
+            </Button>
           </>
         )}
       </div>
 
       <MessageActions
+        messageId={message.id}
         onEdit={() => setIsEditing(true)}
         canEdit={message.user.id === currentUserId}
       />
@@ -75,12 +115,17 @@ export function MessageItem({
   );
 }
 function MessageActions({
+  messageId,
   onEdit,
   canEdit,
 }: {
+  messageId: string;
   onEdit: () => void;
   canEdit: boolean;
 }) {
+  const { setThreadId } = useThread();
+  const { setOpen } = useSidebarWithSide("right");
+
   return (
     <div className="absolute group-hover:flex hidden -top-4 right-8">
       <div className="flex gap-2 items-center">
@@ -89,6 +134,18 @@ function MessageActions({
             <Edit2 />
           </Button>
         )}
+
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => {
+            setThreadId(messageId);
+            setOpen(true);
+          }}
+        >
+          <MessagesSquare className="size-4" />
+          <span className="sr-only">Open thread replies</span>
+        </Button>
       </div>
     </div>
   );

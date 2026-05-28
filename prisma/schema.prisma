@@ -179,6 +179,11 @@ model Message {
   teamId String
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
+  parentMessage Message? @relation("MessageThread", fields: [threadId], references: [id], onDelete: Cascade)
+  threadId      String?
+
+  replies      Message[] @relation("MessageThread")
+
   @@index([teamId])
   @@index([userId])
   @@map("message")
