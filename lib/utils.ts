@@ -1,6 +1,8 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { COLOR_COMBOS } from "./app/data";
+import { renderToMarkdown } from "@tiptap/static-renderer/pm/markdown";
+import { baseExtensions } from "@/components/editor/extensions";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -36,4 +38,35 @@ export function formatLocalDateTime(createdAt: string | number | Date) {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+/**
+ * trim trailing whitespaces and collapse >2 blank lines
+ */
+function normalizeWhitespace(text: string) {
+  return text
+    .replace(/\s+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * Converts a JSON string to a Markdown string using the Tiptap static renderer.
+ *
+ * see https://tiptap.dev/docs/editor/api/utilities/static-renderer
+ */
+export async function jsonToMarkdown(json: string) {
+  let content;
+  try {
+    content = JSON.parse(json);
+  } catch {
+    return "";
+  }
+
+  return normalizeWhitespace(
+    renderToMarkdown({
+      extensions: baseExtensions,
+      content,
+    })
+  );
 }

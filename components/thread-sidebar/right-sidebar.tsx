@@ -1,8 +1,5 @@
 "use client";
 
-// RightSidebar fetches thread data for the active threadId from ThreadContext.
-// When threadId is null (sidebar opened via rail or Ctrl+M before a message is
-// clicked) it shows an empty state so ThreadsForm never renders without a valid id.
 import { ComponentProps, CSSProperties, Suspense } from "react";
 import {
   Sidebar,
@@ -24,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { UserImage } from "../general/user-avatar";
 import { RenderJSONtoHTML } from "../editor/render-content";
+import { SummarizeThreadPopover } from "./summarize-thread-popover";
 
 // Empty state shown when no thread is selected or the thread has no replies yet.
 function EmptyState() {
@@ -58,10 +56,17 @@ export function RightSidebar({
         <SidebarRail />
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">Replies</h1>
-          <Button variant="outline" size="icon" onClick={() => setOpen(false)}>
-            <X className="size-4" />
-            <span className="sr-only">Close threads</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <SummarizeThreadPopover threadId={threadId!} />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setOpen(false)}
+            >
+              <X className="size-4" />
+              <span className="sr-only">Close threads</span>
+            </Button>
+          </div>
         </div>
       </SidebarHeader>
 
