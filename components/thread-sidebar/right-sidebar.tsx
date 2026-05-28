@@ -70,64 +70,65 @@ export function RightSidebar({
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="flex flex-col overflow-hidden gap-4 p-2">
-        {!threadId && <EmptyState />}
+      {/* Single scrollable area so parent message and replies scroll together */}
+      <SidebarContent className="overflow-y-auto">
+        <div className="flex flex-col gap-4 p-2">
+          {!threadId && <EmptyState />}
 
-        {threadId && isLoading && (
-          <p className="text-sm text-muted-foreground p-4 text-center">
-            Loading…
-          </p>
-        )}
+          {threadId && isLoading && (
+            <p className="text-sm text-muted-foreground p-4 text-center">
+              Loading…
+            </p>
+          )}
 
-        {threadId && data && (
-          <>
-            <Card className="shrink-0">
-              <CardContent>
-                <div className="flex items-start gap-2">
-                  <UserImage
-                    image={data.parent.user.image}
-                    className="size-8 rounded-full object-cover object-center"
-                  />
-                  <div className="flex flex-col gap-2">
-                    <div className="flex gap-2 items-center">
-                      <p className="text-sm font-medium max-w-[12ch] truncate">
-                        {data.parent.user.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatLocalDateTime(data.parent.createdAt)}
-                      </p>
-                    </div>
-                    <RenderJSONtoHTML
-                      content={JSON.parse(data.parent.content)}
-                      className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
+          {threadId && data && (
+            <>
+              <Card>
+                <CardContent>
+                  <div className="flex items-start gap-2">
+                    <UserImage
+                      image={data.parent.user.image}
+                      className="size-8 rounded-full object-cover object-center"
                     />
-
-                    {data.parent.imageUrl && (
-                      <div>
-                        <Image
-                          src={data.parent.imageUrl}
-                          alt="uploaded image"
-                          width={512}
-                          height={512}
-                          className="object-cover rounded max-h-75 w-auto"
-                        />
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2 items-center">
+                        <p className="text-sm font-medium max-w-[12ch] truncate">
+                          {data.parent.user.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatLocalDateTime(data.parent.createdAt)}
+                        </p>
                       </div>
-                    )}
+                      <RenderJSONtoHTML
+                        content={JSON.parse(data.parent.content)}
+                        className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
+                      />
+
+                      {data.parent.imageUrl && (
+                        <div>
+                          <Image
+                            src={data.parent.imageUrl}
+                            alt="uploaded image"
+                            width={512}
+                            height={512}
+                            className="object-cover rounded max-h-75 w-auto"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Separator className="shrink-0" />
+              <Separator />
 
-            <div className="text-sm text-muted-foreground shrink-0">
-              {data.threads.length}{" "}
-              {data.threads.length === 1 ? "reply" : "replies"}
-            </div>
+              <div className="text-sm text-muted-foreground">
+                {data.threads.length}{" "}
+                {data.threads.length === 1 ? "reply" : "replies"}
+              </div>
 
-            <div className="flex flex-col flex-1 p-2 min-h-0 gap-2 overflow-y-auto">
               {data.threads.map((thread) => (
-                <Card key={thread.id} className="shrink-0">
+                <Card key={thread.id}>
                   <CardContent>
                     <div className="flex items-start gap-2">
                       <UserImage
@@ -165,9 +166,9 @@ export function RightSidebar({
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </SidebarContent>
 
       <SidebarFooter className="border-t px-2 shrink-0">
