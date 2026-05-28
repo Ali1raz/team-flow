@@ -295,7 +295,7 @@ export const listThreads = base
     })
   )
   .handler(async ({ errors, input, context }) => {
-    const parentMessage = await prisma.message.findUnique({
+    const parent = await prisma.message.findUnique({
       where: {
         id: input.threadId,
         team: {
@@ -315,47 +315,36 @@ export const listThreads = base
             image: true,
           },
         },
-      },
-    });
-
-    if (!parentMessage) {
-      throw errors.NOT_FOUND();
-    }
-
-    const threads = await prisma.message.findMany({
-      where: {
-        threadId: input.threadId,
-        team: {
-          organization: { id: context.workspace.id },
-        },
-      },
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-      select: {
-        id: true,
-        content: true,
-        imageUrl: true,
-        createdAt: true,
-        user: {
+        // Fetch replies in the same query, ordered oldest-first for thread display
+        replies: {
+          orderBy: [{ createdAt: "asc" }, { id: "asc" }],
           select: {
             id: true,
-            name: true,
-            email: true,
-            image: true,
+            content: true,
+            imageUrl: true,
+            createdAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
           },
         },
       },
     });
 
-    const prent = {
-      ...parentMessage,
-    };
+    if (!parent) {
+      throw errors.NOT_FOUND();
+    }
 
-    const messages = threads.map((thread) => ({
-      ...thread,
-    }));
+    // Destructure replies out so parent shape matches the output schema
+    const { replies, ...parentFields } = parent;
 
     return {
-      parent: prent,
-      threads: messages,
+      parent: parentFields,
+      threads: replies,
     };
   });
