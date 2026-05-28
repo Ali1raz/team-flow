@@ -13,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { CreateWorkspaceDialog } from "@/app/(workspace)/workspaces/_components/create-workspace-dialog";
 import { Button } from "./ui/button";
@@ -29,6 +30,7 @@ import { useState } from "react";
 export function WorkspaceSwitcher() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { isMobile } = useSidebar();
 
   const {
     data: { workspaces, currentWorkspace },
@@ -91,7 +93,7 @@ export function WorkspaceSwitcher() {
           <DropdownMenuContent
             className="w-64 rounded-lg"
             align="start"
-            side="bottom"
+            side={isMobile ? "bottom" : "right"}
             sideOffset={8}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">

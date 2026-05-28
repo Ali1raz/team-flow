@@ -26,6 +26,27 @@ export const createMessage = base
   .input(createMessageSchema)
   .output(z.custom<Message>())
   .handler(async ({ context, input, errors }) => {
+    if (input.threadId) {
+      const prentMessage = await prisma.message.findFirst({
+        where: {
+          id: input.threadId,
+          team: {
+            organization: {
+              id: context.workspace.id,
+            },
+          },
+        },
+      });
+
+      if (
+        !prentMessage ||
+        prentMessage.teamId !== input.channelId ||
+        prentMessage.threadId !== null
+      ) {
+        throw errors.BAD_REQUEST();
+      }
+    }
+
     const channel = await prisma.team.findFirst({
       where: {
         id: input.channelId,
@@ -58,6 +79,7 @@ export const createMessage = base
         imageUrl: input.imageUrl,
         teamId: input.channelId,
         userId: context.user.id,
+        threadId: input.threadId,
       },
     });
 
@@ -92,6 +114,9 @@ export const listMessages = base
           content: z.string(),
           imageUrl: z.string().nullable().optional(),
           createdAt: z.date(),
+          _count: z.object({
+            replies: z.number(),
+          }),
           user: z.object({
             id: z.string(),
             name: z.string(),
@@ -125,6 +150,7 @@ export const listMessages = base
     const messages = await prisma.message.findMany({
       where: {
         teamId: channel.id,
+        threadId: null,
       },
       ...(input.cursor
         ? {
@@ -146,6 +172,7 @@ export const listMessages = base
         content: true,
         imageUrl: true,
         createdAt: true,
+        _count: { select: { replies: true } },
         user: {
           select: {
             id: true,
@@ -218,5 +245,117 @@ export const updateMessage = base
     return {
       message: updatedMessage,
       canEdit: message.userId === context.user.id,
+    };
+  });
+
+export const listThreads = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .use(standardsecurityMiddleware)
+  .use(readsecurityMiddleware)
+  .route({
+    method: "GET",
+    path: "/messages/:threadId/threads",
+    summary: "List threads",
+    tags: ["message"],
+  })
+  .input(
+    z.object({
+      threadId: z.string(),
+    })
+  )
+  .output(
+    z.object({
+      parent: z.object({
+        id: z.string(),
+        content: z.string(),
+        imageUrl: z.string().nullable(),
+        createdAt: z.date(),
+        user: z.object({
+          id: z.string(),
+          name: z.string(),
+          email: z.string(),
+          image: z.string().nullable(),
+        }),
+      }),
+      threads: z.array(
+        z.object({
+          id: z.string(),
+          content: z.string(),
+          imageUrl: z.string().nullable(),
+          createdAt: z.date(),
+          user: z.object({
+            id: z.string(),
+            name: z.string(),
+            email: z.string(),
+            image: z.string().nullable(),
+          }),
+        })
+      ),
+    })
+  )
+  .handler(async ({ errors, input, context }) => {
+    const parentMessage = await prisma.message.findUnique({
+      where: {
+        id: input.threadId,
+        team: {
+          organization: { id: context.workspace.id },
+        },
+      },
+      select: {
+        id: true,
+        content: true,
+        imageUrl: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    if (!parentMessage) {
+      throw errors.NOT_FOUND();
+    }
+
+    const threads = await prisma.message.findMany({
+      where: {
+        threadId: input.threadId,
+        team: {
+          organization: { id: context.workspace.id },
+        },
+      },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      select: {
+        id: true,
+        content: true,
+        imageUrl: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    const prent = {
+      ...parentMessage,
+    };
+
+    const messages = threads.map((thread) => ({
+      ...thread,
+    }));
+
+    return {
+      parent: prent,
+      threads: messages,
     };
   });

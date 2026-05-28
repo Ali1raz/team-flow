@@ -49,7 +49,7 @@ export function AppSidebar({
         <WorkspaceSwitcher />
         <CreateTeamDialog />
       </SidebarHeader>
-      <SidebarContent className="flex fflexlex-col overflow-hidden h-full">
+      <SidebarContent className="flex flex-col overflow-hidden h-full">
         {/* Channels */}
         <SidebarGroup className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <SidebarMenu className="flex-1 min-h-0 flex flex-col overflow-hidden">

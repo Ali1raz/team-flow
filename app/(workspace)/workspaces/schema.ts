@@ -21,6 +21,7 @@ export const createMessageSchema = z.object({
   content: z.string().trim().min(1, "Message content is required"),
   channelId: z.string(),
   imageUrl: z.url().optional(),
+  threadId: z.string().optional(),
 });
 
 export type CreateMessageType = z.infer<typeof createMessageSchema>;

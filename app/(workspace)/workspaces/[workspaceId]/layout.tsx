@@ -4,6 +4,8 @@ import { orpc } from "@/lib/orpc";
 import { getQueryClient, HydrateClient } from "@/lib/query/hydration";
 import { ReactNode } from "react";
 import { WokrspaceHeader } from "./_components/workspace-header";
+import { ThreadProvider } from "@/components/thread-sidebar/thread-context";
+import { RightSidebar } from "@/components/thread-sidebar/right-sidebar";
 
 export default async function WorkspaceLayout({
   children,
@@ -21,16 +23,19 @@ export default async function WorkspaceLayout({
     ),
   ]);
   return (
-    <SidebarProvider>
-      <HydrateClient client={queryClient}>
-        <AppSidebar organizationId={workspaceId} />
-      </HydrateClient>
-      <SidebarInset className="h-screen flex flex-col overflow-hidden">
+    <SidebarProvider defaultOpenRight={false}>
+      <ThreadProvider>
         <HydrateClient client={queryClient}>
-          <WokrspaceHeader />
+          <AppSidebar organizationId={workspaceId} />
         </HydrateClient>
-        <main className="flex flex-1 flex-col min-h-0">{children}</main>
-      </SidebarInset>
+        <SidebarInset className="h-screen flex flex-col overflow-hidden">
+          <HydrateClient client={queryClient}>
+            <WokrspaceHeader />
+          </HydrateClient>
+          <main className="flex flex-1 flex-col min-h-0">{children}</main>
+        </SidebarInset>
+        <RightSidebar collapsible="offcanvas" variant="sidebar" side="right" />
+      </ThreadProvider>
     </SidebarProvider>
   );
 }
