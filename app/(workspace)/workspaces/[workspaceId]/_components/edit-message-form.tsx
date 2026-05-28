@@ -22,6 +22,13 @@ interface EditMessageFormProps {
   onSave: () => void;
 }
 
+// Shape of a single page from the message.list procedure.
+type MessagePage = {
+  messages: messageType[];
+  nextCursor: string | null;
+};
+type InfiniteMessages = InfiniteData<MessagePage>;
+
 export function EditMessageForm({
   message,
   onCancel,
@@ -39,40 +46,67 @@ export function EditMessageForm({
 
   const queryClient = useQueryClient();
 
+  // The raw key that MessageList.tsx registers its infinite query under.
+  // Must stay in sync with the `queryKey` option passed to infiniteOptions there.
+  const messageListKey = ["message.list", channelId];
+
   const updateMessageMutation = useMutation(
     orpc.message.update.mutationOptions({
-      onSuccess: (update) => {
-        type messagePage = {
-          messages: messageType[];
-          nextCursor: string | null;
-        };
-        type infinitMessages = InfiniteData<messagePage>;
-        queryClient.setQueryData<infinitMessages>(
-          ["message.list", channelId],
-          (old) => {
-            if (!old) return old;
-            const pages = old.pages.map((page) => ({
+      onMutate: async (variables) => {
+        // Stop any in-flight refetches so they don't overwrite the optimistic value.
+        await queryClient.cancelQueries({ queryKey: messageListKey });
+
+        // Snapshot current data so we can roll back if the server rejects the edit.
+        const prevData =
+          queryClient.getQueryData<InfiniteMessages>(messageListKey);
+
+        // Immediately apply the new content in the cache — this is the optimistic update.
+        queryClient.setQueryData<InfiniteMessages>(messageListKey, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
               ...page,
               messages: page.messages.map((msg) =>
-                msg.id === update.message.id
-                  ? {
-                      ...msg,
-                      content: update.message.content,
-                      imageUrl: update.message.imageUrl,
-                    }
+                msg.id === variables.messageId
+                  ? { ...msg, content: variables.content }
                   : msg
               ),
-            }));
-            return { ...old, pages };
-          }
+            })),
+          };
+        });
+
+        return { prevData };
+      },
+
+      onSuccess: (update) => {
+        // If this message is the parent of an open thread, the right sidebar
+        // uses a separate `message.threads.list` query keyed by message id.
+        // Invalidate it so the sidebar re-fetches and shows the updated content.
+        queryClient.invalidateQueries(
+          orpc.message.threads.list.queryOptions({
+            input: { threadId: update.message.id },
+          })
         );
+
         toast.success("Message updated successfully");
         onSave();
       },
-      onError: (error) => {
+
+      onError: (error, _variables, context) => {
+        // Roll back the optimistic update to the snapshot taken in onMutate.
+        if (context?.prevData) {
+          queryClient.setQueryData(messageListKey, context.prevData);
+        }
         toast.error("Failed to update message", {
           description: error.message,
         });
+      },
+
+      onSettled: () => {
+        // Ensure eventual consistency: re-sync the cache with the server
+        // regardless of success or failure, once the mutation is done.
+        queryClient.invalidateQueries({ queryKey: messageListKey });
       },
     })
   );
