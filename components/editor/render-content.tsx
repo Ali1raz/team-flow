@@ -2,6 +2,7 @@ import { generateHTML, JSONContent } from "@tiptap/react";
 import { baseExtensions } from "./extensions";
 import Dompurify from "dompurify";
 import parse from "html-react-parser";
+import { cn } from "@/lib/utils";
 
 interface iAppProps {
   content: JSONContent;
@@ -13,7 +14,7 @@ export function RenderJSONtoHTML({ content, className }: iAppProps) {
 
   const cleaned = Dompurify.sanitize(html);
 
-  return <div className={className}>{parse(cleaned)}</div>;
+  return <div className={cn("tiptap", className)}>{parse(cleaned)}</div>;
 }
 
 function convertJSONtoHTML(jsonContent: JSONContent): string {

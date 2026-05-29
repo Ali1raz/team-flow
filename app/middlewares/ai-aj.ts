@@ -1,11 +1,21 @@
-import arcjet, { detectBot, sensitiveInfo, slidingWindow } from "@/lib/arcjet";
-import { base } from "../bast";
+import arcjet, {
+  detectBot,
+  sensitiveInfo,
+  slidingWindow,
+  shield,
+} from "@/lib/arcjet";
 import { User } from "@/lib/auth";
 import { formatLocalDateTime } from "@/lib/utils";
 import { ArcjetNextRequest } from "@arcjet/next";
+import { base } from "./bast";
 
-const standardAj = () =>
+const aiAj = () =>
   arcjet
+    .withRule(
+      shield({
+        mode: "LIVE",
+      })
+    )
     .withRule(
       slidingWindow({
         mode: "LIVE",
@@ -16,11 +26,7 @@ const standardAj = () =>
     .withRule(
       detectBot({
         mode: "LIVE",
-        allow: [
-          "CATEGORY:SEARCH_ENGINE",
-          "CATEGORY:PREVIEW",
-          "CATEGORY:MONITOR",
-        ],
+        allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
       })
     )
     .withRule(
@@ -30,13 +36,13 @@ const standardAj = () =>
       })
     );
 
-export const heavyWritesecurityMiddleware = base
+export const aiMiddleware = base
   .$context<{
     request: Request | ArcjetNextRequest;
     user: User;
   }>()
   .middleware(async ({ context, next, errors }) => {
-    const dec = await standardAj().protect(context.request, {
+    const dec = await aiAj().protect(context.request, {
       userId: context.user.id,
     });
 
@@ -50,6 +56,12 @@ export const heavyWritesecurityMiddleware = base
       if (dec.reason.isBot()) {
         throw errors.FORBIDDEN({
           message: "Bot detected. Request blocked!",
+        });
+      }
+
+      if (dec.reason.isShield()) {
+        throw errors.FORBIDDEN({
+          message: "Request blocked by security policy (WAF)!",
         });
       }
 
