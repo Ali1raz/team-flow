@@ -4,11 +4,6 @@ import { Plus } from "lucide-react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -18,7 +13,7 @@ import {
 } from "./ui/dialog";
 import { toast } from "sonner";
 import { useState } from "react";
-import { createSlug } from "@/lib/utils";
+import { cn, createSlug } from "@/lib/utils";
 import {
   Field,
   FieldError,
@@ -36,7 +31,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { useRouter } from "next/navigation";
 
-export function CreateTeamDialog() {
+export function CreateTeamDialog({
+  className,
+}: {
+  className?: React.ComponentProps<typeof Button>["className"];
+}) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const form = useForm<CreateChannelType>({
@@ -83,76 +82,67 @@ export function CreateTeamDialog() {
   }
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <SidebarMenuButton asChild className="w-full px-1.5">
-              <Button variant="outline">
-                <Plus className="size-4" /> Create Channel
-              </Button>
-            </SidebarMenuButton>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-100">
-            <DialogHeader className="text-xs text-muted-foreground">
-              <DialogTitle>Create Channel</DialogTitle>
-              <DialogDescription>
-                Create new channel to get started
-              </DialogDescription>
-            </DialogHeader>
-            <form id="channel-form" onSubmit={form.handleSubmit(onSubmit)}>
-              <FieldGroup className="flex flex-col gap-4">
-                <Controller
-                  name="name"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={field.name}>Name</FieldLabel>
-                      <Input
-                        {...field}
-                        id={field.name}
-                        aria-invalid={
-                          fieldState.invalid && fieldState.isTouched
-                        }
-                        autoComplete="team-name"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className={cn(className)} variant="outline" size="sm">
+          <Plus className="size-4" /> Create Channel
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-100">
+        <DialogHeader className="text-xs text-muted-foreground">
+          <DialogTitle>Create Channel</DialogTitle>
+          <DialogDescription>
+            Create new channel to get started
+          </DialogDescription>
+        </DialogHeader>
+        <form id="channel-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <FieldGroup className="flex flex-col gap-4">
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid && fieldState.isTouched}
+                    autoComplete="team-name"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
                   )}
-                />
+                </Field>
+              )}
+            />
 
-                {slug && (
-                  <p>
-                    will be created as:{" "}
-                    <code className="bg-muted text-muted-foreground px-1 w-fit">
-                      {slug}
-                    </code>
-                  </p>
-                )}
-              </FieldGroup>
-            </form>
+            {slug && (
+              <p>
+                will be created as:{" "}
+                <code className="bg-muted text-muted-foreground px-1 w-fit">
+                  {slug}
+                </code>
+              </p>
+            )}
+          </FieldGroup>
+        </form>
 
-            <Field className="mt-4">
-              <Button
-                disabled={createChannelMutation.isPending}
-                type="submit"
-                form="channel-form"
-              >
-                {createChannelMutation.isPending ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" /> Creating
-                    Channel...
-                  </>
-                ) : (
-                  <>Create Channel</>
-                )}
-              </Button>
-            </Field>
-          </DialogContent>
-        </Dialog>
-      </SidebarMenuItem>
-    </SidebarMenu>
+        <Field className="mt-4">
+          <Button
+            disabled={createChannelMutation.isPending}
+            type="submit"
+            form="channel-form"
+          >
+            {createChannelMutation.isPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" /> Creating Channel...
+              </>
+            ) : (
+              <>Create Channel</>
+            )}
+          </Button>
+        </Field>
+      </DialogContent>
+    </Dialog>
   );
 }

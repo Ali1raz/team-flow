@@ -30,6 +30,8 @@ import { ScrollArea } from "./ui/scroll-area";
 import { useParams } from "next/navigation";
 import { CreateTeamDialog } from "./create-tem-dialog";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { InviteWorkspaceDialog } from "@/app/(workspace)/workspaces/_components/invite-workspace-dialog";
 
 export function AppSidebar({
   organizationId,
@@ -40,6 +42,9 @@ export function AppSidebar({
   } = useSuspenseQuery(
     orpc.channel.list.queryOptions({ input: { organizationId } })
   );
+  const {
+    data: { currentWorkspace },
+  } = useSuspenseQuery(orpc.workspace.list.queryOptions());
 
   const { channelId } = useParams<{ channelId: string }>();
 
@@ -47,7 +52,25 @@ export function AppSidebar({
     <Sidebar {...props}>
       <SidebarHeader className="space-y-4">
         <WorkspaceSwitcher />
-        <CreateTeamDialog />
+        <SidebarMenu className="flex items-center gap-2 w-full flex-row">
+          <SidebarMenuItem className="flex-1 min-w-0">
+            <SidebarMenuButton asChild>
+              <CreateTeamDialog className="w-full" />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem className="flex sm:hidden">
+            <SidebarMenuButton asChild className="shrink-0">
+              <InviteWorkspaceDialog
+                workspaceId={organizationId}
+                channelId={channelId}
+                channels={channels}
+                workspaceName={currentWorkspace?.name || ""}
+              >
+                <Button size="sm">Invite</Button>
+              </InviteWorkspaceDialog>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="flex flex-col overflow-hidden h-full">
         {/* Channels */}
