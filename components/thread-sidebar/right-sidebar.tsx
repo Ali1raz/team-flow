@@ -21,7 +21,7 @@ import {
 } from "@tanstack/react-query";
 import { client, orpc } from "@/lib/orpc";
 import Image from "next/image";
-import { formatLocalDateTime } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/utils";
 import { Card, CardAction, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { UserImage } from "../general/user-avatar";
@@ -207,7 +207,7 @@ export function RightSidebar({
                           {data.parent.user.name}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {formatLocalDateTime(data.parent.createdAt)}
+                          {formatRelativeTime(data.parent.createdAt)}
                         </p>
                       </div>
                       <RenderJSONtoHTML
@@ -272,7 +272,7 @@ export function RightSidebar({
                             {thread.user.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {formatLocalDateTime(thread.createdAt)}
+                            {formatRelativeTime(thread.createdAt)}
                           </p>
                         </div>
                         <RenderJSONtoHTML

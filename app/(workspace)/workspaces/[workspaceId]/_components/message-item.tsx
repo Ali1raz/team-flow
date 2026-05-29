@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, formatLocalDateTime } from "@/lib/utils";
+import { cn, formatRelativeTime } from "@/lib/utils";
 import Image from "next/image";
 import Logo from "@/public/team-flow.png";
 import { RenderJSONtoHTML } from "@/components/editor/render-content";
@@ -84,7 +84,7 @@ export function MessageItem({
         <div className="flex gap-2 items-center">
           <p className="font-medium line-clamp-1">{message.user.name}</p>
           <p className="text-sm text-muted-foreground line-clamp-1">
-            {formatLocalDateTime(message.createdAt)}
+            {formatRelativeTime(message.createdAt)}
           </p>
         </div>
         {isEditing ? (

@@ -35,6 +35,38 @@ export function createAvatarUrl(seed = "ar") {
   return `https://api.dicebear.com/9.x/shapes/svg?seed=${encodeURIComponent(seed)}`;
 }
 
+/**
+ * Relative time label for message timestamps.
+ *
+ * < 1 min   → "just now"
+ * < 1 h     → "5 min"
+ * < 24 h    → "3 h"
+ * < 30 d    → "12 d"
+ * < 1 year  → "May 26"
+ * otherwise → "May 2012"
+ */
+export function formatRelativeTime(date: string | number | Date): string {
+  const now = new Date();
+  const d = new Date(date);
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / (1000 * 60));
+  const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffD = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin} min`;
+  if (diffH < 24) return `${diffH} h`;
+  if (diffD < 30) return `${diffD} d`;
+
+  const sameYear = now.getFullYear() === d.getFullYear();
+
+  if (sameYear) {
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); // "May 26"
+  }
+
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" }); // "May 2012"
+}
+
 export function formatLocalDateTime(createdAt: string | number | Date) {
   // Keep date formatting consistent across the app while still respecting the user's local timezone.
   return new Date(createdAt).toLocaleString("en-US", {
