@@ -5,12 +5,14 @@ import { requireworkspaceMiddleware } from "../middlewares/workspace";
 import { prisma } from "@/lib/prisma";
 import { formatLocalDateTime, jsonToMarkdown } from "@/lib/utils";
 import { streamText } from "ai";
-import { openrouter } from "@/lib/open-router";
+import { model, openrouter } from "@/lib/open-router";
 import { streamToEventIterator } from "@orpc/server";
+import { aiMiddleware } from "../middlewares/ai-aj";
 
 export const generateThreadSummary = base
   .use(requireAuthMiddleware)
   .use(requireworkspaceMiddleware)
+  .use(aiMiddleware)
   .route({
     method: "GET",
     path: "/ai/threads/summary",
@@ -113,7 +115,7 @@ export const generateThreadSummary = base
     console.log("=========");
 
     const result = streamText({
-      model: openrouter("z-ai/glm-4.5-air:free"),
+      model: openrouter(model),
       system: `You are an export assisstant summarizing SLack-like discussion threads for product team.
         Use only provuded thread content, dont invent facts, names or timelines
         Output format (Markdown):
@@ -123,6 +125,48 @@ export const generateThreadSummary = base
         - if the context is insufficent, return a signle sentance summary and omit the bullet list`,
       messages: [{ role: "user", content: compiled }], // single-turn — compiled prompt already contains all context (history, instructions, data), no need for multi-message conversation format
       temperature: 0.2, // low temperature for consistent, deterministic output; avoids hallucinations in structured/factual responses — raise to 0.7+ for creative tasks
+    });
+
+    return streamToEventIterator(result.toUIMessageStream());
+  });
+
+export const generateCompose = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .use(aiMiddleware)
+  .route({
+    method: "GET",
+    path: "/ai/compose/generate",
+    summary: "Generate a message",
+    tags: ["ai"],
+  })
+  .input(
+    z.object({
+      content: z.string(),
+    })
+  )
+  .handler(async ({ input }) => {
+    const markdown = await jsonToMarkdown(input.content);
+
+    const result = streamText({
+      model: openrouter(model),
+      system: `You are a expert rewriting assisstant, you are not a chatbot.
+Task: rewrite the following message to improve its clarity and better structure while preserving its original meaning, facts, terminologies and names.
+Do not address the user, ask questions, add greetings, or include commentary
+keep existing links/mentions intact, dont change code blocks or inline code content
+output strictly in markdown (paragraphs and optional bullet lists), do not output any HTML or images.
+return only rewritter content, no preamble, headings, or closing remarks`,
+      messages: [
+        {
+          role: "user",
+          content: "Please rewrite and improve the following message",
+        },
+        {
+          role: "user",
+          content: markdown,
+        },
+      ],
+      temperature: 0.2,
     });
 
     return streamToEventIterator(result.toUIMessageStream());

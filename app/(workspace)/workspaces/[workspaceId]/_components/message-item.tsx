@@ -114,6 +114,7 @@ export function MessageItem({
     </div>
   );
 }
+
 function MessageActions({
   messageId,
   onEdit,

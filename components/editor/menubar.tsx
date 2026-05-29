@@ -15,6 +15,8 @@ import {
 import { useEditorState } from "@tiptap/react";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
+import { ComposeButton } from "./compose-button";
+import { markdownToJson } from "@/lib/utils";
 
 interface iAppProps {
   editor: Editor | null;
@@ -38,9 +40,19 @@ export function Menubar({ editor }: iAppProps) {
         orderedList: editor.isActive("orderedList"),
         canUndo: editor.can().chain().focus().undo().run(),
         canRedo: editor.can().chain().focus().redo().run(),
+        currentContent: editor.getJSON(),
       };
     },
   });
+
+  function handleAccept(markdown: string) {
+    try {
+      const json = markdownToJson(markdown);
+      editor?.commands.setContent(json);
+    } catch {
+      console.log("something went wrong");
+    }
+  }
 
   return (
     <div className="flex w-full flex-wrap items-center gap-1 sm:p-2 bg-card border-input border-b rounded-t-md p-2">
@@ -214,6 +226,12 @@ export function Menubar({ editor }: iAppProps) {
             <p>Redo</p>
           </TooltipContent>
         </Tooltip>
+      </div>
+      <div className="ml-auto">
+        <ComposeButton
+          onAccept={handleAccept}
+          content={JSON.stringify(editorState?.currentContent)}
+        />
       </div>
     </div>
   );

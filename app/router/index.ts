@@ -1,4 +1,4 @@
-import { generateThreadSummary } from "./ai";
+import { generateCompose, generateThreadSummary } from "./ai";
 import { createChannel, getChannel, listChannels } from "./channel";
 import { getInvitionDEtails } from "./invitations";
 import { inviteMember } from "./members";
@@ -32,6 +32,9 @@ export const router = {
     },
   },
   ai: {
+    compose: {
+      generate: generateCompose,
+    },
     threads: {
       summary: {
         generate: generateThreadSummary,

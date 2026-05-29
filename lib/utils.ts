@@ -3,6 +3,9 @@ import { twMerge } from "tailwind-merge";
 import { COLOR_COMBOS } from "./app/data";
 import { renderToMarkdown } from "@tiptap/static-renderer/pm/markdown";
 import { baseExtensions } from "@/components/editor/extensions";
+import MarkdownIt from "markdown-it";
+import Dompurify from "dompurify";
+import { generateJSON } from "@tiptap/react";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -69,4 +72,13 @@ export async function jsonToMarkdown(json: string) {
       content,
     })
   );
+}
+
+const md = new MarkdownIt({ html: false, linkify: true, breaks: false });
+
+export function markdownToJson(markdown: string) {
+  const html = md.render(markdown);
+  const cleaned = Dompurify.sanitize(html, { USE_PROFILES: { html: true } });
+
+  return generateJSON(cleaned, baseExtensions);
 }
