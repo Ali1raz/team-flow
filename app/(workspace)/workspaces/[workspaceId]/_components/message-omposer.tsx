@@ -9,18 +9,22 @@ interface iAppProps {
     value: string;
     onChange: (value: string) => void;
   };
-  imageUrl: string | undefined;
+  imageUrl: string | null | undefined;
   onImageChange: (url: string | undefined) => void;
+  onClearImage?: () => void;
   onSubmit: () => void;
   isSubmitting?: boolean;
+  submitLabel?: string;
 }
 
 export function Messagecomponser({
   field,
   imageUrl,
   onImageChange,
+  onClearImage,
   onSubmit,
   isSubmitting,
+  submitLabel = "Send",
 }: iAppProps) {
   return (
     <Editor
@@ -32,14 +36,16 @@ export function Messagecomponser({
           size="sm"
           onClick={onSubmit}
         >
-          <Send data-icon="inline-start" /> Send
+          <Send data-icon="inline-start" /> {submitLabel}
         </Button>
       }
       footerLeft={
         imageUrl ? (
           <AttachmentChip
             url={imageUrl}
-            onDelete={() => onImageChange(undefined)}
+            onDelete={() =>
+              onClearImage ? onClearImage() : onImageChange(undefined)
+            }
             onChangeComplete={(url) => onImageChange(url)}
           />
         ) : (
