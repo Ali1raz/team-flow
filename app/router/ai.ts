@@ -8,6 +8,7 @@ import { streamText } from "ai";
 import { model, openrouter } from "@/lib/open-router";
 import { streamToEventIterator } from "@orpc/server";
 import { aiMiddleware } from "../middlewares/ai-aj";
+import { sensitiveInfoAj } from "@/lib/arcjet-helpers";
 
 export const generateThreadSummary = base
   .use(requireAuthMiddleware)
@@ -114,6 +115,26 @@ export const generateThreadSummary = base
     console.log("compiled", compiled);
     console.log("=========");
 
+    // Run PII check here because middleware cannot access the parsed/compiled text.
+    // This prevents sensitive data (CC numbers, phone numbers) from being sent to the AI.
+    const sensitiveDecision = await sensitiveInfoAj().protect(context.request, {
+      userId: context.user.id,
+      sensitiveInfoValue: compiled,
+    });
+
+    if (sensitiveDecision.isDenied()) {
+      if (sensitiveDecision.reason.isSensitiveInfo()) {
+        throw errors.FORBIDDEN({
+          message:
+            "Sensitive information detected. Please remove PII (e.g. credit card numbers, phone numbers) and try again!",
+        });
+      }
+
+      throw errors.FORBIDDEN({
+        message: "Request blocked!",
+      });
+    }
+
     const result = streamText({
       model: openrouter(model),
       system: `You are an export assisstant summarizing SLack-like discussion threads for product team.
@@ -145,8 +166,27 @@ export const generateCompose = base
       content: z.string(),
     })
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ input, context, errors }) => {
     const markdown = await jsonToMarkdown(input.content);
+
+    // Check user-provided content for sensitive info before sending to AI
+    const sensitiveDecision = await sensitiveInfoAj().protect(context.request, {
+      userId: context.user.id,
+      sensitiveInfoValue: markdown,
+    });
+
+    if (sensitiveDecision.isDenied()) {
+      if (sensitiveDecision.reason.isSensitiveInfo()) {
+        throw errors.FORBIDDEN({
+          message:
+            "Sensitive information detected. Please remove PII (e.g. credit card numbers, phone numbers) and try again!",
+        });
+      }
+
+      throw errors.FORBIDDEN({
+        message: "Request blocked!",
+      });
+    }
 
     const result = streamText({
       model: openrouter(model),

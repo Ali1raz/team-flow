@@ -1,9 +1,4 @@
-import arcjet, {
-  detectBot,
-  sensitiveInfo,
-  slidingWindow,
-  shield,
-} from "@/lib/arcjet";
+import arcjet, { detectBot, slidingWindow, shield } from "@/lib/arcjet";
 import { User } from "@/lib/auth";
 import { formatLocalDateTime } from "@/lib/utils";
 import { ArcjetNextRequest } from "@arcjet/next";
@@ -28,14 +23,7 @@ const aiAj = () =>
         mode: "LIVE",
         allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
       })
-    )
-    .withRule(
-      sensitiveInfo({
-        mode: "LIVE",
-        deny: ["CREDIT_CARD_NUMBER", "PHONE_NUMBER"],
-      })
     );
-
 export const aiMiddleware = base
   .$context<{
     request: Request | ArcjetNextRequest;

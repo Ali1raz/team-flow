@@ -11,6 +11,7 @@ import {
 } from "../(workspace)/workspaces/schema";
 import { Message } from "@/generated/prisma/client";
 import { readsecurityMiddleware } from "../middlewares/arcjet/read";
+import { sensitiveInfoAj } from "@/lib/arcjet-helpers";
 
 export const createMessage = base
   .use(requireAuthMiddleware)
@@ -26,6 +27,28 @@ export const createMessage = base
   .input(createMessageSchema)
   .output(z.custom<Message>())
   .handler(async ({ context, input, errors }) => {
+    // Run the PII check here because the middleware layer cannot see parsed input.
+    const sensitiveInfoDecision = await sensitiveInfoAj().protect(
+      context.request,
+      {
+        userId: context.user.id,
+        sensitiveInfoValue: input.content,
+      }
+    );
+
+    if (sensitiveInfoDecision.isDenied()) {
+      if (sensitiveInfoDecision.reason.isSensitiveInfo()) {
+        throw errors.FORBIDDEN({
+          message:
+            "Sensitive information detected. Please remove PII (e.g. credit card numbers, phone numbers) and try again!",
+        });
+      }
+
+      throw errors.FORBIDDEN({
+        message: "Request blocked!",
+      });
+    }
+
     if (input.threadId) {
       const prentMessage = await prisma.message.findFirst({
         where: {
@@ -212,6 +235,28 @@ export const updateMessage = base
     })
   )
   .handler(async ({ context, input, errors }) => {
+    // Run the PII check here because the middleware layer cannot see parsed input.
+    const sensitiveInfoDecision = await sensitiveInfoAj().protect(
+      context.request,
+      {
+        userId: context.user.id,
+        sensitiveInfoValue: input.content,
+      }
+    );
+
+    if (sensitiveInfoDecision.isDenied()) {
+      if (sensitiveInfoDecision.reason.isSensitiveInfo()) {
+        throw errors.FORBIDDEN({
+          message:
+            "Sensitive information detected. Please remove PII (e.g. credit card numbers, phone numbers) and try again!",
+        });
+      }
+
+      throw errors.FORBIDDEN({
+        message: "Request blocked!",
+      });
+    }
+
     const message = await prisma.message.findUnique({
       where: {
         id: input.messageId,
