@@ -1,11 +1,17 @@
 "use client";
 
-import { formatLocalDateTime } from "@/lib/utils";
+import { cn, formatLocalDateTime } from "@/lib/utils";
 import Image from "next/image";
 import Logo from "@/public/team-flow.png";
 import { RenderJSONtoHTML } from "@/components/editor/render-content";
-import { Edit2, MessagesSquare, Trash2 } from "lucide-react";
+import { Edit2, MessagesSquare, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EditMessageForm } from "./edit-message-form";
 import { useCallback, useState } from "react";
 import { DeleteMessageDialog } from "./delete-message-dialog";
@@ -35,7 +41,7 @@ export function MessageItem({
 
   // Access thread context and right sidebar so the replies button can open the
   // thread panel in the same way the MessagesSquare action button does.
-  const { setThreadId } = useThread();
+  const { setThreadId, threadId } = useThread();
   const { setOpen } = useSidebarWithSide("right");
 
   /** Opens the right sidebar and loads this message's thread. */
@@ -56,7 +62,12 @@ export function MessageItem({
   }, [queryClinet, message.id]);
 
   return (
-    <div className="flex relative group gap-3 items-start rounded-md hover:bg-muted/70 p-3 first:mt-4">
+    <div
+      className={cn(
+        "flex relative group gap-3 items-start rounded-md hover:bg-muted/70 p-3 first:mt-4",
+        message.id === threadId && "bg-muted/50 ring-1"
+      )}
+    >
       <Image
         src={message.user.image || Logo}
         alt={message.user.name}
@@ -105,7 +116,7 @@ export function MessageItem({
               onMouseEnter={prefetchThread}
               onFocus={prefetchThread}
             >
-              <MessagesSquare className="size-3.5" />
+              <MessagesSquare className="size-4" />
               {message._count.replies || 0}{" "}
               {message._count.replies <= 1 ? "reply" : "replies"}
             </Button>
@@ -121,6 +132,7 @@ export function MessageItem({
     </div>
   );
 }
+
 function MessageActions({
   messageId,
   onEdit,
@@ -132,44 +144,57 @@ function MessageActions({
 }) {
   const { setThreadId } = useThread();
   const { setOpen } = useSidebarWithSide("right");
+  const [dropdownopen, setDropdownOpen] = useState(false);
 
   return (
-    <>
-      <div className="absolute group-hover:flex hidden -top-4 right-8">
-        <div className="flex gap-2 items-center">
-          {canEdit && (
-            <>
-              <Button variant="outline" size="icon" onClick={onEdit}>
-                <Edit2 />
-              </Button>
+    <DropdownMenu open={dropdownopen} onOpenChange={setDropdownOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon-sm">
+          <MoreVertical />
+          <span className="sr-only">Message actions</span>
+        </Button>
+      </DropdownMenuTrigger>
 
-              {/* Destructive delete action — only shown to the message author */}
-              <DeleteMessageDialog messageId={messageId}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <Trash2 className="size-4" />
-                  <span className="sr-only">Delete message</span>
-                </Button>
-              </DeleteMessageDialog>
-            </>
-          )}
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault();
+            setThreadId(messageId);
+            setOpen(true);
+            setDropdownOpen(false);
+          }}
+        >
+          <MessagesSquare />
+          Open thread
+        </DropdownMenuItem>
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              setThreadId(messageId);
-              setOpen(true);
-            }}
-          >
-            <MessagesSquare className="size-4" />
-            <span className="sr-only">Open thread replies</span>
-          </Button>
-        </div>
-      </div>
-    </>
+        {canEdit && (
+          <>
+            <DropdownMenuItem
+              onSelect={(event) => {
+                event.preventDefault();
+                onEdit();
+                setDropdownOpen(false);
+              }}
+            >
+              <Edit2 />
+              Edit
+            </DropdownMenuItem>
+
+            <DeleteMessageDialog messageId={messageId}>
+              <DropdownMenuItem
+                onSelect={(event) => {
+                  event.preventDefault();
+                }}
+                variant="destructive"
+              >
+                <Trash2 />
+                Delete
+              </DropdownMenuItem>
+            </DeleteMessageDialog>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

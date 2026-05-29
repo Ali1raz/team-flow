@@ -21,7 +21,7 @@ import { InfiniteMessages } from "./message-item";
 
 interface DeleteMessageDialogProps {
   messageId: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function DeleteMessageDialog({

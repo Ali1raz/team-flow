@@ -226,7 +226,11 @@ export function MessageList() {
 
   return (
     <div className="relative h-full">
-      <div ref={ref} onScroll={handleScroll} className="h-full overflow-y-auto">
+      <div
+        ref={ref}
+        onScroll={handleScroll}
+        className="h-full overflow-y-auto px-2 space-y-1"
+      >
         {messages?.map((msg) => (
           <MessageItem key={msg.id} message={msg} currentUserId={user.id} />
         ))}

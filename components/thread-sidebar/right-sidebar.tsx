@@ -157,7 +157,7 @@ export function RightSidebar({
       style={{ "--sidebar-width": width } as CSSProperties}
       className="h-screen"
     >
-      <SidebarHeader className="p-4 h-16">
+      <SidebarHeader className="p-4 h-16 border-b">
         <SidebarRail />
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">Replies</h1>
@@ -237,7 +237,7 @@ export function RightSidebar({
                   key={thread.id}
                   className={cn(
                     editingThreadId === thread.id &&
-                      "ring-1 ring-primary/40 bg-muted/40"
+                      "ring-1 ring-primary bg-muted/40"
                   )}
                 >
                   <CardContent className="relative">
