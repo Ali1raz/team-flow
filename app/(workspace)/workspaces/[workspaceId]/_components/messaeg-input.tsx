@@ -110,19 +110,45 @@ export function MessageInput({ channelId }: IAppPops) {
           });
         }
 
-        // Return snapshot so onError can restore it.
-        return { prevData };
+        // Return snapshot and tempId so onSuccess can replace the fake entry
+        // with the real server-assigned ID before invalidation fires.
+        return { prevData, tempId };
       },
-      onSuccess: () => {
-        toast.success("Message sent successfully");
-        form.reset({ channelId, content: "", imageUrl: undefined });
-        form.setValue("imageUrl", undefined);
+      onSuccess: (createdMessage, _variables, context) => {
+        // Swap the fake optimistic ID for the real server-assigned ID
+        if (context?.tempId) {
+          queryclient.setQueryData<
+            InfiniteData<MessagePage, string | undefined>
+          >(["message.list", channelId], (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                messages: page.messages.map((msg) =>
+                  msg.id === context.tempId
+                    ? {
+                        ...msg,
+                        // Replace the fake id and server-assigned timestamp
+                        id: createdMessage.id,
+                        createdAt: createdMessage.createdAt,
+                      }
+                    : msg
+                ),
+              })),
+            };
+          });
+        }
+
         setEditorKey((prev) => prev + 1);
+        form.reset({ channelId, content: "", imageUrl: undefined });
+        toast.success("Message sent successfully");
+        form.setValue("imageUrl", undefined);
+
+        // Invalidate using the same raw key the infinite query is stored under
+        // (not the oRPC-generated key, which differs from what MessageList uses).
         queryclient.invalidateQueries({
-          queryKey: orpc.message.list.key({
-            type: "infinite",
-            input: { channelId },
-          }),
+          queryKey: ["message.list", channelId],
         });
       },
       onError: (error, _variables, context) => {
