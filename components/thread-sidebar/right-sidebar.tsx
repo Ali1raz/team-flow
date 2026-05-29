@@ -50,7 +50,7 @@ export function RightSidebar({
   ...props
 }: ComponentProps<typeof Sidebar> & { width?: string }) {
   const { threadId } = useThread();
-  const { setOpen } = useSidebarWithSide("right");
+  const { setOpen, isMobile, setOpenMobile } = useSidebarWithSide("right");
   const { channelId } = useParams<{ channelId: string }>();
   const queryClient = useQueryClient();
   const [editingThreadId, setEditingThreadId] = useState<string | null>(null);
@@ -166,7 +166,13 @@ export function RightSidebar({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                if (isMobile) {
+                  setOpenMobile(false);
+                } else {
+                  setOpen(false);
+                }
+              }}
             >
               <X className="size-4" />
               <span className="sr-only">Close threads</span>

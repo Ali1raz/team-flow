@@ -42,12 +42,17 @@ export function MessageItem({
   // Access thread context and right sidebar so the replies button can open the
   // thread panel in the same way the MessagesSquare action button does.
   const { setThreadId, threadId } = useThread();
-  const { setOpen } = useSidebarWithSide("right");
+  const { setOpen, isMobile, setOpenMobile, open } =
+    useSidebarWithSide("right");
 
   /** Opens the right sidebar and loads this message's thread. */
   function openThread() {
     setThreadId(message.id);
-    setOpen(true);
+    if (isMobile) {
+      setOpenMobile(true);
+    } else {
+      setOpen(true);
+    }
   }
 
   const queryClinet = useQueryClient();
@@ -64,8 +69,8 @@ export function MessageItem({
   return (
     <div
       className={cn(
-        "flex relative group gap-3 items-start rounded-md hover:bg-muted/70 p-3 first:mt-4",
-        message.id === threadId && "bg-muted/50 ring-1"
+        "flex relative group gap-3 items-start rounded-md overflow-x-hidden hover:bg-muted/70 p-3 first:mt-4",
+        open && message.id === threadId && "bg-muted/50 ring-1"
       )}
     >
       <Image
@@ -77,8 +82,8 @@ export function MessageItem({
       />
       <div className="flex flex-col gap-2 *:leading-none w-full">
         <div className="flex gap-2 items-center">
-          <p className="font-medium">{message.user.name}</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="font-medium line-clamp-1">{message.user.name}</p>
+          <p className="text-sm text-muted-foreground line-clamp-1">
             {formatLocalDateTime(message.createdAt)}
           </p>
         </div>
@@ -143,7 +148,7 @@ function MessageActions({
   canEdit: boolean;
 }) {
   const { setThreadId } = useThread();
-  const { setOpen } = useSidebarWithSide("right");
+  const { setOpen, isMobile, setOpenMobile } = useSidebarWithSide("right");
   const [dropdownopen, setDropdownOpen] = useState(false);
 
   return (
@@ -160,7 +165,11 @@ function MessageActions({
           onSelect={(event) => {
             event.preventDefault();
             setThreadId(messageId);
-            setOpen(true);
+            if (isMobile) {
+              setOpenMobile(true);
+            } else {
+              setOpen(true);
+            }
             setDropdownOpen(false);
           }}
         >
