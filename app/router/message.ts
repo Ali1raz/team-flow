@@ -248,6 +248,61 @@ export const updateMessage = base
     };
   });
 
+export const deleteMessage = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .use(standardsecurityMiddleware)
+  .use(writesecurityMiddleware)
+  .route({
+    method: "DELETE",
+    path: "/messages/:messageId",
+    summary: "Delete a message",
+    tags: ["message"],
+  })
+  .input(
+    z.object({
+      messageId: z.string(),
+    })
+  )
+  .output(
+    z.object({
+      id: z.string(),
+    })
+  )
+  .handler(async ({ context, input, errors }) => {
+    // Verify the message exists and belongs to the current workspace
+    console.log(`[deleteMessage]:${input.messageId}`);
+    const message = await prisma.message.findUnique({
+      where: {
+        id: input.messageId,
+        team: {
+          organization: { id: context.workspace.id },
+        },
+      },
+      select: {
+        id: true,
+        userId: true,
+      },
+    });
+
+    if (!message) {
+      throw errors.NOT_FOUND();
+    }
+
+    // Only the message author may delete their own message
+    if (message.userId !== context.user.id) {
+      throw errors.FORBIDDEN({
+        message: "You do not have permission to delete this message.",
+      });
+    }
+
+    await prisma.message.delete({
+      where: { id: input.messageId },
+    });
+
+    return { id: input.messageId };
+  });
+
 export const listThreads = base
   .use(requireAuthMiddleware)
   .use(requireworkspaceMiddleware)

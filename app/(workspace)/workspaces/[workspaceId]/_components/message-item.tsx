@@ -4,18 +4,25 @@ import { formatLocalDateTime } from "@/lib/utils";
 import Image from "next/image";
 import Logo from "@/public/team-flow.png";
 import { RenderJSONtoHTML } from "@/components/editor/render-content";
-import { Edit2, MessagesSquare } from "lucide-react";
+import { Edit2, MessagesSquare, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditMessageForm } from "./edit-message-form";
 import { useCallback, useState } from "react";
+import { DeleteMessageDialog } from "./delete-message-dialog";
 import { client, orpc } from "@/lib/orpc";
 import { useSidebarWithSide } from "@/components/ui/sidebar";
 import { useThread } from "@/components/thread-sidebar/thread-context";
-import { useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 
 export type messageType = Awaited<
   ReturnType<typeof client.message.list>
 >["messages"][number];
+
+export type MessagePage = {
+  messages: messageType[];
+  nextCursor: string | null;
+};
+export type InfiniteMessages = InfiniteData<MessagePage>;
 
 export function MessageItem({
   message,
@@ -49,7 +56,7 @@ export function MessageItem({
   }, [queryClinet, message.id]);
 
   return (
-    <div className="flex relative group gap-3 items-start rounded-md hover:bg-muted/70 p-3">
+    <div className="flex relative group gap-3 items-start rounded-md hover:bg-muted/70 p-3 first:mt-4">
       <Image
         src={message.user.image || Logo}
         alt={message.user.name}
@@ -127,26 +134,42 @@ function MessageActions({
   const { setOpen } = useSidebarWithSide("right");
 
   return (
-    <div className="absolute group-hover:flex hidden -top-4 right-8">
-      <div className="flex gap-2 items-center">
-        {canEdit && (
-          <Button variant="outline" size="icon" onClick={onEdit}>
-            <Edit2 />
-          </Button>
-        )}
+    <>
+      <div className="absolute group-hover:flex hidden -top-4 right-8">
+        <div className="flex gap-2 items-center">
+          {canEdit && (
+            <>
+              <Button variant="outline" size="icon" onClick={onEdit}>
+                <Edit2 />
+              </Button>
 
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => {
-            setThreadId(messageId);
-            setOpen(true);
-          }}
-        >
-          <MessagesSquare className="size-4" />
-          <span className="sr-only">Open thread replies</span>
-        </Button>
+              {/* Destructive delete action — only shown to the message author */}
+              <DeleteMessageDialog messageId={messageId}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="size-4" />
+                  <span className="sr-only">Delete message</span>
+                </Button>
+              </DeleteMessageDialog>
+            </>
+          )}
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              setThreadId(messageId);
+              setOpen(true);
+            }}
+          >
+            <MessagesSquare className="size-4" />
+            <span className="sr-only">Open thread replies</span>
+          </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
