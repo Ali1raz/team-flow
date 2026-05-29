@@ -1,5 +1,6 @@
 "use client";
 
+import { AttachmentChip } from "./attachment-chip";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
 import { updateMessageSchema, UpdateMessageSchemaType } from "../../schema";
@@ -8,6 +9,7 @@ import { Editor } from "@/components/editor/editor";
 import { Button } from "@/components/ui/button";
 import { messageType } from "./message-item";
 import { orpc } from "@/lib/orpc";
+import { ImageUploadDialog } from "./image-dialog";
 import {
   InfiniteData,
   useMutation,
@@ -40,6 +42,8 @@ export function EditMessageForm({
     defaultValues: {
       content: message.content,
       messageId: message.id,
+      // Keep the existing attachment visible while the message is being edited.
+      imageUrl: message.imageUrl ?? undefined,
     },
     mode: "onChange",
   });
@@ -69,7 +73,14 @@ export function EditMessageForm({
               ...page,
               messages: page.messages.map((msg) =>
                 msg.id === variables.messageId
-                  ? { ...msg, content: variables.content }
+                  ? {
+                      ...msg,
+                      content: variables.content,
+                      imageUrl:
+                        variables.imageUrl === undefined
+                          ? msg.imageUrl
+                          : variables.imageUrl,
+                    }
                   : msg
               ),
             })),
@@ -120,34 +131,57 @@ export function EditMessageForm({
       <FieldGroup>
         <Controller
           control={form.control}
-          name="content"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <Editor
-                field={{ value: field.value, onChange: field.onChange }}
-                sendButton={
-                  <div className="flex items-center gap-4">
-                    <Button
-                      size="sm"
-                      disabled={updateMessageMutation.isPending}
-                    >
-                      {updateMessageMutation.isPending
-                        ? "Updating..."
-                        : "Update"}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={updateMessageMutation.isPending}
-                      onClick={onCancel}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                }
-              />
-            </Field>
+          name="imageUrl"
+          render={({ field: imageField }) => (
+            <Controller
+              control={form.control}
+              name="content"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <Editor
+                    field={{ value: field.value, onChange: field.onChange }}
+                    footerLeft={
+                      imageField.value ? (
+                        <AttachmentChip
+                          url={imageField.value}
+                          onDelete={() => imageField.onChange(null)}
+                          onChangeComplete={(url) => imageField.onChange(url)}
+                        />
+                      ) : (
+                        <ImageUploadDialog
+                          onUploadComplete={(url) => imageField.onChange(url)}
+                        >
+                          <Button size="sm" variant="outline" type="button">
+                            Attach
+                          </Button>
+                        </ImageUploadDialog>
+                      )
+                    }
+                    sendButton={
+                      <div className="flex items-center gap-4">
+                        <Button
+                          size="sm"
+                          disabled={updateMessageMutation.isPending}
+                        >
+                          {updateMessageMutation.isPending
+                            ? "Updating..."
+                            : "Update"}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={updateMessageMutation.isPending}
+                          onClick={onCancel}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    }
+                  />
+                </Field>
+              )}
+            />
           )}
         />
       </FieldGroup>

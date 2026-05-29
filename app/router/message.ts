@@ -239,6 +239,8 @@ export const updateMessage = base
       },
       data: {
         content: input.content,
+        // Preserve attachment edits from the message editor instead of silently dropping them.
+        imageUrl: input.imageUrl,
       },
     });
 
