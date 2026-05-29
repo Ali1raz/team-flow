@@ -3,7 +3,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import { baseExtensions } from "./extensions";
 import { Menubar } from "./menubar";
 import { EditorBubbleMenu } from "./bubble-menu";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface iAppProps {
@@ -41,6 +41,35 @@ export function Editor({ field, sendButton, footerLeft }: iAppProps) {
     },
     immediatelyRender: false,
   });
+
+  useEffect(() => {
+    if (!editor || !field) {
+      return;
+    }
+
+    // Keep the Tiptap instance aligned with form resets and edit defaults,
+    // because React Hook Form can update after the editor has already mounted.
+    const nextContent = field.value
+      ? (() => {
+          try {
+            return JSON.parse(field.value);
+          } catch {
+            return "";
+          }
+        })()
+      : "";
+
+    if (field.value) {
+      const currentValue = JSON.stringify(editor.getJSON());
+      if (currentValue === field.value) {
+        return;
+      }
+    } else if (editor.isEmpty) {
+      return;
+    }
+
+    editor.commands.setContent(nextContent);
+  }, [editor, field]);
 
   return (
     <div className="relative w-full border border-input rounded-md overflow-hidden dark:bg-input/30 flex flex-col">

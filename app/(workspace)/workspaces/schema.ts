@@ -39,6 +39,7 @@ export type InviteMemberSchemaType = z.infer<typeof inviteMemberSchema>;
 export const updateMessageSchema = z.object({
   messageId: z.string(),
   content: z.string().trim().min(1, "content is required"),
+  imageUrl: z.url().nullable().optional(),
 });
 
 export type UpdateMessageSchemaType = z.infer<typeof updateMessageSchema>;

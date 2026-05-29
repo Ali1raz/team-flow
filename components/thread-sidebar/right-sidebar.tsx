@@ -1,6 +1,6 @@
 "use client";
 
-import { ComponentProps, CSSProperties, Suspense } from "react";
+import { ComponentProps, CSSProperties, Suspense, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,15 +13,28 @@ import { ThreadsForm } from "./threads-form";
 import { useThread } from "./thread-context";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { orpc } from "@/lib/orpc";
+import {
+  InfiniteData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { client, orpc } from "@/lib/orpc";
 import Image from "next/image";
 import { formatLocalDateTime } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardAction, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { UserImage } from "../general/user-avatar";
 import { RenderJSONtoHTML } from "../editor/render-content";
 import { SummarizeThreadPopover } from "./summarize-thread-popover";
+import { ThreadActionsDropdown } from "./thread-actions-dropdown";
+import { useParams } from "next/navigation";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+type ThreadsData = Awaited<ReturnType<typeof client.message.threads.list>>;
+type MessagePage = Awaited<ReturnType<typeof client.message.list>>;
+type InfiniteMessageList = InfiniteData<MessagePage>;
 
 // Empty state shown when no thread is selected or the thread has no replies yet.
 function EmptyState() {
@@ -38,13 +51,105 @@ export function RightSidebar({
 }: ComponentProps<typeof Sidebar> & { width?: string }) {
   const { threadId } = useThread();
   const { setOpen } = useSidebarWithSide("right");
+  const { channelId } = useParams<{ channelId: string }>();
+  const queryClient = useQueryClient();
+  const [editingThreadId, setEditingThreadId] = useState<string | null>(null);
+  const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
+
+  const threadsQueryOptions = orpc.message.threads.list.queryOptions({
+    input: { threadId: threadId ?? "" },
+  });
+
+  const messageListKey = ["message.list", channelId];
 
   const { data, isLoading } = useQuery({
-    ...orpc.message.threads.list.queryOptions({
-      input: { threadId: threadId ?? "" },
-    }),
+    ...threadsQueryOptions,
     enabled: !!threadId,
   });
+
+  const { data: workspace } = useQuery(orpc.workspace.list.queryOptions());
+  const selectedEditingThread = data
+    ? (data.threads.find((thread) => thread.id === editingThreadId) ?? null)
+    : null;
+
+  const deleteThreadMutation = useMutation(
+    orpc.message.delete.mutationOptions({
+      onMutate: async (variables) => {
+        await queryClient.cancelQueries({
+          queryKey: threadsQueryOptions.queryKey,
+        });
+        await queryClient.cancelQueries({ queryKey: messageListKey });
+
+        const prevThreadData = queryClient.getQueryData<ThreadsData>(
+          threadsQueryOptions.queryKey
+        );
+        const prevMessageListData =
+          queryClient.getQueryData<InfiniteMessageList>(messageListKey);
+
+        // Remove the reply immediately so the sidebar stays responsive while the server confirms the delete.
+        queryClient.setQueryData<ThreadsData>(
+          threadsQueryOptions.queryKey,
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              threads: old.threads.filter(
+                (thread) => thread.id !== variables.messageId
+              ),
+            };
+          }
+        );
+
+        queryClient.setQueryData<InfiniteMessageList>(messageListKey, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              messages: page.messages.map((message) =>
+                message.id === threadId
+                  ? {
+                      ...message,
+                      _count: {
+                        ...message._count,
+                        replies: Math.max(0, message._count.replies - 1),
+                      },
+                    }
+                  : message
+              ),
+            })),
+          };
+        });
+
+        return { prevThreadData, prevMessageListData };
+      },
+      onSuccess: () => {
+        toast.success("Reply deleted successfully!");
+        setEditingThreadId(null);
+      },
+      onError: (error, _variables, context) => {
+        if (context?.prevThreadData) {
+          queryClient.setQueryData(
+            threadsQueryOptions.queryKey,
+            context.prevThreadData
+          );
+        }
+        if (context?.prevMessageListData) {
+          queryClient.setQueryData(messageListKey, context.prevMessageListData);
+        }
+        toast.error("Failed to delete reply", {
+          description: error.message,
+        });
+      },
+      onSettled: () => {
+        setDeletingThreadId(null);
+        queryClient.invalidateQueries({
+          queryKey: threadsQueryOptions.queryKey,
+        });
+        queryClient.invalidateQueries({ queryKey: messageListKey });
+      },
+    })
+  );
 
   return (
     <Sidebar
@@ -128,8 +233,27 @@ export function RightSidebar({
               </div>
 
               {data.threads.map((thread) => (
-                <Card key={thread.id}>
-                  <CardContent>
+                <Card
+                  key={thread.id}
+                  className={cn(
+                    editingThreadId === thread.id &&
+                      "ring-1 ring-primary/40 bg-muted/40"
+                  )}
+                >
+                  <CardContent className="relative">
+                    <CardAction className="absolute -top-2 right-2">
+                      <ThreadActionsDropdown
+                        canEdit={workspace?.user.id === thread.user.id}
+                        isDeleting={deletingThreadId === thread.id}
+                        onEdit={() => setEditingThreadId(thread.id)}
+                        onDelete={async () => {
+                          setDeletingThreadId(thread.id);
+                          await deleteThreadMutation.mutateAsync({
+                            messageId: thread.id,
+                          });
+                        }}
+                      />
+                    </CardAction>
                     <div className="flex items-start gap-2">
                       <UserImage
                         image={thread.user.image}
@@ -174,7 +298,12 @@ export function RightSidebar({
       <SidebarFooter className="border-t px-2 shrink-0">
         {threadId ? (
           <Suspense fallback={null}>
-            <ThreadsForm key={threadId} threadId={threadId} />
+            <ThreadsForm
+              key={threadId}
+              threadId={threadId}
+              editingThread={selectedEditingThread}
+              onCancelEdit={() => setEditingThreadId(null)}
+            />
           </Suspense>
         ) : (
           <EmptyState />

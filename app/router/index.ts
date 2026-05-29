@@ -4,6 +4,7 @@ import { getInvitionDEtails } from "./invitations";
 import { inviteMember } from "./members";
 import {
   createMessage,
+  deleteMessage,
   listMessages,
   listThreads,
   updateMessage,
@@ -27,6 +28,7 @@ export const router = {
     create: createMessage,
     list: listMessages,
     update: updateMessage,
+    delete: deleteMessage,
     threads: {
       list: listThreads,
     },
