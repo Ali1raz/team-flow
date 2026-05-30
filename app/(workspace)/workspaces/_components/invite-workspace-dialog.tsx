@@ -9,7 +9,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { InfoIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,6 +35,11 @@ import { MembershipRole } from "@/generated/prisma/enums";
 import { client, orpc } from "@/lib/orpc";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMutation } from "@tanstack/react-query";
+import {
+  HoverCardTrigger,
+  HoverCardContent,
+  HoverCard,
+} from "@/components/ui/hover-card";
 
 export function InviteWorkspaceDialog({
   children,
@@ -122,7 +127,26 @@ export function InviteWorkspaceDialog({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Role</FieldLabel>
+                  <div className="flex items-center justify-between">
+                    <FieldLabel htmlFor={field.name}>Role</FieldLabel>
+                    <HoverCard openDelay={10} closeDelay={100}>
+                      <HoverCardTrigger>
+                        <InfoIcon className="size-4" />
+                      </HoverCardTrigger>
+                      <HoverCardContent
+                        className="space-y-2 *:text-sm *:text-muted-foreground"
+                        align="center"
+                        side="top"
+                      >
+                        <p>owner: Full access.</p>
+                        <p>
+                          admin: Full access except delete workspace/change
+                          owner.
+                        </p>
+                        <p>member: read-only on workspace data.</p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
                   <Select
                     defaultValue="member"
                     onValueChange={(value) => field.onChange(value)}
