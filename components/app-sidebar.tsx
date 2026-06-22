@@ -8,6 +8,7 @@ import {
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -22,7 +23,7 @@ import {
 } from "./ui/collapsible";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
-import { ChevronRight, Hash } from "lucide-react";
+import { ChevronRight, Hash, MoreHorizontal } from "lucide-react";
 import { UserImage } from "./general/user-avatar";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -32,6 +33,15 @@ import { CreateTeamDialog } from "./create-tem-dialog";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { InviteWorkspaceDialog } from "@/app/(workspace)/workspaces/_components/invite-workspace-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { UpdateChannelDialog } from "./update-channel-dialog";
+import { DeleteChannelDialog } from "./delete-channel-dailog";
 
 export function AppSidebar({
   organizationId,
@@ -80,25 +90,28 @@ export function AppSidebar({
               defaultOpen
               className="group/collapsible flex-1 min-h-0 flex flex-col overflow-hidden"
             >
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton>
+                  Channels
+                  <ChevronRight className="ml-auto transition-transform duration-100 group-data-[state=open]/collapsible:rotate-90" />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              {/* Keep flex sizing on a stable wrapper so Radix's internal content div cannot break scroll height propagation. */}
               <SidebarMenuItem className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton>
-                    Channels
-                    <ChevronRight className="ml-auto transition-transform duration-100 group-data-[state=open]/collapsible:rotate-90" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                {/* Keep flex sizing on a stable wrapper so Radix's internal content div cannot break scroll height propagation. */}
                 <div className="flex-1 min-h-0">
                   <CollapsibleContent className="h-full overflow-hidden">
                     <ScrollArea className="h-full">
                       <SidebarMenuSub>
                         {channels &&
                           channels.map((ch) => (
-                            <SidebarMenuSubItem key={ch.id}>
+                            <SidebarMenuSubItem
+                              key={ch.id}
+                              className="flex items-center justify-between gap-1"
+                            >
                               <SidebarMenuSubButton
                                 asChild
                                 className={cn(
-                                  "text-muted-foreground hover:bg-muted cursor-pointer",
+                                  "text-muted-foreground hover:bg-muted flex-1 cursor-pointer",
                                   channelId === ch.id &&
                                     "bg-accent text-accent-foreground"
                                 )}
@@ -117,6 +130,36 @@ export function AppSidebar({
                                   </p>
                                 </Link>
                               </SidebarMenuSubButton>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <SidebarMenuAction showOnHover>
+                                    <MoreHorizontal />
+                                    <span className="sr-only">More</span>
+                                  </SidebarMenuAction>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-12">
+                                  <UpdateChannelDialog channel={ch}>
+                                    <DropdownMenuItem
+                                      onSelect={(event) =>
+                                        event.preventDefault()
+                                      }
+                                    >
+                                      Edit
+                                    </DropdownMenuItem>
+                                  </UpdateChannelDialog>
+                                  <DropdownMenuSeparator />
+                                  <DeleteChannelDialog channel={ch}>
+                                    <DropdownMenuItem
+                                      onSelect={(event) =>
+                                        event.preventDefault()
+                                      }
+                                      variant="destructive"
+                                    >
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DeleteChannelDialog>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </SidebarMenuSubItem>
                           ))}
                       </SidebarMenuSub>
