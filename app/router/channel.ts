@@ -223,3 +223,44 @@ export const getChannel = base
       currentUser: context.user,
     };
   });
+
+export const deleteChannel = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .use(standardsecurityMiddleware)
+  .route({
+    method: "DELETE",
+    path: "/channel/:channelId",
+    summary: "Delete a channel",
+    tags: ["channel"],
+  })
+  .input(
+    z.object({
+      channelId: z.string(),
+    })
+  )
+  .output(
+    z.object({
+      organizationId: z.string(),
+    })
+  )
+  .handler(async ({ input, context, errors }) => {
+    try {
+      await auth.api.removeTeam({
+        body: {
+          teamId: input.channelId,
+          organizationId: context.workspace.id,
+        },
+        headers: await headers(),
+      });
+    } catch (error: unknown) {
+      console.log(error);
+      throw errors.BAD_REQUEST({
+        message: errorMessage(error, "Failed to delete channel"),
+      });
+    }
+
+    return {
+      organizationId: context.workspace.id,
+    };
+  });

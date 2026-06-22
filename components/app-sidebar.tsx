@@ -41,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { UpdateChannelDialog } from "./update-channel-dialog";
+import { DeleteChannelDialog } from "./delete-channel-dailog";
 
 export function AppSidebar({
   organizationId,
@@ -146,6 +147,17 @@ export function AppSidebar({
                                       Edit
                                     </DropdownMenuItem>
                                   </UpdateChannelDialog>
+                                  <DropdownMenuSeparator />
+                                  <DeleteChannelDialog channel={ch}>
+                                    <DropdownMenuItem
+                                      onSelect={(event) =>
+                                        event.preventDefault()
+                                      }
+                                      variant="destructive"
+                                    >
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DeleteChannelDialog>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </SidebarMenuSubItem>

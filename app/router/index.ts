@@ -1,6 +1,7 @@
 import { generateCompose, generateThreadSummary } from "./ai";
 import {
   createChannel,
+  deleteChannel,
   getChannel,
   listChannels,
   updateChannel,
@@ -29,6 +30,7 @@ export const router = {
     list: listChannels,
     get: getChannel,
     update: updateChannel,
+    delete: deleteChannel,
   },
   message: {
     create: createMessage,
