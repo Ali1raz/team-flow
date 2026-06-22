@@ -69,7 +69,7 @@ export function WorkspaceSwitcher() {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="w-full px-4 mt-2">
+            <SidebarMenuButton className="w-full px-4 py-5 mt-2">
               <div className="flex aspect-square size-5 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
                 <Image
                   alt="logo"
