@@ -31,7 +31,7 @@ export function LoginForm({
         callbackURL: callbackUrl,
         fetchOptions: {
           onSuccess: () => {
-            toast.success("Logged in successfully! Redirecting...");
+            toast.success("Please wait, You will be redirected shortly...");
           },
           onError: ({ error }) => {
             toast.error(`Login failed`, { description: error.message });
