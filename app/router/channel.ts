@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { readsecurityMiddleware } from "../middlewares/arcjet/read";
 import { headers } from "next/headers";
 import { MembershipRole } from "@/generated/prisma/enums";
+import { updateChannelSchema } from "@/lib/schema";
 
 export const createChannel = base
   .use(requireAuthMiddleware)
@@ -54,6 +55,52 @@ export const createChannel = base
     }
 
     return { ...data, updatedAt: data.updatedAt ?? null };
+  });
+
+export const updateChannel = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .use(standardsecurityMiddleware)
+  .use(heavyWritesecurityMiddleware)
+  .route({
+    method: "PUT",
+    path: "/channel/:channelId",
+    summary: "update channel",
+    tags: ["channel"],
+  })
+  .input(updateChannelSchema)
+  .output(
+    z.object({
+      name: z.string(),
+      organizationId: z.string(),
+    })
+  )
+  .handler(async ({ context, input, errors }) => {
+    const slug = createSlug(input.name);
+    let data;
+    try {
+      data = await auth.api.updateTeam({
+        body: {
+          teamId: input.chanelId,
+          data: {
+            name: input.name,
+            slug,
+            organizationId: context.workspace.id,
+          },
+        },
+        headers: await headers(),
+      });
+    } catch (error: unknown) {
+      throw errors.BAD_REQUEST({
+        message: errorMessage(error, "Failed to update channel"),
+      });
+    }
+
+    if (!data) {
+      throw errors.NOT_FOUND({ message: "Channel not found" });
+    }
+
+    return { name: data.name, organizationId: data.organizationId };
   });
 
 export const listChannels = base
