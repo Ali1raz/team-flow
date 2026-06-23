@@ -48,10 +48,14 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { organizationId: string }) {
   const {
-    data: { members, channels },
+    data: { channels },
   } = useSuspenseQuery(
     orpc.channel.list.queryOptions({ input: { organizationId } })
   );
+  const {
+    data: { members },
+  } = useSuspenseQuery(orpc.workspace.members.list.queryOptions());
+
   const {
     data: { currentWorkspace },
   } = useSuspenseQuery(orpc.workspace.list.queryOptions());
