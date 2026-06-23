@@ -28,7 +28,6 @@ export default async function Page(
     organizationId: workspaceId,
   });
 
-  // Just redirect — don't mutate session here
   if (channels.length === 0)
     return (
       <Empty className="h-full bg-muted/40">
@@ -51,7 +50,7 @@ export default async function Page(
     );
 
   return (
-    <div className="h-full p-4 sm:p-6">
+    <div className="p-4 sm:p-6">
       <h1 className="font-bold text-2xl">Your channels</h1>
 
       <div className="max-w-xl mt-4 space-x-2">

@@ -8,6 +8,9 @@ import { createAvatarUrl, createSlug } from "@/lib/utils";
 import { errorMessage } from "@/lib/error-message";
 import { standardsecurityMiddleware } from "../middlewares/arcjet/standard";
 import { heavyWritesecurityMiddleware } from "../middlewares/arcjet/heavy-write-middleware";
+import { requireworkspaceMiddleware } from "../middlewares/workspace";
+import { MembershipRole } from "@/generated/prisma/enums";
+import { prisma } from "@/lib/prisma";
 
 export const listWorkspaces = base
   .use(requireAuthMiddleware)
@@ -99,5 +102,67 @@ export const createWorkspace = base
       slug: data.slug,
       createdAt: data.createdAt.toISOString(),
       logo: data.logo,
+    };
+  });
+
+export const listWorkspaceMembers = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .route({
+    method: "GET",
+    path: "/workspace/:workspaceId/members",
+    summary: "List all members of a workspace",
+    tags: ["Workspace"],
+  })
+  .input(z.void())
+  .output(
+    z.object({
+      members: z.array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          email: z.string(),
+          image: z.string().nullable(),
+          role: z.enum([...Object.values(MembershipRole)]),
+        })
+      ),
+    })
+  )
+  .handler(async ({ context, errors }) => {
+    let workspacemembers;
+    try {
+      workspacemembers = await prisma.member.findMany({
+        where: {
+          organizationId: context.workspace.id,
+        },
+        select: {
+          role: true,
+
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      });
+    } catch (error: unknown) {
+      throw errors.BAD_REQUEST({
+        message: errorMessage(error, "Failed to list workspace members"),
+      });
+    }
+
+    const members = workspacemembers.map((member) => ({
+      id: member.user.id,
+      name: member.user.name,
+      email: member.user.email,
+      image: member.user.image ?? null,
+      role: member.role ?? "member",
+    }));
+
+    return {
+      members,
     };
   });

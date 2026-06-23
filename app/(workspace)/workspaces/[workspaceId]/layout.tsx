@@ -21,6 +21,7 @@ export default async function WorkspaceLayout({
     queryClient.prefetchQuery(
       orpc.channel.list.queryOptions({ input: { organizationId: workspaceId } })
     ),
+    queryClient.prefetchQuery(orpc.workspace.members.list.queryOptions()),
   ]);
   return (
     <SidebarProvider defaultOpenRight={false}>
@@ -32,7 +33,9 @@ export default async function WorkspaceLayout({
           <HydrateClient client={queryClient}>
             <WokrspaceHeader />
           </HydrateClient>
-          <main className="flex flex-1 flex-col min-h-0">{children}</main>
+          <main className="overflow-scroll flex flex-1 flex-col min-h-0">
+            {children}
+          </main>
         </SidebarInset>
         <RightSidebar collapsible="offcanvas" variant="sidebar" side="right" />
       </ThreadProvider>

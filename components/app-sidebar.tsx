@@ -42,6 +42,7 @@ import {
 } from "./ui/dropdown-menu";
 import { UpdateChannelDialog } from "./update-channel-dialog";
 import { DeleteChannelDialog } from "./delete-channel-dailog";
+import { AddMemberToChannel } from "./add-member-to-channel";
 
 export function AppSidebar({
   organizationId,
@@ -136,12 +137,12 @@ export function AppSidebar({
                               </SidebarMenuSubButton>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <SidebarMenuAction showOnHover>
+                                  <SidebarMenuAction>
                                     <MoreHorizontal />
                                     <span className="sr-only">More</span>
                                   </SidebarMenuAction>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-12">
+                                <DropdownMenuContent className="w-20">
                                   <UpdateChannelDialog channel={ch}>
                                     <DropdownMenuItem
                                       onSelect={(event) =>
@@ -151,6 +152,27 @@ export function AppSidebar({
                                       Edit
                                     </DropdownMenuItem>
                                   </UpdateChannelDialog>
+                                  <AddMemberToChannel
+                                    organizationId={organizationId}
+                                    channelId={ch.id}
+                                  >
+                                    <DropdownMenuItem
+                                      onSelect={(event) =>
+                                        event.preventDefault()
+                                      }
+                                    >
+                                      Add Member
+                                    </DropdownMenuItem>
+                                  </AddMemberToChannel>
+                                  <DropdownMenuItem
+                                    onSelect={(event) => event.preventDefault()}
+                                  >
+                                    <Link
+                                      href={`/workspaces/${organizationId}/channel/${ch.id}/members`}
+                                    >
+                                      Manage Members
+                                    </Link>
+                                  </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DeleteChannelDialog channel={ch}>
                                     <DropdownMenuItem

@@ -1,9 +1,12 @@
 import { generateCompose, generateThreadSummary } from "./ai";
 import {
+  addMembersToChannel,
   createChannel,
   deleteChannel,
   getChannel,
+  listChannelMembers,
   listChannels,
+  removeMemberFromChannel,
   updateChannel,
 } from "./channel";
 import { getInvitionDEtails } from "./invitations";
@@ -15,7 +18,11 @@ import {
   listThreads,
   updateMessage,
 } from "./message";
-import { createWorkspace, listWorkspaces } from "./workspace";
+import {
+  createWorkspace,
+  listWorkspaceMembers,
+  listWorkspaces,
+} from "./workspace";
 
 export const router = {
   workspace: {
@@ -23,6 +30,7 @@ export const router = {
     create: createWorkspace,
     members: {
       invite: inviteMember,
+      list: listWorkspaceMembers,
     },
   },
   channel: {
@@ -31,6 +39,11 @@ export const router = {
     get: getChannel,
     update: updateChannel,
     delete: deleteChannel,
+    members: {
+      list: listChannelMembers,
+      add: addMembersToChannel,
+      remove: removeMemberFromChannel,
+    },
   },
   message: {
     create: createMessage,
