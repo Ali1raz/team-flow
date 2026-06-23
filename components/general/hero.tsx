@@ -1,10 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
 import { motion } from "motion/react";
 import DashboardImage from "@/public/image.png";
 import DashboardImageLight from "@/public/image-light.png";
+import Link from "next/link";
 
 const Hero = () => {
   return (
@@ -24,12 +25,15 @@ const Hero = () => {
             TeamFlow organizes conversations into channels and threads and uses
             AI to keep teams in sync.
           </p>
-          <div className="flex flex-row items-center gap-2">
-            <Button className="rounded">Book a call</Button>
-            <Button className="rounded" variant="outline">
-              Watch Demo
-            </Button>
-          </div>
+
+          <Link
+            className={buttonVariants({
+              className: "rounded-sm w-fit",
+            })}
+            href="/login"
+          >
+            Get Started
+          </Link>
         </section>
       </section>
       <div className="relative my-18 pointer-events-none">
