@@ -126,43 +126,29 @@ export const listChannels = base
           slug: z.string(),
           createdAt: z.date(),
           updatedAt: z.date().nullable().optional(),
-        })
-      ),
-      members: z.array(
-        z.object({
-          id: z.string(),
-          name: z.string(),
-          email: z.string(),
-          image: z.string().nullable(),
-          role: z.enum([...Object.values(MembershipRole)]),
+          totalMembers: z.number(),
         })
       ),
     })
   )
   .handler(async ({ input }) => {
-    const [channels] = await Promise.all([
-      prisma.team.findMany({
-        where: {
-          organizationId: input.organizationId,
-        },
-        orderBy: {
-          createdAt: "desc", // newest channels first
-        },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      }),
-    ]);
-
-    const teamMembers = await auth.api.listMembers({
-      query: {
+    const channels = await prisma.team.findMany({
+      where: {
         organizationId: input.organizationId,
       },
-      headers: await headers(),
+      orderBy: {
+        createdAt: "desc", // newest channels first
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: { teammembers: true, messages: true },
+        },
+      },
     });
 
     const rawMembers = Array.isArray(teamMembers)
@@ -178,8 +164,14 @@ export const listChannels = base
     }));
 
     return {
-      channels,
-      members,
+      channels: channels.map((channel) => ({
+        id: channel.id,
+        name: channel.name,
+        slug: channel.slug,
+        createdAt: channel.createdAt,
+        updatedAt: channel.updatedAt,
+        totalMembers: channel._count.teammembers ?? 0,
+      })),
     };
   });
 

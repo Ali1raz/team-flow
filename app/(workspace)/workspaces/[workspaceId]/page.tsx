@@ -24,7 +24,7 @@ export default async function Page(
 ) {
   const { params } = props;
   const { workspaceId } = await params;
-  const { channels, members } = await client.channel.list({
+  const { channels } = await client.channel.list({
     organizationId: workspaceId,
   });
 
@@ -64,7 +64,7 @@ export default async function Page(
               <CardHeader>
                 <CardTitle>{channel.name}</CardTitle>
                 <CardDescription>
-                  Total members: {members.length}
+                  Total members: {channel.totalMembers}
                 </CardDescription>
               </CardHeader>
 
