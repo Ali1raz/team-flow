@@ -1,6 +1,12 @@
 "use client";
 
-import { ComponentProps, CSSProperties, Suspense, useState } from "react";
+import {
+  ComponentProps,
+  CSSProperties,
+  Suspense,
+  useMemo,
+  useState,
+} from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +37,8 @@ import { ThreadActionsDropdown } from "./thread-actions-dropdown";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePresence } from "@/hooks/use-presence";
+import { RealtimeUserSchemaType } from "@/realtime/schema";
 
 type ThreadsData = Awaited<ReturnType<typeof client.message.threads.list>>;
 type MessagePage = Awaited<ReturnType<typeof client.message.list>>;
@@ -51,7 +59,10 @@ export function RightSidebar({
 }: ComponentProps<typeof Sidebar> & { width?: string }) {
   const { threadId } = useThread();
   const { setOpen, isMobile, setOpenMobile } = useSidebarWithSide("right");
-  const { channelId } = useParams<{ channelId: string }>();
+  const { channelId, workspaceId } = useParams<{
+    channelId: string;
+    workspaceId: string;
+  }>();
   const queryClient = useQueryClient();
   const [editingThreadId, setEditingThreadId] = useState<string | null>(null);
   const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
@@ -151,6 +162,22 @@ export function RightSidebar({
     })
   );
 
+  const { data: workspacedata } = useQuery(orpc.workspace.list.queryOptions());
+
+  const currentUser = workspacedata?.user
+    ? ({ id: workspacedata.user.id } satisfies RealtimeUserSchemaType)
+    : null;
+
+  const { onlineusers } = usePresence({
+    room: workspaceId,
+    user: currentUser,
+  });
+
+  const onlineUserIds = useMemo(
+    () => new Set(onlineusers.map((user) => user.id)),
+    [onlineusers]
+  );
+
   return (
     <Sidebar
       {...props}
@@ -199,7 +226,12 @@ export function RightSidebar({
                   <div className="flex items-start gap-2">
                     <UserImage
                       image={data.parent.user.image}
-                      className="size-8 rounded-full object-cover object-center"
+                      // className="size-8 rounded-full object-cover object-center"
+                      isOnline={
+                        !!data.parent.user.id &&
+                        onlineUserIds.has(data.parent.user.id)
+                      }
+                      showOnline={true}
                     />
                     <div className="flex flex-col gap-2">
                       <div className="flex gap-2 items-center">
@@ -265,6 +297,10 @@ export function RightSidebar({
                         image={thread.user.image}
                         name={thread.user.name}
                         className="size-8 rounded-full object-cover object-center"
+                        isOnline={
+                          !!thread.user.id && onlineUserIds.has(thread.user.id)
+                        }
+                        showOnline={true}
                       />
                       <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">

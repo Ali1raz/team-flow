@@ -1,5 +1,5 @@
 "use client";
-import * as React from "react";
+import { useMemo } from "react";
 
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import {
@@ -21,7 +21,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { ChevronRight, Hash, MoreHorizontal } from "lucide-react";
 import { UserImage } from "./general/user-avatar";
@@ -43,6 +43,8 @@ import {
 import { UpdateChannelDialog } from "./update-channel-dialog";
 import { DeleteChannelDialog } from "./delete-channel-dailog";
 import { AddMemberToChannel } from "./add-member-to-channel";
+import { usePresence } from "@/hooks/use-presence";
+import { RealtimeUserSchemaType } from "@/realtime/schema";
 
 export function AppSidebar({
   organizationId,
@@ -56,6 +58,22 @@ export function AppSidebar({
   const {
     data: { members },
   } = useSuspenseQuery(orpc.workspace.members.list.queryOptions());
+
+  const { data } = useQuery(orpc.workspace.list.queryOptions());
+
+  const currentUser = data?.user
+    ? ({ id: data.user.id } satisfies RealtimeUserSchemaType)
+    : null;
+
+  const { onlineusers } = usePresence({
+    room: organizationId,
+    user: currentUser,
+  });
+
+  const onlineUserIds = useMemo(
+    () => new Set(onlineusers.map((user) => user.id)),
+    [onlineusers]
+  );
 
   const {
     data: { currentWorkspace },
@@ -220,6 +238,8 @@ export function AppSidebar({
                             name={user.name}
                             image={user.image}
                             className="size-8 object-cover"
+                            isOnline={!!user.id && onlineUserIds.has(user.id)}
+                            showOnline={true}
                           />
                           <div className="flex flex-col flex-1 max-w-[15ch] gap-1">
                             <span className="leading-none">
