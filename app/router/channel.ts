@@ -146,10 +146,15 @@ export const listChannels = base
       ),
     })
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ context, input }) => {
     const channels = await prisma.team.findMany({
       where: {
         organizationId: input.organizationId,
+        teammembers: {
+          some: {
+            userId: context.user.id,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc", // newest channels first
