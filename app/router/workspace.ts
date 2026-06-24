@@ -11,6 +11,7 @@ import { heavyWritesecurityMiddleware } from "../middlewares/arcjet/heavy-write-
 import { requireworkspaceMiddleware } from "../middlewares/workspace";
 import { MembershipRole } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
+import { requireMemberMiddleware } from "../middlewares/member";
 
 export const listWorkspaces = base
   .use(requireAuthMiddleware)
@@ -165,4 +166,61 @@ export const listWorkspaceMembers = base
     return {
       members,
     };
+  });
+
+export const updateWorkspaceMemberRole = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .use(requireMemberMiddleware)
+  .use(standardsecurityMiddleware)
+  .use(heavyWritesecurityMiddleware)
+  .route({
+    method: "POST",
+    path: "/workspace/members/update-role",
+    summary: "Update a member's role in the workspace",
+    tags: ["workspace"],
+  })
+  .input(
+    z.object({
+      userId: z.string(),
+      role: z.enum([...Object.values(MembershipRole)]),
+      organizationId: z.string().optional(),
+    })
+  )
+  .output(z.void())
+  .handler(async ({ context, input, errors }) => {
+    if (!["owner", "admin"].includes(context.member.role)) {
+      throw errors.FORBIDDEN({
+        message: "Only admins and owners can update member roles",
+      });
+    }
+
+    const orgId = input.organizationId ?? context.workspace.id;
+
+    const member = await prisma.member.findFirst({
+      where: {
+        userId: input.userId,
+        organizationId: orgId,
+      },
+      select: { id: true },
+    });
+
+    if (!member) {
+      throw errors.NOT_FOUND({ message: "Member not found in this workspace" });
+    }
+
+    try {
+      await auth.api.updateMemberRole({
+        body: {
+          memberId: member.id,
+          role: input.role,
+          organizationId: orgId,
+        },
+        headers: await headers(),
+      });
+    } catch (error: unknown) {
+      throw errors.BAD_REQUEST({
+        message: errorMessage(error, "Failed to update member role"),
+      });
+    }
   });
