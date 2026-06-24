@@ -82,7 +82,7 @@ export function WorkspaceList() {
 
   return (
     <div className="flex w-full mx-auto mt-16 max-w-2xl flex-col gap-6">
-      <form id="workspace-form" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="workspace-select-form" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup className="flex flex-col gap-4">
           <Controller
             name="workspaceId"
@@ -118,7 +118,7 @@ export function WorkspaceList() {
       </form>
 
       <Field className="mt-4">
-        <Button disabled={isPending} type="submit" form="workspace-form">
+        <Button disabled={isPending} type="submit" form="workspace-select-form">
           {isPending ? (
             <>
               <Loader2 className="size-4 animate-spin" /> Switching...

@@ -76,7 +76,7 @@ export function CreateWorkspaceDialog({ children }: { children?: ReactNode }) {
           <DialogTitle>Create Workspace</DialogTitle>
           <DialogDescription>Create a new workspace.</DialogDescription>
         </DialogHeader>
-        <form id="workspace-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="create-workspace-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup className="flex flex-col gap-4">
             <Controller
               name="name"
@@ -108,7 +108,7 @@ export function CreateWorkspaceDialog({ children }: { children?: ReactNode }) {
           <Button
             disabled={createWorkspaceMutation.isPending}
             type="submit"
-            form="workspace-form"
+            form="create-workspace-form"
           >
             {createWorkspaceMutation.isPending ? (
               <>
