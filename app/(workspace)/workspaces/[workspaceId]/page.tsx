@@ -53,29 +53,36 @@ export default async function Page(
     <div className="p-4 sm:p-6">
       <h1 className="font-bold text-2xl">Your channels</h1>
 
-      <div className="max-w-xl mt-4 space-x-2">
+      <div className="max-w-xl mt-4 space-y-2">
         {channels.map((channel) => (
-          <Link
-            key={channel.id}
-            href={`/workspaces/${workspaceId}/channel/${channel.id}`}
-          >
-            <Card className="group w-full outline-2 outline-transparent hover:outline-primary outline-offset-4 rounded-xl ">
-              <CardHeader>
-                <CardTitle>{channel.name}</CardTitle>
-                <CardDescription>
+          <Card key={channel.id} className="group w-full outline-2 outline-transparent hover:outline-primary outline-offset-4 rounded-xl">
+            <CardHeader>
+              <CardTitle>
+                <Link
+                  href={`/workspaces/${workspaceId}/channel/${channel.id}`}
+                  className="hover:underline"
+                >
+                  {channel.name}
+                </Link>
+              </CardTitle>
+              <CardDescription>
+                <Link
+                  href={`/workspaces/${workspaceId}/channel/${channel.id}/members`}
+                  className="hover:underline"
+                >
                   Total members: {channel.totalMembers}
-                </CardDescription>
-              </CardHeader>
+                </Link>
+              </CardDescription>
+            </CardHeader>
 
-              <CardContent className="relative">
-                <CardAction className="absolute bottom-0 right-4 opacity-0 group-hover:opacity-100 transition duration-75">
-                  <div className="size-8 bg-muted/40 rounded-full flex items-center justify-center">
-                    <ArrowRight className="size-4" />
-                  </div>
-                </CardAction>
-              </CardContent>
-            </Card>
-          </Link>
+            <CardContent className="relative">
+              <CardAction className="absolute bottom-0 right-4 opacity-0 group-hover:opacity-100 transition duration-75">
+                <div className="size-8 bg-muted/40 rounded-full flex items-center justify-center">
+                  <ArrowRight className="size-4" />
+                </div>
+              </CardAction>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
