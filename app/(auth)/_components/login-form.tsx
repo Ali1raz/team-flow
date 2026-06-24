@@ -13,15 +13,13 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
 
 export function LoginForm({
   className,
+  callbackUrl = "/",
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & { callbackUrl?: string }) {
   const [pending, startTransition] = useTransition();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("from") ?? "/";
 
   function loginWithGitHub() {
     startTransition(async () => {

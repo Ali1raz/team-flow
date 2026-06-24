@@ -6,7 +6,11 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -14,6 +18,8 @@ export default async function LoginPage() {
   if (session) {
     redirect("/");
   }
+
+  const { from } = await searchParams;
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
@@ -30,7 +36,7 @@ export default async function LoginPage() {
           />
           <p className="text-primary">TeamFlow</p>
         </Link>
-        <LoginForm />
+        <LoginForm callbackUrl={from ?? "/"} />{" "}
       </div>
     </div>
   );
