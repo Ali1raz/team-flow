@@ -35,12 +35,14 @@ export function WokrspaceHeader() {
         orientation="vertical"
         className="mr-2 data-vertical:h-4 data-vertical:self-auto"
       />
-      <div className="flex items-center gap-1 text-lg font-mono">
-        <span>#</span>
-        <span className="truncate max-w-[10ch]">
-          {activeChannel?.name ?? "Cool channel"}
-        </span>
-      </div>
+      {activeChannel?.name ? (
+        <div className="flex items-center gap-1 text-lg font-mono">
+          <span>#</span>
+          <span className="truncate max-w-[10ch]">{activeChannel.name}</span>
+        </div>
+      ) : (
+        <span className="text-lg font-mono">TeamFlow</span>
+      )}
       <div className="ml-auto flex items-center gap-4">
         <div className="hidden sm:flex">
           <InviteWorkspaceDialog
