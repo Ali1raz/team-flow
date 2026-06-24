@@ -7,17 +7,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { ArrowRight, FolderCode } from "lucide-react";
+import { FolderCode } from "lucide-react";
 import { CreateTeamDialog } from "@/components/create-tem-dialog";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import Link from "next/link";
+import { ChannelCard } from "./_components/channel-card";
 
 export default async function Page(
   props: PageProps<"/workspaces/[workspaceId]">
@@ -50,39 +42,16 @@ export default async function Page(
     );
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6 sm:max-w-xl w-full">
       <h1 className="font-bold text-2xl">Your channels</h1>
 
-      <div className="max-w-xl mt-4 space-y-2">
+      <div className="mt-4 space-y-2">
         {channels.map((channel) => (
-          <Card key={channel.id} className="group w-full outline-2 outline-transparent hover:outline-primary outline-offset-4 rounded-xl">
-            <CardHeader>
-              <CardTitle>
-                <Link
-                  href={`/workspaces/${workspaceId}/channel/${channel.id}`}
-                  className="hover:underline"
-                >
-                  {channel.name}
-                </Link>
-              </CardTitle>
-              <CardDescription>
-                <Link
-                  href={`/workspaces/${workspaceId}/channel/${channel.id}/members`}
-                  className="hover:underline"
-                >
-                  Total members: {channel.totalMembers}
-                </Link>
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="relative">
-              <CardAction className="absolute bottom-0 right-4 opacity-0 group-hover:opacity-100 transition duration-75">
-                <div className="size-8 bg-muted/40 rounded-full flex items-center justify-center">
-                  <ArrowRight className="size-4" />
-                </div>
-              </CardAction>
-            </CardContent>
-          </Card>
+          <ChannelCard
+            key={channel.id}
+            channel={channel}
+            workspaceId={workspaceId}
+          />
         ))}
       </div>
     </div>

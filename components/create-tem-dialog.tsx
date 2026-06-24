@@ -33,8 +33,10 @@ import { useRouter } from "next/navigation";
 
 export function CreateTeamDialog({
   className,
+  children,
 }: {
   className?: React.ComponentProps<typeof Button>["className"];
+  children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -84,9 +86,11 @@ export function CreateTeamDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className={cn(className)} variant="outline" size="sm">
-          <Plus className="size-4" /> Create Channel
-        </Button>
+        {children ?? (
+          <Button className={cn(className)} variant="outline" size="sm">
+            <Plus className="size-4" /> Create Channel
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-100">
         <DialogHeader className="text-xs text-muted-foreground">
