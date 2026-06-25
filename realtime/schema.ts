@@ -32,8 +32,8 @@ export const RealtimeMessageSchema = z.object({
   teamId: z.string().nullable(),
   threadId: z.string().nullable(),
   content: z.string(),
-   imageUrl: z.string().nullable().optional(),
-  repliesCount: z.number().optional(),
+  imageUrl: z.string().nullable().optional(),
+  _count: z.object({replies: z.number()}).optional(),
   user: z.object({
       id: z.string(),
       name: z.string(),

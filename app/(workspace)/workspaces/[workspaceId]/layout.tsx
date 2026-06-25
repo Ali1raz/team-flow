@@ -6,6 +6,7 @@ import { ReactNode } from "react";
 import { WokrspaceHeader } from "./_components/workspace-header";
 import { ThreadProvider } from "@/components/thread-sidebar/thread-context";
 import { RightSidebar } from "@/components/thread-sidebar/right-sidebar";
+import { RealtimeProviderWrapper } from "./_components/realtime-provider-wrapper";
 
 export default async function WorkspaceLayout({
   children,
@@ -29,15 +30,17 @@ export default async function WorkspaceLayout({
         <HydrateClient client={queryClient}>
           <AppSidebar organizationId={workspaceId} />
         </HydrateClient>
-        <SidebarInset className="h-screen flex flex-col overflow-hidden">
-          <HydrateClient client={queryClient}>
-            <WokrspaceHeader />
-          </HydrateClient>
-          <main className="overflow-scroll flex flex-1 flex-col min-h-0">
-            {children}
-          </main>
-        </SidebarInset>
-        <RightSidebar collapsible="offcanvas" variant="sidebar" side="right" />
+        <RealtimeProviderWrapper>
+          <SidebarInset className="h-screen flex flex-col overflow-hidden">
+            <HydrateClient client={queryClient}>
+              <WokrspaceHeader />
+            </HydrateClient>
+            <main className="overflow-scroll flex flex-1 flex-col min-h-0">
+              {children}
+            </main>
+          </SidebarInset>
+          <RightSidebar collapsible="offcanvas" variant="sidebar" side="right" />
+        </RealtimeProviderWrapper>
       </ThreadProvider>
     </SidebarProvider>
   );

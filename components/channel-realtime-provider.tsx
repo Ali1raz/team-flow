@@ -80,6 +80,23 @@ export const RealtimeChannelProvider = ({
           return;
         }
 
+        if (eventData.type === "message:reply:increment") {
+          const { messageId, delta } = eventData.payload
+
+          queryClient.setQueryData<InfiniteMessages>(['message.list', channelId], (old) => {
+            if (!old) return old;
+            const pages = old.pages.map(page => ({
+              ...page,
+              messages: page.messages.map(message => message.id === messageId ? {
+                ...message, _count: {replies: Math.max(0, Number(message._count?.replies ?? 0) + Number(delta))},
+              } : message)
+            }));
+
+            return { ...old, pages }
+          });
+          return;
+        }
+
       } catch {
         console.log("[RealtimeChannelProvider]: Something went wrong");
       }

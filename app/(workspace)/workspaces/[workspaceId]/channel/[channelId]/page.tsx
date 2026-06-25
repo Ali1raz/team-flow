@@ -1,4 +1,3 @@
-import { RealtimeChannelProvider } from "@/components/channel-realtime-provider";
 import { MessageInput } from "../../_components/messaeg-input";
 import { MessageList } from "../../_components/MessageList";
 
@@ -9,7 +8,6 @@ export default async function ChannelIdPAge(
   const { channelId } = await params;
 
   return (
-    <RealtimeChannelProvider channelId={channelId}>
       <section className="h-full flex w-full flex-col">
         <div className="flex-1 mb-4 px-2 min-h-0">
           <MessageList />
@@ -19,6 +17,5 @@ export default async function ChannelIdPAge(
           <MessageInput channelId={channelId} />
         </div>
       </section>
-    </RealtimeChannelProvider>
   );
 }

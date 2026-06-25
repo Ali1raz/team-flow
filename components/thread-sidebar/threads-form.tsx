@@ -19,6 +19,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import { Field, FieldError, FieldGroup } from "../ui/field";
 import { InfiniteMessages } from "@/app/(workspace)/workspaces/[workspaceId]/_components/message-item";
+import { useRealtimeChannel } from "../channel-realtime-provider";
 
 type ThreadsData = Awaited<ReturnType<typeof client.message.threads.list>>;
 type ThreadItem = ThreadsData["threads"][number];
@@ -37,6 +38,8 @@ export function ThreadsForm({
   const [composerVersion, setComposerVersion] = useState(0);
   const { channelId } = useParams<{ channelId: string }>();
   const queryClient = useQueryClient();
+
+  const { send } = useRealtimeChannel();
 
   const threadsQueryOptions = orpc.message.threads.list.queryOptions({
     input: { threadId },
@@ -140,7 +143,6 @@ export function ThreadsForm({
         return { prevData, prevMessageListData };
       },
       onSuccess: () => {
-        toast.success("Reply sent successfully");
         form.reset({
           content: "",
           channelId,
@@ -155,6 +157,10 @@ export function ThreadsForm({
         // actually stores data under. The oRPC-generated key is different and
         // would silently miss the cache entry, leaving the reply count stale.
         queryClient.invalidateQueries({ queryKey: messageListKey });
+        console.log("update replycount: ", threadId)
+        send({ type: "message:reply:increment", payload: { messageId: threadId, delta: 1 } });
+        toast.success("Reply sent successfully");
+
       },
       onError: (error, _variables, context) => {
         // Roll back the thread list to its pre-optimistic snapshot.
