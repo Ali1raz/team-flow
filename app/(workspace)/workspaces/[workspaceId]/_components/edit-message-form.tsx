@@ -17,6 +17,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
+import { useRealtimeChannel } from "@/components/channel-realtime-provider";
 
 interface EditMessageFormProps {
   message: messageType;
@@ -37,6 +38,8 @@ export function EditMessageForm({
   onSave,
 }: EditMessageFormProps) {
   const { channelId } = useParams<{ channelId: string }>();
+  const { send } = useRealtimeChannel();
+
   const form = useForm<UpdateMessageSchemaType>({
     resolver: zodResolver(updateMessageSchema),
     defaultValues: {
@@ -101,7 +104,25 @@ export function EditMessageForm({
         );
 
         toast.success("Message updated successfully");
+        send({
+          type: "message:updated",
+          payload: {
+            message: {
+              id: update.message.id,
+              createdAt: update.message.createdAt,
+              updatedAt: update.message.updatedAt,
+              teamId: update.message.teamId,
+              threadId: update.message.threadId,
+              content: update.message.content,
+              imageUrl: update.message.imageUrl ?? null,
+              user: message.user,
+              repliesCount: message._count?.replies ?? 0,
+            }
+          }
+        });
+
         onSave();
+
       },
 
       onError: (error, _variables, context) => {

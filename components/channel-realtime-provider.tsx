@@ -65,6 +65,21 @@ export const RealtimeChannelProvider = ({
             }
           );
         }
+
+        if (eventData.type === "message:updated") {
+          const updated = eventData.payload.message;
+          // replace message in infinite list
+          queryClient.setQueryData<InfiniteMessages>(["message.list", channelId], (old) => {
+            if (!old) return old;
+            const pages = old.pages.map(page => ({
+              ...page,
+              messages: page.messages.map(message => message.id === updated.id ? { ...message, ...updated } : message)
+            }));
+            return { ...old, pages }
+          });
+          return;
+        }
+
       } catch {
         console.log("[RealtimeChannelProvider]: Something went wrong");
       }
