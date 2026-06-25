@@ -1,0 +1,89 @@
+"use client";
+import { RealtimechannelEventSchema, RealtimechannelEventSchemaType, RealtimeMessageSchemaType } from "@/realtime/schema";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
+import usePartySocket from "partysocket/react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
+
+interface RealtimeChannelContextProps {
+  channelId: string;
+  children: ReactNode;
+}
+
+type MessageListPage = { messages: RealtimeMessageSchemaType[], nextCursor?: string }
+type InfiniteMessages = InfiniteData<MessageListPage>
+
+type RealtimeChannelContextValue = {
+  send: (e: RealtimechannelEventSchemaType) => void;
+}
+
+const RealtimeChannelContext = createContext<RealtimeChannelContextValue | null>(null);
+
+export const RealtimeChannelProvider = ({
+  channelId,
+  children
+}: RealtimeChannelContextProps) => {
+  const queryClient = useQueryClient();
+
+  const socket = usePartySocket({
+    host: "http://localhost:8787",
+    room: channelId,
+    party: "chat",
+    onMessage(event) {
+      try {
+        const data = JSON.parse(event.data);
+        const res = RealtimechannelEventSchema.safeParse(data);
+        if (res.error) {
+          console.log("Failed to parse message:", res.error);
+          return;
+        }
+        const eventData = res.data;
+
+        if (eventData.type === "message:created") {
+          const raw = eventData.payload.message;
+          const mapped = {
+            ...raw,
+            _count: { replies: raw.repliesCount ?? 0 },
+          };
+
+          queryClient.setQueryData<InfiniteMessages>(
+            ["message.list", channelId],
+            (oldMessages) => {
+              if (!oldMessages) return {
+                pageParams: [undefined],
+                pages: [{ messages: [mapped], nextCursor: undefined }]
+              } as InfiniteMessages;
+
+              const first = oldMessages.pages[0];
+              const updatedFirst = {
+                ...first,
+                messages: [mapped, ...first.messages]
+              };
+              return {
+                ...oldMessages,
+                pages: [updatedFirst, ...oldMessages.pages.slice(1)]
+              };
+            }
+          );
+        }
+      } catch {
+        console.log("[RealtimeChannelProvider]: Something went wrong");
+      }
+    },
+  });
+
+  const value = useMemo<RealtimeChannelContextValue>(() => ({
+    send: (e) => socket.send(JSON.stringify(e))
+  }), [socket]);
+
+  return (
+    <RealtimeChannelContext.Provider value={value}>
+      {children}
+    </RealtimeChannelContext.Provider>
+  );
+};
+
+export function useRealtimeChannel(): RealtimeChannelContextValue {
+  const ctx = useContext(RealtimeChannelContext);
+  if (!ctx) throw new Error("useRealtimeChannel must be used within RealtimeChannelProvider");
+  return ctx;
+}

@@ -1,5 +1,6 @@
 import { Connection, routePartykitRequest, Server } from "partyserver";
 import {
+  RealtimechannelEventSchema,
   RealtimePresenceSchema,
   RealtimePresenceSchemaType,
   RealtimeUserSchema,
@@ -54,6 +55,15 @@ export class ChatServer extends Server {
           this.updateUsers();
           return;
         }
+      }
+
+      const event = RealtimechannelEventSchema.safeParse(parsed);
+      console.log(`[ChatServer.onMessage]: ${ JSON.stringify(event)}`);
+      if (event.success) {
+        const payload = JSON.stringify(event.data);
+
+        this.broadcast(payload, [connection.id]);
+        return;
       }
     } catch (error) {
       console.log("Somthing bad happend!", error);
