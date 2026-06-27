@@ -56,9 +56,6 @@ importers:
       '@tiptap/extension-blockquote':
         specifier: ^3.23.6
         version: 3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))
-      '@tiptap/extension-bubble-menu':
-        specifier: ^3.23.6
-        version: 3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6)
       '@tiptap/extension-code-block-lowlight':
         specifier: ^3.23.6
         version: 3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/extension-code-block@3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6)(highlight.js@11.11.1)(lowlight@3.3.0)
@@ -104,9 +101,6 @@ importers:
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
-      extension-bubble-menu:
-        specifier: link:[200~@tiptap/extension-bubble-menu
-        version: link:[200~@tiptap/extension-bubble-menu
       html-react-parser:
         specifier: ^6.1.2
         version: 6.1.2(@types/react@19.2.15)(react@19.2.4)
@@ -7936,6 +7930,7 @@ snapshots:
       '@floating-ui/dom': 1.7.6
       '@tiptap/core': 3.23.6(@tiptap/pm@3.23.6)
       '@tiptap/pm': 3.23.6
+    optional: true
 
   '@tiptap/extension-bullet-list@3.23.6(@tiptap/extension-list@3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6))':
     dependencies:
