@@ -1,4 +1,5 @@
 {
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "teamflow-realtime",
   "main": "realtime/index.ts",
   "compatibility_date": "2025-11-09",
@@ -15,5 +16,13 @@
       "tag": "v1",
       "new_sqlite_classes": ["ChatServer"]
     }
-  ]
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
+  }
 }
