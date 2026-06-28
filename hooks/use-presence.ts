@@ -14,7 +14,7 @@ interface iAppProps {
 export function usePresence({ room, user }: iAppProps) {
   const [onlineusers, setOnlineUsers] = useState<RealtimeUserSchemaType[]>([]);
   const socket = usePartySocket({
-    host: "http://localhost:8787",
+    host: process.env.NEXT_PUBLIC_PARTYKIT_HOST || "http://localhost:8787",
     room,
     party: "chat",
     onOpen() {
@@ -42,9 +42,11 @@ export function usePresence({ room, user }: iAppProps) {
 
     onClose() {
       console.log("Disconnected from room", room);
+      setOnlineUsers([]);
     },
     onError(error) {
       console.log("Websocket Error", error);
+      setOnlineUsers([]);
     },
   });
 

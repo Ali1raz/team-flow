@@ -36,7 +36,7 @@ interface IAppPops {
 export function MessageInput({ channelId }: IAppPops) {
   const [editorKey, setEditorKey] = useState(0);
 
-  const {send} = useRealtimeChannel()
+  const { send } = useRealtimeChannel();
 
   const form = useForm<CreateMessageType>({
     resolver: zodResolver(createMessageSchema),
@@ -153,7 +153,10 @@ export function MessageInput({ channelId }: IAppPops) {
           queryKey: ["message.list", channelId],
         });
 
-        send({type: "message:created", payload: {message: {
+        send({
+          type: "message:created",
+          payload: {
+            message: {
               ...createdMessage,
               user: {
                 id: currentUser.id,
@@ -161,8 +164,10 @@ export function MessageInput({ channelId }: IAppPops) {
                 image: currentUser.image ?? null,
                 email: currentUser.email,
               },
-              repliesCount: 0,
-            }}})
+              _count: { replies: 0 },
+            },
+          },
+        });
 
         toast.success("Message sent successfully");
       },

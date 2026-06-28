@@ -36,12 +36,13 @@ export type InfiniteMessages = InfiniteData<MessagePage>;
 export function MessageItem({
   message,
   currentUserId,
+  onlineUserIds,
 }: {
   message: messageType;
   currentUserId: string;
+  onlineUserIds: Set<string>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const { workspaceId } = useParams<{ workspaceId: string }>();
 
   // Access thread context and right sidebar so the replies button can open the
   // thread panel in the same way the MessagesSquare action button does.
@@ -69,22 +70,6 @@ export function MessageItem({
       .prefetchQuery({ ...options, staleTime: 60_000 })
       .catch(() => {});
   }, [queryClinet, message.id]);
-
-  const { data } = useQuery(orpc.workspace.list.queryOptions());
-
-  const currentUser = data?.user
-    ? ({ id: data.user.id } satisfies RealtimeUserSchemaType)
-    : null;
-
-  const { onlineusers } = usePresence({
-    room: workspaceId,
-    user: currentUser,
-  });
-
-  const onlineUserIds = useMemo(
-    () => new Set(onlineusers.map((user) => user.id)),
-    [onlineusers]
-  );
 
   return (
     <div

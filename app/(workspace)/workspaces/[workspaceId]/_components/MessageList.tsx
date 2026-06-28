@@ -15,6 +15,8 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RealtimeUserSchemaType } from "@/realtime/schema";
+import { usePresence } from "@/hooks/use-presence";
 
 export function MessageList() {
   const { channelId } = useParams<{ channelId: string }>();
@@ -178,6 +180,18 @@ export function MessageList() {
     }
   };
 
+  const { workspaceId } = useParams<{ workspaceId: string }>();
+  const currentUser = user
+    ? ({ id: user.id } satisfies RealtimeUserSchemaType)
+    : null;
+
+  const { onlineusers } = usePresence({ room: workspaceId, user: currentUser });
+
+  const onlineUserIds = useMemo(
+    () => new Set(onlineusers.map((u) => u.id)),
+    [onlineusers]
+  );
+
   if ((!messages || messages?.length === 0) && !isFetching) {
     return (
       <div className="flex items-center justify-center h-full p-4">
@@ -232,7 +246,12 @@ export function MessageList() {
         className="h-full overflow-y-auto px-2 space-y-1"
       >
         {messages?.map((msg) => (
-          <MessageItem key={msg.id} message={msg} currentUserId={user.id} />
+          <MessageItem
+            key={msg.id}
+            message={msg}
+            currentUserId={user.id}
+            onlineUserIds={onlineUserIds}
+          />
         ))}
         <div ref={bottomRef} />
       </div>

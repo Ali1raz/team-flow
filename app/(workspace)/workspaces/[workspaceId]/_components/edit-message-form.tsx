@@ -116,13 +116,12 @@ export function EditMessageForm({
               content: update.message.content,
               imageUrl: update.message.imageUrl ?? null,
               user: message.user,
-              repliesCount: message._count?.replies ?? 0,
-            }
-          }
+              _count: { replies: message._count?.replies ?? 0 },
+            },
+          },
         });
 
         onSave();
-
       },
 
       onError: (error, _variables, context) => {

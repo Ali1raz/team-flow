@@ -3,6 +3,7 @@ import {
   RealtimechannelEventSchema,
   RealtimePresenceSchema,
   RealtimePresenceSchemaType,
+  RealtimeReplyEventSchema,
   RealtimeUserSchema,
 } from "./schema";
 import { z } from "zod";
@@ -58,9 +59,16 @@ export class ChatServer extends Server {
       }
 
       const event = RealtimechannelEventSchema.safeParse(parsed);
-      console.log(`[ChatServer.onMessage]: ${ JSON.stringify(event)}`);
       if (event.success) {
         const payload = JSON.stringify(event.data);
+
+        this.broadcast(payload, [connection.id]);
+        return;
+      }
+
+      const replyEvent = RealtimeReplyEventSchema.safeParse(parsed);
+      if (replyEvent.success) {
+        const payload = JSON.stringify(replyEvent.data);
 
         this.broadcast(payload, [connection.id]);
         return;
