@@ -19,9 +19,12 @@ import {
 import { orpc } from "@/lib/orpc";
 import { MoreHorizontal } from "lucide-react";
 import { RemoveMemberDialog } from "./_components/remov-member-dialog";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { AddMemberToChannel } from "@/components/add-member-to-channel";
+import { usePresence } from "@/hooks/use-presence";
+import { RealtimeUserSchemaType } from "@/realtime/schema";
+import { useMemo } from "react";
 import { UpdateMemberRoleDialog } from "./_components/update-member-role-dialog";
 
 export default function ChannelMembersPage() {
@@ -34,6 +37,22 @@ export default function ChannelMembersPage() {
     data: { members },
   } = useSuspenseQuery(
     orpc.channel.members.list.queryOptions({ input: { channelId } })
+  );
+
+  const { data } = useQuery(orpc.workspace.list.queryOptions());
+
+  const currentUser = data?.user
+    ? ({ id: data.user.id } satisfies RealtimeUserSchemaType)
+    : null;
+
+  const { onlineusers } = usePresence({
+    room: workspaceId,
+    user: currentUser,
+  });
+
+  const onlineUserIds = useMemo(
+    () => new Set(onlineusers.map((user) => user.id)),
+    [onlineusers]
   );
 
   return (
@@ -54,7 +73,12 @@ export default function ChannelMembersPage() {
         {members.map((member) => (
           <Card key={member.id}>
             <CardHeader className="flex flex-row items-center gap-2 w-full">
-              <UserImage image={member.image} name={member.name} />
+              <UserImage
+                image={member.image}
+                name={member.name}
+                isOnline={!!member.id && onlineUserIds.has(member.id)}
+                showOnline={true}
+              />
               <div className="flex flex-col gap-1">
                 <CardTitle className="flex items-center justify-between">
                   <span>{member.name}</span>

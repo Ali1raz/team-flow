@@ -19,6 +19,8 @@ import { Controller, useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import { Field, FieldError, FieldGroup } from "../ui/field";
 import { InfiniteMessages } from "@/app/(workspace)/workspaces/[workspaceId]/_components/message-item";
+import { useRealtimeChannel } from "../channel-realtime-provider";
+import { useRealtimeThread } from "../realtime-thread-provider";
 
 type ThreadsData = Awaited<ReturnType<typeof client.message.threads.list>>;
 type ThreadItem = ThreadsData["threads"][number];
@@ -35,8 +37,15 @@ export function ThreadsForm({
   onCancelEdit,
 }: ThreadsFormProps) {
   const [composerVersion, setComposerVersion] = useState(0);
-  const { channelId } = useParams<{ channelId: string }>();
+  const { channelId } = useParams<{
+    channelId: string;
+    workspaceId: string;
+  }>();
   const queryClient = useQueryClient();
+
+  const { send } = useRealtimeChannel();
+
+  const { send: sendThread } = useRealtimeThread();
 
   const threadsQueryOptions = orpc.message.threads.list.queryOptions({
     input: { threadId },
@@ -139,8 +148,7 @@ export function ThreadsForm({
         // Return both snapshots so onError can restore them.
         return { prevData, prevMessageListData };
       },
-      onSuccess: () => {
-        toast.success("Reply sent successfully");
+      onSuccess: (data) => {
         form.reset({
           content: "",
           channelId,
@@ -151,10 +159,28 @@ export function ThreadsForm({
         queryClient.invalidateQueries({
           queryKey: threadsQueryOptions.queryKey,
         });
-        // Invalidate the message list using the raw key that MessageList.tsx
-        // actually stores data under. The oRPC-generated key is different and
-        // would silently miss the cache entry, leaving the reply count stale.
         queryClient.invalidateQueries({ queryKey: messageListKey });
+
+        sendThread({
+          type: "reply:created",
+          payload: {
+            reply: {
+              ...data,
+              user: {
+                id: currentUser.id,
+                name: currentUser.name,
+                image: currentUser.image ?? null,
+                email: currentUser.email,
+              },
+            },
+          },
+        });
+
+        send({
+          type: "message:reply:increment",
+          payload: { messageId: threadId, delta: 1 },
+        });
+        toast.success("Reply sent successfully");
       },
       onError: (error, _variables, context) => {
         // Roll back the thread list to its pre-optimistic snapshot.
@@ -211,7 +237,20 @@ export function ThreadsForm({
 
         return { prevData };
       },
-      onSuccess: () => {
+      onSuccess: (data) => {
+        sendThread({
+          type: "reply:updated",
+          payload: {
+            reply: {
+              id: data.message.id,
+              content: data.message.content,
+              imageUrl: data.message.imageUrl,
+              createdAt: data.message.createdAt,
+              user: editingThread!.user,
+            },
+          },
+        });
+
         toast.success("Reply updated successfully");
         onCancelEdit();
         form.reset({

@@ -105,7 +105,27 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+login to wrangler cli to your cloudflare account:
+
+```bash
+pnpm dlx wrangler login
+```
+
+generate wrangler types: 
+
+```bash
+pnpm wrangler:types
+```
+
+
+run wrangler to serve the worker locally (because local dev server has to run in parallel):
+
+```bash
+pnpm wrangler:dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) for the app.
+Open [http://localhost:8787](http://localhost:8787) for wrangler dev server
 
 ## Database Scripts
 

@@ -1,6 +1,12 @@
 "use client";
 
-import { ComponentProps, CSSProperties, Suspense, useState } from "react";
+import {
+  ComponentProps,
+  CSSProperties,
+  Suspense,
+  useMemo,
+  useState,
+} from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +37,9 @@ import { ThreadActionsDropdown } from "./thread-actions-dropdown";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePresence } from "@/hooks/use-presence";
+import { RealtimeUserSchemaType } from "@/realtime/schema";
+import { RealtimeThreadPRovider } from "../realtime-thread-provider";
 
 type ThreadsData = Awaited<ReturnType<typeof client.message.threads.list>>;
 type MessagePage = Awaited<ReturnType<typeof client.message.list>>;
@@ -51,7 +60,10 @@ export function RightSidebar({
 }: ComponentProps<typeof Sidebar> & { width?: string }) {
   const { threadId } = useThread();
   const { setOpen, isMobile, setOpenMobile } = useSidebarWithSide("right");
-  const { channelId } = useParams<{ channelId: string }>();
+  const { channelId, workspaceId } = useParams<{
+    channelId: string;
+    workspaceId: string;
+  }>();
   const queryClient = useQueryClient();
   const [editingThreadId, setEditingThreadId] = useState<string | null>(null);
   const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
@@ -151,139 +163,95 @@ export function RightSidebar({
     })
   );
 
+  const { data: workspacedata } = useQuery(orpc.workspace.list.queryOptions());
+
+  const currentUser = workspacedata?.user
+    ? ({ id: workspacedata.user.id } satisfies RealtimeUserSchemaType)
+    : null;
+
+  const { onlineusers } = usePresence({
+    room: workspaceId,
+    user: currentUser,
+  });
+
+  const onlineUserIds = useMemo(
+    () => new Set(onlineusers.map((user) => user.id)),
+    [onlineusers]
+  );
+
+  if (!threadId) return null;
+
   return (
-    <Sidebar
-      {...props}
-      style={{ "--sidebar-width": width } as CSSProperties}
-      className="h-screen"
-    >
-      <SidebarHeader className="p-4 h-16 border-b">
-        <SidebarRail />
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Replies</h1>
-          <div className="flex items-center gap-2">
-            <SummarizeThreadPopover threadId={threadId!} />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => {
-                if (isMobile) {
-                  setOpenMobile(false);
-                } else {
-                  setOpen(false);
-                }
-              }}
-            >
-              <X className="size-4" />
-              <span className="sr-only">Close threads</span>
-            </Button>
+    <RealtimeThreadPRovider threadId={threadId!}>
+      <Sidebar
+        {...props}
+        style={{ "--sidebar-width": width } as CSSProperties}
+        className="h-screen"
+      >
+        <SidebarHeader className="p-4 h-16 border-b">
+          <SidebarRail />
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg font-semibold">Replies</h1>
+            <div className="flex items-center gap-2">
+              <SummarizeThreadPopover threadId={threadId!} />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  if (isMobile) {
+                    setOpenMobile(false);
+                  } else {
+                    setOpen(false);
+                  }
+                }}
+              >
+                <X className="size-4" />
+                <span className="sr-only">Close threads</span>
+              </Button>
+            </div>
           </div>
-        </div>
-      </SidebarHeader>
+        </SidebarHeader>
+        {/* Single scrollable area so parent message and replies scroll together */}
+        <SidebarContent className="overflow-y-auto">
+          <div className="flex flex-col gap-4 p-2">
+            {threadId && isLoading && (
+              <p className="text-sm text-muted-foreground p-4 text-center">
+                Loading…
+              </p>
+            )}
 
-      {/* Single scrollable area so parent message and replies scroll together */}
-      <SidebarContent className="overflow-y-auto">
-        <div className="flex flex-col gap-4 p-2">
-          {!threadId && <EmptyState />}
-
-          {threadId && isLoading && (
-            <p className="text-sm text-muted-foreground p-4 text-center">
-              Loading…
-            </p>
-          )}
-
-          {threadId && data && (
-            <>
-              <Card>
-                <CardContent>
-                  <div className="flex items-start gap-2">
-                    <UserImage
-                      image={data.parent.user.image}
-                      className="size-8 rounded-full object-cover object-center"
-                    />
-                    <div className="flex flex-col gap-2">
-                      <div className="flex gap-2 items-center">
-                        <p className="text-sm font-medium max-w-[12ch] truncate">
-                          {data.parent.user.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatRelativeTime(data.parent.createdAt)}
-                        </p>
-                      </div>
-                      <RenderJSONtoHTML
-                        content={JSON.parse(data.parent.content)}
-                        className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
-                      />
-
-                      {data.parent.imageUrl && (
-                        <div>
-                          <Image
-                            src={data.parent.imageUrl}
-                            alt="uploaded image"
-                            width={512}
-                            height={512}
-                            className="object-cover rounded max-h-75 w-auto"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Separator />
-
-              <div className="text-sm text-muted-foreground">
-                {data.threads.length}{" "}
-                {data.threads.length === 1 ? "reply" : "replies"}
-              </div>
-
-              {data.threads.map((thread) => (
-                <Card
-                  key={thread.id}
-                  className={cn(
-                    editingThreadId === thread.id &&
-                      "ring-1 ring-primary bg-muted/40"
-                  )}
-                >
-                  <CardContent className="relative">
-                    <CardAction className="absolute -top-2 right-2">
-                      <ThreadActionsDropdown
-                        canEdit={workspace?.user.id === thread.user.id}
-                        isDeleting={deletingThreadId === thread.id}
-                        onEdit={() => setEditingThreadId(thread.id)}
-                        onDelete={async () => {
-                          setDeletingThreadId(thread.id);
-                          await deleteThreadMutation.mutateAsync({
-                            messageId: thread.id,
-                          });
-                        }}
-                      />
-                    </CardAction>
+            {threadId && data && (
+              <>
+                <Card>
+                  <CardContent>
                     <div className="flex items-start gap-2">
                       <UserImage
-                        image={thread.user.image}
-                        name={thread.user.name}
-                        className="size-8 rounded-full object-cover object-center"
+                        image={data.parent.user.image}
+                        // className="size-8 rounded-full object-cover object-center"
+                        isOnline={
+                          !!data.parent.user.id &&
+                          onlineUserIds.has(data.parent.user.id)
+                        }
+                        showOnline={true}
                       />
                       <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">
                           <p className="text-sm font-medium max-w-[12ch] truncate">
-                            {thread.user.name}
+                            {data.parent.user.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {formatRelativeTime(thread.createdAt)}
+                            {formatRelativeTime(data.parent.createdAt)}
                           </p>
                         </div>
                         <RenderJSONtoHTML
-                          content={JSON.parse(thread.content)}
+                          content={JSON.parse(data.parent.content)}
                           className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
                         />
 
-                        {thread.imageUrl && (
+                        {data.parent.imageUrl && (
                           <div>
                             <Image
-                              src={thread.imageUrl}
+                              src={data.parent.imageUrl}
                               alt="uploaded image"
                               width={512}
                               height={512}
@@ -295,26 +263,96 @@ export function RightSidebar({
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </>
-          )}
-        </div>
-      </SidebarContent>
 
-      <SidebarFooter className="border-t px-2 shrink-0">
-        {threadId ? (
-          <Suspense fallback={null}>
-            <ThreadsForm
-              key={threadId}
-              threadId={threadId}
-              editingThread={selectedEditingThread}
-              onCancelEdit={() => setEditingThreadId(null)}
-            />
-          </Suspense>
-        ) : (
-          <EmptyState />
-        )}
-      </SidebarFooter>
-    </Sidebar>
+                <Separator />
+
+                <div className="text-sm text-muted-foreground">
+                  {data.threads.length}{" "}
+                  {data.threads.length === 1 ? "reply" : "replies"}
+                </div>
+
+                {data.threads.map((thread) => (
+                  <Card
+                    key={thread.id}
+                    className={cn(
+                      editingThreadId === thread.id &&
+                        "ring-1 ring-primary bg-muted/40"
+                    )}
+                  >
+                    <CardContent className="relative">
+                      <CardAction className="absolute -top-2 right-2">
+                        <ThreadActionsDropdown
+                          canEdit={workspace?.user.id === thread.user.id}
+                          isDeleting={deletingThreadId === thread.id}
+                          onEdit={() => setEditingThreadId(thread.id)}
+                          onDelete={async () => {
+                            setDeletingThreadId(thread.id);
+                            await deleteThreadMutation.mutateAsync({
+                              messageId: thread.id,
+                            });
+                          }}
+                        />
+                      </CardAction>
+                      <div className="flex items-start gap-2">
+                        <UserImage
+                          image={thread.user.image}
+                          name={thread.user.name}
+                          className="size-8 rounded-full object-cover object-center"
+                          isOnline={
+                            !!thread.user.id &&
+                            onlineUserIds.has(thread.user.id)
+                          }
+                          showOnline={true}
+                        />
+                        <div className="flex flex-col gap-2">
+                          <div className="flex gap-2 items-center">
+                            <p className="text-sm font-medium max-w-[12ch] truncate">
+                              {thread.user.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatRelativeTime(thread.createdAt)}
+                            </p>
+                          </div>
+                          <RenderJSONtoHTML
+                            content={JSON.parse(thread.content)}
+                            className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
+                          />
+
+                          {thread.imageUrl && (
+                            <div>
+                              <Image
+                                src={thread.imageUrl}
+                                alt="uploaded image"
+                                width={512}
+                                height={512}
+                                className="object-cover rounded max-h-75 w-auto"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </>
+            )}
+          </div>
+        </SidebarContent>
+        <SidebarFooter className="border-t px-2 shrink-0">
+          {threadId ? (
+            <Suspense fallback={null}>
+              <ThreadsForm
+                key={threadId}
+                threadId={threadId}
+                editingThread={selectedEditingThread}
+                onCancelEdit={() => setEditingThreadId(null)}
+              />
+            </Suspense>
+          ) : (
+            <EmptyState />
+          )}
+        </SidebarFooter>
+      </Sidebar>
+    </RealtimeThreadPRovider>
   );
 }

@@ -16,6 +16,7 @@ import type { client } from "@/lib/orpc";
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useRealtimeChannel } from "@/components/channel-realtime-provider";
 
 // ---------------------------------------------------------------------------
 // Types inferred directly from the oRPC client so they stay in sync with the
@@ -34,6 +35,8 @@ interface IAppPops {
 
 export function MessageInput({ channelId }: IAppPops) {
   const [editorKey, setEditorKey] = useState(0);
+
+  const { send } = useRealtimeChannel();
 
   const form = useForm<CreateMessageType>({
     resolver: zodResolver(createMessageSchema),
@@ -142,7 +145,6 @@ export function MessageInput({ channelId }: IAppPops) {
 
         setEditorKey((prev) => prev + 1);
         form.reset({ channelId, content: "", imageUrl: undefined });
-        toast.success("Message sent successfully");
         form.setValue("imageUrl", undefined);
 
         // Invalidate using the same raw key the infinite query is stored under
@@ -150,6 +152,24 @@ export function MessageInput({ channelId }: IAppPops) {
         queryclient.invalidateQueries({
           queryKey: ["message.list", channelId],
         });
+
+        send({
+          type: "message:created",
+          payload: {
+            message: {
+              ...createdMessage,
+              user: {
+                id: currentUser.id,
+                name: currentUser.name,
+                image: currentUser.image ?? null,
+                email: currentUser.email,
+              },
+              _count: { replies: 0 },
+            },
+          },
+        });
+
+        toast.success("Message sent successfully");
       },
       onError: (error, _variables, context) => {
         // Roll back to the pre-optimistic snapshot if we have one.

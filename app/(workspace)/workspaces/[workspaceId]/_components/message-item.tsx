@@ -2,7 +2,6 @@
 
 import { cn, formatRelativeTime } from "@/lib/utils";
 import Image from "next/image";
-import Logo from "@/public/team-flow.png";
 import { RenderJSONtoHTML } from "@/components/editor/render-content";
 import { Edit2, MessagesSquare, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,12 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EditMessageForm } from "./edit-message-form";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DeleteMessageDialog } from "./delete-message-dialog";
 import { client, orpc } from "@/lib/orpc";
 import { useSidebarWithSide } from "@/components/ui/sidebar";
 import { useThread } from "@/components/thread-sidebar/thread-context";
-import { InfiniteData, useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePresence } from "@/hooks/use-presence";
+import { useParams } from "next/navigation";
+import { RealtimeUserSchemaType } from "@/realtime/schema";
+import { UserImage } from "@/components/general/user-avatar";
 
 export type messageType = Awaited<
   ReturnType<typeof client.message.list>
@@ -33,9 +36,11 @@ export type InfiniteMessages = InfiniteData<MessagePage>;
 export function MessageItem({
   message,
   currentUserId,
+  onlineUserIds,
 }: {
   message: messageType;
   currentUserId: string;
+  onlineUserIds: Set<string>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -73,12 +78,11 @@ export function MessageItem({
         open && message.id === threadId && "bg-muted/50 ring-1"
       )}
     >
-      <Image
-        src={message.user.image || Logo}
-        alt={message.user.name}
-        width={40}
-        height={40}
-        className="size-8 rounded-full"
+      <UserImage
+        image={message.user.image}
+        name={message.user.name}
+        isOnline={!!message.user.id && onlineUserIds.has(message.user.id)}
+        showOnline={true}
       />
       <div className="flex flex-col gap-2 *:leading-none w-full">
         <div className="flex gap-2 items-center">
