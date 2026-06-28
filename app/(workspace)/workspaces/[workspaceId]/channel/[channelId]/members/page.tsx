@@ -25,6 +25,7 @@ import { AddMemberToChannel } from "@/components/add-member-to-channel";
 import { usePresence } from "@/hooks/use-presence";
 import { RealtimeUserSchemaType } from "@/realtime/schema";
 import { useMemo } from "react";
+import { UpdateMemberRoleDialog } from "./_components/update-member-role-dialog";
 
 export default function ChannelMembersPage() {
   const { channelId, workspaceId } = useParams<{
@@ -107,6 +108,17 @@ export default function ChannelMembersPage() {
                         Remove
                       </DropdownMenuItem>
                     </RemoveMemberDialog>
+                    <UpdateMemberRoleDialog
+                      userId={member.id}
+                      currentRole={member.role}
+                      channelId={channelId}
+                      organizationId={workspaceId}
+                      memberName={member.name}
+                    >
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        Update Role
+                      </DropdownMenuItem>
+                    </UpdateMemberRoleDialog>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </CardAction>

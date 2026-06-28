@@ -56,8 +56,7 @@ export function Menubar({ editor }: iAppProps) {
 
   return (
     <div className="flex w-full flex-wrap items-center gap-1 sm:p-2 bg-card border-input border-b rounded-t-md p-2">
-      {/* Formatting buttons — desktop (sm+) only; on mobile the BubbleMenu covers these */}
-      <div className="hidden sm:flex gap-1 items-center flex-wrap">
+      <div className="flex gap-1 items-center flex-wrap">
         <Tooltip>
           <TooltipTrigger asChild>
             <Toggle
@@ -145,11 +144,10 @@ export function Menubar({ editor }: iAppProps) {
 
       <Separator
         orientation="vertical"
-        className="data-vertical:h-4 data-vertical:self-auto hidden sm:block"
+        className="data-vertical:h-4 data-vertical:self-auto"
       />
 
-      {/* List buttons — desktop only, same reasoning as the formatting group above */}
-      <div className="hidden sm:flex gap-1 items-center flex-wrap">
+      <div className="flex gap-1 items-center flex-wrap">
         <Tooltip>
           <TooltipTrigger asChild>
             <Toggle
@@ -185,13 +183,11 @@ export function Menubar({ editor }: iAppProps) {
         </Tooltip>
       </div>
 
-      {/* Separator only makes sense when the formatting buttons are visible */}
       <Separator
         orientation="vertical"
-        className="data-vertical:h-4 data-vertical:self-auto hidden sm:block"
+        className="data-vertical:h-4 data-vertical:self-auto"
       />
 
-      {/* Undo/Redo — always visible on all screen sizes so mobile users retain history controls */}
       <div className="flex gap-1 items-center">
         <Tooltip>
           <TooltipTrigger asChild>

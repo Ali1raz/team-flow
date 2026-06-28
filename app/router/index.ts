@@ -22,6 +22,7 @@ import {
   createWorkspace,
   listWorkspaceMembers,
   listWorkspaces,
+  updateWorkspaceMemberRole,
 } from "./workspace";
 
 export const router = {
@@ -31,6 +32,7 @@ export const router = {
     members: {
       invite: inviteMember,
       list: listWorkspaceMembers,
+      updateRole: updateWorkspaceMemberRole,
     },
   },
   channel: {
