@@ -125,6 +125,27 @@ export const RealtimeChannelProvider = ({
           );
           return;
         }
+
+        if (eventData.type === "message:deleted") {
+          const { messageId } = eventData.payload;
+
+          queryClient.setQueryData<InfiniteMessages>(
+            ["message.list", channelId],
+            (old) => {
+              if (!old) return old;
+              return {
+                ...old,
+                pages: old.pages.map((page) => ({
+                  ...page,
+                  messages: page.messages.filter(
+                    (msg) => msg.id !== messageId
+                  ),
+                })),
+              };
+            }
+          );
+          return;
+        }
       } catch {
         console.log("[RealtimeChannelProvider]: Something went wrong");
       }

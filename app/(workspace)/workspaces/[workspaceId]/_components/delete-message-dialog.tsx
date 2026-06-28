@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { orpc } from "@/lib/orpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRealtimeChannel } from "@/components/channel-realtime-provider";
 import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ export function DeleteMessageDialog({
 }: DeleteMessageDialogProps) {
   const { channelId } = useParams<{ channelId: string }>();
   const queryClient = useQueryClient();
+  const { send } = useRealtimeChannel();
   const [open, setOpen] = useState(false);
 
   // Must stay in sync with the key used in MessageList and EditMessageForm.
@@ -62,7 +64,11 @@ export function DeleteMessageDialog({
         return { prevData };
       },
 
-      onSuccess: () => {
+      onSuccess: (data, variables) => {
+        send({
+          type: "message:deleted",
+          payload: { messageId: variables.messageId },
+        });
         toast.success("Message deleted");
         setOpen(false);
       },

@@ -57,6 +57,10 @@ export const RealtimechannelEventSchema = z.union([
     type: z.literal("message:reply:increment"),
     payload: z.object({ messageId: z.string(), delta: z.number() }),
   }),
+  z.object({
+    type: z.literal("message:deleted"),
+    payload: z.object({ messageId: z.string() }),
+  }),
 ]);
 
 export type RealtimechannelEventSchemaType = z.infer<
@@ -86,6 +90,10 @@ export const RealtimeReplyEventSchema = z.union([
   z.object({
     type: z.literal("reply:updated"),
     payload: z.object({ reply: RealtimeReplySchema }),
+  }),
+  z.object({
+    type: z.literal("reply:deleted"),
+    payload: z.object({ replyId: z.string() }),
   }),
 ]);
 
