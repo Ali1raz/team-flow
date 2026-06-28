@@ -39,7 +39,11 @@ export default async function WorkspaceLayout({
               {children}
             </main>
           </SidebarInset>
-          <RightSidebar collapsible="offcanvas" variant="sidebar" side="right" />
+          <RightSidebar
+            collapsible="offcanvas"
+            variant="sidebar"
+            side="right"
+          />
         </RealtimeProviderWrapper>
       </ThreadProvider>
     </SidebarProvider>

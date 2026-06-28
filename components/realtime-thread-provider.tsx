@@ -96,6 +96,28 @@ export function RealtimeThreadPRovider({
 
           return;
         }
+
+        if (e.type === "reply:deleted") {
+          const { replyId } = e.payload;
+          const listOptions = orpc.message.threads.list.queryOptions({
+            input: { threadId },
+          });
+
+          queryClient.setQueryData<ThreadQuerydata>(
+            listOptions.queryKey,
+            (old) => {
+              if (!old) return old;
+              return {
+                ...old,
+                threads: old.threads.filter(
+                  (thread) => thread.id !== replyId
+                ),
+              };
+            }
+          );
+
+          return;
+        }
       } catch (e) {
         console.error(e);
       }

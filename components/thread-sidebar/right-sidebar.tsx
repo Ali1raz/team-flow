@@ -40,10 +40,17 @@ import { cn } from "@/lib/utils";
 import { usePresence } from "@/hooks/use-presence";
 import { RealtimeUserSchemaType } from "@/realtime/schema";
 import { RealtimeThreadPRovider } from "../realtime-thread-provider";
+import { useRealtimeChannel } from "../channel-realtime-provider";
+import { useRealtimeThread } from "../realtime-thread-provider";
 
 type ThreadsData = Awaited<ReturnType<typeof client.message.threads.list>>;
-type MessagePage = Awaited<ReturnType<typeof client.message.list>>;
-type InfiniteMessageList = InfiniteData<MessagePage>;
+type MessageListPage = {
+  messages: {
+    id: string;
+    _count: { replies: number };
+  }[];
+  nextCursor?: string;
+};
 
 // Empty state shown when no thread is selected or the thread has no replies yet.
 function EmptyState() {
@@ -54,35 +61,38 @@ function EmptyState() {
   );
 }
 
-export function RightSidebar({
-  width = "24rem",
-  ...props
-}: ComponentProps<typeof Sidebar> & { width?: string }) {
-  const { threadId } = useThread();
-  const { setOpen, isMobile, setOpenMobile } = useSidebarWithSide("right");
-  const { channelId, workspaceId } = useParams<{
+function ThreadItem({
+  thread,
+  threadId,
+  editingThreadId,
+  setEditingThreadId,
+  deletingThreadId,
+  setDeletingThreadId,
+  onlineUserIds,
+  workspaceUserId,
+}: {
+  thread: ThreadsData["threads"][number];
+  threadId: string;
+  editingThreadId: string | null;
+  setEditingThreadId: (id: string | null) => void;
+  deletingThreadId: string | null;
+  setDeletingThreadId: (id: string | null) => void;
+  onlineUserIds: Set<string>;
+  workspaceUserId: string | undefined;
+}) {
+  const { channelId } = useParams<{
     channelId: string;
     workspaceId: string;
   }>();
   const queryClient = useQueryClient();
-  const [editingThreadId, setEditingThreadId] = useState<string | null>(null);
-  const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
+  const { send } = useRealtimeChannel();
+  const { send: sendThread } = useRealtimeThread();
 
   const threadsQueryOptions = orpc.message.threads.list.queryOptions({
-    input: { threadId: threadId ?? "" },
+    input: { threadId },
   });
 
   const messageListKey = ["message.list", channelId];
-
-  const { data, isLoading } = useQuery({
-    ...threadsQueryOptions,
-    enabled: !!threadId,
-  });
-
-  const { data: workspace } = useQuery(orpc.workspace.list.queryOptions());
-  const selectedEditingThread = data
-    ? (data.threads.find((thread) => thread.id === editingThreadId) ?? null)
-    : null;
 
   const deleteThreadMutation = useMutation(
     orpc.message.delete.mutationOptions({
@@ -96,9 +106,8 @@ export function RightSidebar({
           threadsQueryOptions.queryKey
         );
         const prevMessageListData =
-          queryClient.getQueryData<InfiniteMessageList>(messageListKey);
+          queryClient.getQueryData<InfiniteData<MessageListPage>>(messageListKey);
 
-        // Remove the reply immediately so the sidebar stays responsive while the server confirms the delete.
         queryClient.setQueryData<ThreadsData>(
           threadsQueryOptions.queryKey,
           (old) => {
@@ -112,7 +121,7 @@ export function RightSidebar({
           }
         );
 
-        queryClient.setQueryData<InfiniteMessageList>(messageListKey, (old) => {
+        queryClient.setQueryData<InfiniteData<MessageListPage>>(messageListKey, (old) => {
           if (!old) return old;
           return {
             ...old,
@@ -135,7 +144,15 @@ export function RightSidebar({
 
         return { prevThreadData, prevMessageListData };
       },
-      onSuccess: () => {
+      onSuccess: (data, variables) => {
+        sendThread({
+          type: "reply:deleted",
+          payload: { replyId: variables.messageId },
+        });
+        send({
+          type: "message:reply:increment",
+          payload: { messageId: threadId, delta: -1 },
+        });
         toast.success("Reply deleted successfully!");
         setEditingThreadId(null);
       },
@@ -162,6 +179,97 @@ export function RightSidebar({
       },
     })
   );
+
+  return (
+    <Card
+      key={thread.id}
+      className={cn(
+        editingThreadId === thread.id && "ring-1 ring-primary bg-muted/40"
+      )}
+    >
+      <CardContent className="relative">
+        <CardAction className="absolute -top-2 right-2">
+          <ThreadActionsDropdown
+            canEdit={workspaceUserId === thread.user.id}
+            isDeleting={deletingThreadId === thread.id}
+            onEdit={() => setEditingThreadId(thread.id)}
+            onDelete={async () => {
+              setDeletingThreadId(thread.id);
+              await deleteThreadMutation.mutateAsync({
+                messageId: thread.id,
+              });
+            }}
+          />
+        </CardAction>
+        <div className="flex items-start gap-2">
+          <UserImage
+            image={thread.user.image}
+            name={thread.user.name}
+            className="size-8 rounded-full object-cover object-center"
+            isOnline={
+              !!thread.user.id &&
+              onlineUserIds.has(thread.user.id)
+            }
+            showOnline={true}
+          />
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center">
+              <p className="text-sm font-medium max-w-[12ch] truncate">
+                {thread.user.name}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatRelativeTime(thread.createdAt)}
+              </p>
+            </div>
+            <RenderJSONtoHTML
+              content={JSON.parse(thread.content)}
+              className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
+            />
+
+            {thread.imageUrl && (
+              <div>
+                <Image
+                  src={thread.imageUrl}
+                  alt="uploaded image"
+                  width={512}
+                  height={512}
+                  className="object-cover rounded max-h-75 w-auto"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function RightSidebar({
+  width = "24rem",
+  ...props
+}: ComponentProps<typeof Sidebar> & { width?: string }) {
+  const { threadId } = useThread();
+  const { setOpen, isMobile, setOpenMobile } = useSidebarWithSide("right");
+  const { channelId, workspaceId } = useParams<{
+    channelId: string;
+    workspaceId: string;
+  }>();
+  const [editingThreadId, setEditingThreadId] = useState<string | null>(null);
+  const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
+
+  const threadsQueryOptions = orpc.message.threads.list.queryOptions({
+    input: { threadId: threadId ?? "" },
+  });
+
+  const { data, isLoading } = useQuery({
+    ...threadsQueryOptions,
+    enabled: !!threadId,
+  });
+
+  const { data: workspace } = useQuery(orpc.workspace.list.queryOptions());
+  const selectedEditingThread = data
+    ? (data.threads.find((thread) => thread.id === editingThreadId) ?? null)
+    : null;
 
   const { data: workspacedata } = useQuery(orpc.workspace.list.queryOptions());
 
@@ -272,67 +380,17 @@ export function RightSidebar({
                 </div>
 
                 {data.threads.map((thread) => (
-                  <Card
+                  <ThreadItem
                     key={thread.id}
-                    className={cn(
-                      editingThreadId === thread.id &&
-                        "ring-1 ring-primary bg-muted/40"
-                    )}
-                  >
-                    <CardContent className="relative">
-                      <CardAction className="absolute -top-2 right-2">
-                        <ThreadActionsDropdown
-                          canEdit={workspace?.user.id === thread.user.id}
-                          isDeleting={deletingThreadId === thread.id}
-                          onEdit={() => setEditingThreadId(thread.id)}
-                          onDelete={async () => {
-                            setDeletingThreadId(thread.id);
-                            await deleteThreadMutation.mutateAsync({
-                              messageId: thread.id,
-                            });
-                          }}
-                        />
-                      </CardAction>
-                      <div className="flex items-start gap-2">
-                        <UserImage
-                          image={thread.user.image}
-                          name={thread.user.name}
-                          className="size-8 rounded-full object-cover object-center"
-                          isOnline={
-                            !!thread.user.id &&
-                            onlineUserIds.has(thread.user.id)
-                          }
-                          showOnline={true}
-                        />
-                        <div className="flex flex-col gap-2">
-                          <div className="flex gap-2 items-center">
-                            <p className="text-sm font-medium max-w-[12ch] truncate">
-                              {thread.user.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatRelativeTime(thread.createdAt)}
-                            </p>
-                          </div>
-                          <RenderJSONtoHTML
-                            content={JSON.parse(thread.content)}
-                            className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
-                          />
-
-                          {thread.imageUrl && (
-                            <div>
-                              <Image
-                                src={thread.imageUrl}
-                                alt="uploaded image"
-                                width={512}
-                                height={512}
-                                className="object-cover rounded max-h-75 w-auto"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    thread={thread}
+                    threadId={threadId!}
+                    editingThreadId={editingThreadId}
+                    setEditingThreadId={setEditingThreadId}
+                    deletingThreadId={deletingThreadId}
+                    setDeletingThreadId={setDeletingThreadId}
+                    onlineUserIds={onlineUserIds}
+                    workspaceUserId={workspace?.user.id}
+                  />
                 ))}
               </>
             )}
