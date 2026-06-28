@@ -16,8 +16,8 @@ export function UserImage({
   const imageUrl = image ?? `https://avatar.vercel.sh/${name ?? "U"}`;
 
   return (
-    <div className={cn("relative", className)}>
-      <Avatar>
+    <div className="relative">
+      <Avatar className={cn(className)}>
         <AvatarImage src={imageUrl} alt="Profile image" />
         <AvatarFallback>
           {name && name.length > 0 ? name[0] : "U"}

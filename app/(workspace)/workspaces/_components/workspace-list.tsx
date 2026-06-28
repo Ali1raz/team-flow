@@ -9,7 +9,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Loader2 } from "lucide-react";
+import { Ban, Loader2, RefreshCcw } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,14 @@ import { Controller, useForm } from "react-hook-form";
 import z from "zod/v3";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const schema = z.object({
   workspaceId: z.string().min(1, "Please select a workspace"),
@@ -37,6 +45,8 @@ export function WorkspaceList() {
 
   const {
     data: { workspaces, currentWorkspace },
+    isFetching,
+    refetch,
   } = useSuspenseQuery(orpc.workspace.list.queryOptions());
 
   const [activeId, setActiveId] = useState<string | null>(
@@ -55,8 +65,6 @@ export function WorkspaceList() {
       workspaceId: activeWorkspace?.id ?? "",
     },
   });
-
-  console.log("===\n=====Current workspace", currentWorkspace?.id);
 
   const router = useRouter();
 
@@ -82,52 +90,102 @@ export function WorkspaceList() {
 
   return (
     <div className="flex w-full mx-auto mt-16 max-w-2xl flex-col gap-6">
-      <form id="workspace-select-form" onSubmit={form.handleSubmit(onSubmit)}>
-        <FieldGroup className="flex flex-col gap-4">
-          <Controller
-            name="workspaceId"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Workspace</FieldLabel>
-                <Select
-                  value={field.value}
-                  onValueChange={(value) => field.onChange(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a workspace" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Select a workspace</SelectLabel>
-                      {workspaces.map((ws) => (
-                        <SelectItem key={ws.id} value={ws.id}>
-                          {ws.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-        </FieldGroup>
-      </form>
+      <Button
+        onClick={() => refetch({})}
+        disabled={isFetching || isPending}
+        className="w-fit"
+      >
+        {isFetching ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <RefreshCcw className="size-4" />
+        )}{" "}
+        {isFetching ? "Refreshing..." : "Refresh"}
+      </Button>
+      {(!workspaces || workspaces?.length === 0) && !isFetching && (
+        <div className="flex items-center justify-center h-full">
+          <Empty className="h-full bg-muted/40 py-24">
+            <EmptyHeader>
+              <EmptyMedia
+                variant="icon"
+                className="bg-muted rounded-full size-28"
+              >
+                <Ban className="sm:size-14 size-8" />
+              </EmptyMedia>
+              <EmptyTitle className="sm:text-4xl sm:mt-6 mt-4 text-2xl">
+                No workspaces found.
+              </EmptyTitle>
+              <EmptyDescription className="sm:w-xl w-sm sm:text-lg text-xs">
+                There are no workspaces. Start by creating a new workpace and
+                inviting friends to start chatting.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      )}
 
-      <Field className="mt-4">
-        <Button disabled={isPending} type="submit" form="workspace-select-form">
-          {isPending ? (
-            <>
-              <Loader2 className="size-4 animate-spin" /> Switching...
-            </>
-          ) : (
-            <>Select this workspace</>
-          )}
-        </Button>
-      </Field>
+      {isFetching ? (
+        <div className="flex w-full flex-col gap-6">
+          <Skeleton className="w-full h-16" />
+          <Skeleton className="w-full h-10" />
+        </div>
+      ) : (
+        <>
+          <form
+            id="workspace-select-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
+            <FieldGroup className="flex flex-col gap-4">
+              <Controller
+                name="workspaceId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Workspace</FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => field.onChange(value)}
+                    >
+                      <SelectTrigger disabled={isPending}>
+                        <SelectValue placeholder="Select a workspace" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Select a workspace</SelectLabel>
+                          {workspaces.map((ws) => (
+                            <SelectItem key={ws.id} value={ws.id}>
+                              {ws.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+          </form>
+
+          <Field className="mt-4">
+            <Button
+              disabled={isPending}
+              type="submit"
+              form="workspace-select-form"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" /> Switching...
+                </>
+              ) : (
+                <>Select this workspace</>
+              )}
+            </Button>
+          </Field>
+        </>
+      )}
     </div>
   );
 }

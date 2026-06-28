@@ -12,15 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EditMessageForm } from "./edit-message-form";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { DeleteMessageDialog } from "./delete-message-dialog";
 import { client, orpc } from "@/lib/orpc";
 import { useSidebarWithSide } from "@/components/ui/sidebar";
 import { useThread } from "@/components/thread-sidebar/thread-context";
-import { InfiniteData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { usePresence } from "@/hooks/use-presence";
-import { useParams } from "next/navigation";
-import { RealtimeUserSchemaType } from "@/realtime/schema";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { UserImage } from "@/components/general/user-avatar";
 
 export type messageType = Awaited<
