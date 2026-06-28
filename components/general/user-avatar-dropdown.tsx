@@ -1,6 +1,12 @@
 "use client";
 
-import { ChevronDownIcon, Home, LogOutIcon, User } from "lucide-react";
+import {
+  ChevronDownIcon,
+  Home,
+  LogOutIcon,
+  User,
+  UserCircle,
+} from "lucide-react";
 
 import { useSignOut } from "@/hooks/use-signout";
 import Link from "next/link";
@@ -55,6 +61,12 @@ export default function UserAvatarDropdown({
             <Link href="/">
               <Home size={16} aria-hidden="true" />
               <span>Home</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/profile">
+              <UserCircle className="h-4 w-4" />
+              <span>Profile</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
