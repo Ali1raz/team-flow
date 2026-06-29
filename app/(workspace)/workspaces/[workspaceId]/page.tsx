@@ -10,6 +10,7 @@ import {
 import { FolderCode } from "lucide-react";
 import { CreateTeamDialog } from "@/components/create-tem-dialog";
 import { ChannelCard } from "./_components/channel-card";
+import { LeaveWorkspaceDialog } from "./_components/leave-workspace-dialog";
 
 export default async function Page(
   props: PageProps<"/workspaces/[workspaceId]">
@@ -43,7 +44,10 @@ export default async function Page(
 
   return (
     <div className="p-4 sm:p-6 sm:max-w-xl w-full">
-      <h1 className="font-bold text-2xl">Your channels</h1>
+      <div className="flex sm:items-center items-start sm:justify-between gap-2">
+        <h1 className="font-bold text-2xl">Your channels</h1>
+        <LeaveWorkspaceDialog workspaceId={workspaceId} />
+      </div>
 
       <div className="mt-4 space-y-2">
         {channels.map((channel) => (
