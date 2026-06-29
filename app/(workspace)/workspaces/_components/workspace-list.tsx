@@ -3,7 +3,14 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { Button } from "@/components/ui/button";
-import { Ban, Check, Loader2, MoreHorizontal, RefreshCcw } from "lucide-react";
+import {
+  ArrowUpRight,
+  Ban,
+  Check,
+  Loader2,
+  MoreHorizontal,
+  RefreshCcw,
+} from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -39,6 +46,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DeleteWorkspaceDialog } from "@/components/delete-workspace-dialog";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export function WorkspaceList() {
   const [isPending, startTransition] = useTransition();
@@ -112,9 +120,10 @@ export function WorkspaceList() {
       )}
 
       {isFetching ? (
-        <div className="flex w-full flex-col gap-6">
-          <Skeleton className="w-full h-16" />
-          <Skeleton className="w-full h-10" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Skeleton className="w-full h-26" />
+          <Skeleton className="w-full h-26" />
+          <Skeleton className="w-full h-26" />
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -149,7 +158,18 @@ export function WorkspaceList() {
                 )}
                 <div className="space-y-1">
                   <CardTitle>
-                    <h1 className="line-clamp-1 truncate">{ws.name}</h1>
+                    <h1 className="line-clamp-1 truncate">
+                      {ws.id === activeWorkspace?.id ? (
+                        <Link
+                          className="font-bold flex items-center gap-1 underline hover:underline-primary"
+                          href={`/workspaces/${ws.id}`}
+                        >
+                          {ws.name} <ArrowUpRight className="size-4" />
+                        </Link>
+                      ) : (
+                        `${ws.name}`
+                      )}
+                    </h1>
                   </CardTitle>
                   <CardDescription>
                     <p>Total Members: {ws.totalMembers}</p>
@@ -183,15 +203,19 @@ export function WorkspaceList() {
                             Switch to this Workspace
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuSeparator />
-                        <DeleteWorkspaceDialog workspaceId={ws.id}>
-                          <DropdownMenuItem
-                            onSelect={(e) => e.preventDefault()}
-                            variant="destructive"
-                          >
-                            Delete Workspace
-                          </DropdownMenuItem>
-                        </DeleteWorkspaceDialog>
+                        {ws.role !== "member" && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DeleteWorkspaceDialog workspaceId={ws.id}>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                                variant="destructive"
+                              >
+                                Delete Workspace
+                              </DropdownMenuItem>
+                            </DeleteWorkspaceDialog>{" "}
+                          </>
+                        )}
                       </DropdownMenuGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
