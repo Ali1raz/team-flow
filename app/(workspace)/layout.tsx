@@ -1,5 +1,15 @@
+import { SITE } from "@/lib/app/site";
 import { orpc } from "@/lib/orpc";
 import { getQueryClient, HydrateClient } from "@/lib/query/hydration";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    template: `%s | ${SITE.name}`,
+    default: SITE.name,
+  },
+  robots: { index: false, follow: false },
+};
 
 export default async function Layout({
   children,

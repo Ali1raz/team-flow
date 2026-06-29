@@ -5,6 +5,13 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Login",
+  description: "Login to your TeamFlow account",
+  robots: { index: false, follow: false },
+};
 
 export default async function LoginPage() {
   const session = await auth.api.getSession({
