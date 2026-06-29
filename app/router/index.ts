@@ -20,6 +20,7 @@ import {
 } from "./message";
 import {
   createWorkspace,
+  leaveWorkspace,
   listWorkspaceMembers,
   listWorkspaces,
   updateWorkspaceMemberRole,
@@ -29,6 +30,7 @@ export const router = {
   workspace: {
     list: listWorkspaces,
     create: createWorkspace,
+    leave: leaveWorkspace,
     members: {
       invite: inviteMember,
       list: listWorkspaceMembers,

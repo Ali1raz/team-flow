@@ -224,3 +224,40 @@ export const updateWorkspaceMemberRole = base
       });
     }
   });
+
+export const leaveWorkspace = base
+  .use(requireAuthMiddleware)
+  .route({
+    method: "POST",
+    path: "/workspace/leave",
+    summary: "Leave a workspace",
+    tags: ["Workspace"],
+  })
+  .input(z.object({ organizationId: z.string() }))
+  .output(z.void())
+  .handler(async ({ context, input, errors }) => {
+    const { user } = context;
+    const { organizationId } = input;
+
+    // better-auth throws if sole owner
+    try {
+      await auth.api.leaveOrganization({
+        body: { organizationId },
+        headers: await headers(),
+      });
+    } catch (error: unknown) {
+      throw errors.BAD_REQUEST({
+        message: errorMessage(error, "Failed to leave workspace"),
+      });
+    }
+
+    // No hook fires on leave, so clean up teamMember records manually
+    await prisma.teamMember.deleteMany({
+      where: {
+        userId: user.id,
+        team: { organizationId },
+      },
+    });
+
+    console.log("Left workspace", organizationId);
+  });
