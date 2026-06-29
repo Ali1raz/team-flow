@@ -21,6 +21,8 @@ export default async function Page(
     organizationId: workspaceId,
   });
 
+  const user = await client.user.get();
+
   if (channels.length === 0)
     return (
       <Empty className="h-full bg-muted/40">
@@ -37,7 +39,7 @@ export default async function Page(
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <CreateTeamDialog />
+          {user.role !== "member" && <CreateTeamDialog />}
         </EmptyContent>
       </Empty>
     );

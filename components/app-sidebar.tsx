@@ -46,6 +46,7 @@ import { UpdateMemberRoleDialog } from "@/components/update-member-role-dialog";
 
 import type { ClientOutputs } from "@/lib/orpc";
 import { MemberRoleBadge } from "./general/member-role-badge";
+import { MembershipRole } from "@/generated/prisma/enums";
 
 type MembersListOutput = ClientOutputs["workspace"]["members"]["list"];
 type MemberType = MembersListOutput["members"][number];
@@ -256,6 +257,7 @@ export function AppSidebar({
                               </span>
                               {member.id !== user?.id && canManageWorkspace && (
                                 <MemberActionsDropdown
+                                  currentUserRole={user.role}
                                   user={member}
                                   organizationId={organizationId}
                                 />
@@ -280,9 +282,11 @@ export function AppSidebar({
 function MemberActionsDropdown({
   user,
   organizationId,
+  currentUserRole,
 }: {
   user: MemberType;
   organizationId: string;
+  currentUserRole: MembershipRole;
 }) {
   return (
     <DropdownMenu>
@@ -292,16 +296,18 @@ function MemberActionsDropdown({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <UpdateMemberRoleDialog
-          userId={user.id}
-          currentRole={user.role}
-          organizationId={organizationId}
-          memberName={user.name}
-        >
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            Update Role
-          </DropdownMenuItem>
-        </UpdateMemberRoleDialog>
+        {currentUserRole !== "member" && (
+          <UpdateMemberRoleDialog
+            userId={user.id}
+            currentRole={user.role}
+            organizationId={organizationId}
+            memberName={user.name}
+          >
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              Update Role
+            </DropdownMenuItem>
+          </UpdateMemberRoleDialog>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
