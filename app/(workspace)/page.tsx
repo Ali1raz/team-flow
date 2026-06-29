@@ -8,7 +8,6 @@ import { SITE } from "@/lib/app/site";
 export const metadata: Metadata = {
   title: SITE.name,
   description: SITE.description,
-  robots: { index: true, follow: true },
 };
 
 export default function Home() {

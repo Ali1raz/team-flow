@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/workspaces/", "/profile", "/accept-invite/"],
+        disallow: ["/api/"],
       },
       {
         userAgent: "*",
