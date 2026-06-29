@@ -1,7 +1,6 @@
 "use client";
 
 import { UserImage } from "@/components/general/user-avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,7 +24,7 @@ import { AddMemberToChannel } from "@/components/add-member-to-channel";
 import { usePresence } from "@/hooks/use-presence";
 import { RealtimeUserSchemaType } from "@/realtime/schema";
 import { useMemo } from "react";
-import { UpdateMemberRoleDialog } from "./_components/update-member-role-dialog";
+import { MemberRoleBadge } from "@/components/general/member-role-badge";
 
 export default function ChannelMembersPage() {
   const { channelId, workspaceId } = useParams<{
@@ -79,10 +78,10 @@ export default function ChannelMembersPage() {
                 isOnline={!!member.id && onlineUserIds.has(member.id)}
                 showOnline={true}
               />
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 w-full">
                 <CardTitle className="flex items-center justify-between">
                   <span>{member.name}</span>
-                  <Badge variant="ghost">{member.role}</Badge>
+                  <MemberRoleBadge role={member.role} />
                 </CardTitle>
                 <CardDescription>{member.email}</CardDescription>
               </div>
@@ -90,7 +89,7 @@ export default function ChannelMembersPage() {
               <CardAction>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="outline" size="icon">
                       <MoreHorizontal />
                     </Button>
                   </DropdownMenuTrigger>
@@ -108,17 +107,6 @@ export default function ChannelMembersPage() {
                         Remove
                       </DropdownMenuItem>
                     </RemoveMemberDialog>
-                    <UpdateMemberRoleDialog
-                      userId={member.id}
-                      currentRole={member.role}
-                      channelId={channelId}
-                      organizationId={workspaceId}
-                      memberName={member.name}
-                    >
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        Update Role
-                      </DropdownMenuItem>
-                    </UpdateMemberRoleDialog>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </CardAction>

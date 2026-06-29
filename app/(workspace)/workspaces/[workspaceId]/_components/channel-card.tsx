@@ -1,5 +1,6 @@
 "use client";
 
+import { AddMemberToChannel } from "@/components/add-member-to-channel";
 import { DeleteChannelDialog } from "@/components/delete-channel-dailog";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +14,15 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { channelType } from "@/components/update-channel-dialog";
+import {
+  channelType,
+  UpdateChannelDialog,
+} from "@/components/update-channel-dialog";
+import { orpc } from "@/lib/orpc";
+import { useQuery } from "@tanstack/react-query";
 import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
@@ -26,6 +33,8 @@ export function ChannelCard({
   channel: channelType;
   workspaceId: string;
 }) {
+  const { data: user } = useQuery(orpc.user.get.queryOptions());
+
   return (
     <Card className="group w-full outline-2 outline-transparent hover:outline-primary outline-offset-4 rounded-xl">
       <CardHeader>
@@ -47,28 +56,51 @@ export function ChannelCard({
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="relative">
-        <div className="absolute bottom-0 right-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <MoreHorizontal className="size-4" />
-                <span className="sr-only">More</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DeleteChannelDialog channel={channel}>
-                <DropdownMenuItem
-                  onSelect={(event) => event.preventDefault()}
-                  variant="destructive"
+      {user && user.role !== "member" && (
+        <CardContent className="relative">
+          <div className="absolute bottom-0 right-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <MoreHorizontal className="size-4" />
+                  <span className="sr-only">More</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <UpdateChannelDialog channel={channel}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    Edit
+                  </DropdownMenuItem>
+                </UpdateChannelDialog>
+                <AddMemberToChannel
+                  organizationId={workspaceId}
+                  channelId={channel.id}
                 >
-                  Delete
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    Add Member
+                  </DropdownMenuItem>
+                </AddMemberToChannel>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`/workspaces/${workspaceId}/channel/${channel.id}/members`}
+                  >
+                    Manage Members
+                  </Link>
                 </DropdownMenuItem>
-              </DeleteChannelDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </CardContent>
+                <DropdownMenuSeparator />
+                <DeleteChannelDialog channel={channel}>
+                  <DropdownMenuItem
+                    onSelect={(event) => event.preventDefault()}
+                    variant="destructive"
+                  >
+                    Delete channel
+                  </DropdownMenuItem>
+                </DeleteChannelDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardContent>
+      )}
     </Card>
   );
 }

@@ -25,3 +25,7 @@ export const client: RouterClient<typeof router> =
   globalThis.$client ?? createORPCClient(link);
 
 export const orpc = createTanstackQueryUtils(client);
+
+import type { InferRouterOutputs } from "@orpc/server";
+
+export type ClientOutputs = InferRouterOutputs<typeof router>;

@@ -24,21 +24,19 @@ import {
 } from "@/components/ui/select";
 import { MembershipRole } from "@/generated/prisma/enums";
 
-const ROLE_OPTIONS = Object.values(MembershipRole).filter((r) => r !== "owner");
+const ROLE_OPTIONS = Object.values(MembershipRole);
 
 export function UpdateMemberRoleDialog({
   userId,
   organizationId,
   memberName,
   currentRole,
-  channelId,
   children,
 }: {
   userId: string;
   organizationId: string;
   memberName: string;
   currentRole: string;
-  channelId: string;
   children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -48,15 +46,13 @@ export function UpdateMemberRoleDialog({
   const updateRoleMutation = useMutation(
     orpc.workspace.members.updateRole.mutationOptions({
       onSuccess: () => {
-        toast.success(`${memberName}'s role updated to ${selectedRole}`);
-        queryClient.invalidateQueries({
-          queryKey: orpc.channel.members.list.queryKey({
-            input: { channelId },
-          }),
-        });
         queryClient.invalidateQueries({
           queryKey: orpc.workspace.members.list.queryKey(),
         });
+        queryClient.invalidateQueries({
+          queryKey: orpc.user.get.queryKey(),
+        });
+        toast.success(`${memberName}'s role updated`);
         setOpen(false);
       },
       onError: (error) => {
@@ -102,7 +98,11 @@ export function UpdateMemberRoleDialog({
         </DialogDescription>
 
         <div className="py-4">
-          <Select value={selectedRole} onValueChange={setSelectedRole}>
+          <Select
+            value={selectedRole}
+            onValueChange={setSelectedRole}
+            disabled={updateRoleMutation.isPending}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>

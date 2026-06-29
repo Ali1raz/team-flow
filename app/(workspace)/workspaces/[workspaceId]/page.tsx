@@ -44,8 +44,13 @@ export default async function Page(
 
   return (
     <div className="p-4 sm:p-6 sm:max-w-xl w-full">
-      <div className="flex sm:items-center items-start sm:justify-between gap-2">
-        <h1 className="font-bold text-2xl">Your channels</h1>
+      <div className="flex gap-2 sm:flex-row sm:justify-between sm:items-baseline items-start flex-col">
+        <div className="space-y-1">
+          <h1 className="font-bold text-2xl">Channels</h1>
+          <p className="text-muted-foreground text-sm">
+            Channels in this workspace
+          </p>
+        </div>
         <LeaveWorkspaceDialog workspaceId={workspaceId} />
       </div>
 
