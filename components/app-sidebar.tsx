@@ -23,15 +23,13 @@ import {
 } from "./ui/collapsible";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
-import { ChevronRight, Hash, MoreHorizontal } from "lucide-react";
+import { ChevronRight, Hash, MoreHorizontal, MoreVertical } from "lucide-react";
 import { UserImage } from "./general/user-avatar";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ScrollArea } from "./ui/scroll-area";
 import { useParams } from "next/navigation";
 import { CreateTeamDialog } from "./create-tem-dialog";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
 import { InviteWorkspaceDialog } from "@/app/(workspace)/workspaces/_components/invite-workspace-dialog";
 import {
   DropdownMenu,
@@ -44,7 +42,13 @@ import { UpdateChannelDialog } from "./update-channel-dialog";
 import { DeleteChannelDialog } from "./delete-channel-dailog";
 import { AddMemberToChannel } from "./add-member-to-channel";
 import { usePresence } from "@/hooks/use-presence";
-import { RealtimeUserSchemaType } from "@/realtime/schema";
+import { UpdateMemberRoleDialog } from "@/components/update-member-role-dialog";
+
+import type { ClientOutputs } from "@/lib/orpc";
+import { MemberRoleBadge } from "./general/member-role-badge";
+
+type MembersListOutput = ClientOutputs["workspace"]["members"]["list"];
+type MemberType = MembersListOutput["members"][number];
 
 export function AppSidebar({
   organizationId,
@@ -59,19 +63,15 @@ export function AppSidebar({
     data: { members },
   } = useSuspenseQuery(orpc.workspace.members.list.queryOptions());
 
-  const { data } = useQuery(orpc.workspace.list.queryOptions());
-
-  const currentUser = data?.user
-    ? ({ id: data.user.id } satisfies RealtimeUserSchemaType)
-    : null;
+  const { data: user } = useQuery(orpc.user.get.queryOptions());
 
   const { onlineusers } = usePresence({
     room: organizationId,
-    user: currentUser,
+    user: user ? { id: user.id } : null,
   });
 
   const onlineUserIds = useMemo(
-    () => new Set(onlineusers.map((user) => user.id)),
+    () => new Set(onlineusers.map((u) => u.id)),
     [onlineusers]
   );
 
@@ -81,28 +81,35 @@ export function AppSidebar({
 
   const { channelId } = useParams<{ channelId: string }>();
 
+  const canManageWorkspace = !!user && user.role !== "member";
+
   return (
     <Sidebar {...props}>
       <SidebarHeader className="space-y-4">
         <WorkspaceSwitcher />
         <SidebarMenu className="flex items-center gap-2 w-full flex-row">
-          <SidebarMenuItem className="flex-1 min-w-0">
-            <SidebarMenuButton asChild>
-              <CreateTeamDialog className="w-full" />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem className="flex sm:hidden">
-            <SidebarMenuButton asChild className="shrink-0">
-              <InviteWorkspaceDialog
-                workspaceId={organizationId}
-                channelId={channelId}
-                channels={channels}
-                workspaceName={currentWorkspace?.name || ""}
-              >
-                <Button size="sm">Invite</Button>
-              </InviteWorkspaceDialog>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {canManageWorkspace && (
+            <SidebarMenuItem className="flex-1 min-w-0">
+              <SidebarMenuButton asChild>
+                <CreateTeamDialog className="w-full" />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
+
+          {canManageWorkspace && (
+            <SidebarMenuItem className="flex sm:hidden">
+              <SidebarMenuButton asChild className="shrink-0">
+                <InviteWorkspaceDialog
+                  workspaceId={organizationId}
+                  channelId={channelId}
+                  channels={channels}
+                  workspaceName={currentWorkspace?.name || ""}
+                >
+                  <Button size="sm">Invite</Button>
+                </InviteWorkspaceDialog>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="flex flex-col overflow-hidden h-full">
@@ -127,83 +134,76 @@ export function AppSidebar({
                       <SidebarMenuSub>
                         {channels &&
                           channels.map((ch) => (
-                            <SidebarMenuSubItem
-                              key={ch.id}
-                              className="flex items-center justify-between gap-1"
-                            >
+                            <SidebarMenuSubItem key={ch.id}>
                               <SidebarMenuSubButton
                                 asChild
-                                className={cn(
-                                  "text-muted-foreground hover:bg-muted flex-1 cursor-pointer",
-                                  channelId === ch.id &&
-                                    "bg-accent text-accent-foreground"
-                                )}
+                                isActive={channelId === ch.id}
+                                className="text-muted-foreground flex-1"
                               >
                                 <Link
                                   href={`/workspaces/${organizationId}/channel/${ch.id}`}
-                                  className={cn(
-                                    "flex items-center justify-between",
-                                    channelId === ch.id && "font-medium"
-                                  )}
                                   title={ch.name}
                                 >
-                                  <p className="flex items-center w-[15ch] gap-2">
-                                    <Hash className="size-4 shrink-0" />
-                                    <span className="truncate">{ch.name}</span>
-                                  </p>
+                                  <Hash className="size-4 shrink-0" />
+                                  <span className="truncate max-w-[12ch]">
+                                    {ch.name}
+                                  </span>
                                 </Link>
                               </SidebarMenuSubButton>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <SidebarMenuAction>
-                                    <MoreHorizontal />
-                                    <span className="sr-only">More</span>
-                                  </SidebarMenuAction>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-20">
-                                  <UpdateChannelDialog channel={ch}>
-                                    <DropdownMenuItem
-                                      onSelect={(event) =>
-                                        event.preventDefault()
-                                      }
-                                    >
-                                      Edit
-                                    </DropdownMenuItem>
-                                  </UpdateChannelDialog>
-                                  <AddMemberToChannel
-                                    organizationId={organizationId}
-                                    channelId={ch.id}
+
+                              {canManageWorkspace && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger
+                                    className="flex items-center justify-center"
+                                    asChild
                                   >
-                                    <DropdownMenuItem
-                                      onSelect={(event) =>
-                                        event.preventDefault()
-                                      }
+                                    <SidebarMenuAction
+                                      className={buttonVariants({
+                                        variant: "ghost",
+                                        size: "sm",
+                                      })}
                                     >
-                                      Add Member
+                                      <MoreVertical />
+                                      <span className="sr-only">More</span>
+                                    </SidebarMenuAction>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent className="w-48">
+                                    <UpdateChannelDialog channel={ch}>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => e.preventDefault()}
+                                      >
+                                        Edit
+                                      </DropdownMenuItem>
+                                    </UpdateChannelDialog>
+                                    <AddMemberToChannel
+                                      organizationId={organizationId}
+                                      channelId={ch.id}
+                                    >
+                                      <DropdownMenuItem
+                                        onSelect={(e) => e.preventDefault()}
+                                      >
+                                        Add Member
+                                      </DropdownMenuItem>
+                                    </AddMemberToChannel>
+                                    <DropdownMenuItem asChild>
+                                      <Link
+                                        href={`/workspaces/${organizationId}/channel/${ch.id}/members`}
+                                      >
+                                        Manage Members
+                                      </Link>
                                     </DropdownMenuItem>
-                                  </AddMemberToChannel>
-                                  <DropdownMenuItem
-                                    onSelect={(event) => event.preventDefault()}
-                                  >
-                                    <Link
-                                      href={`/workspaces/${organizationId}/channel/${ch.id}/members`}
-                                    >
-                                      Manage Members
-                                    </Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DeleteChannelDialog channel={ch}>
-                                    <DropdownMenuItem
-                                      onSelect={(event) =>
-                                        event.preventDefault()
-                                      }
-                                      variant="destructive"
-                                    >
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DeleteChannelDialog>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                                    <DropdownMenuSeparator />
+                                    <DeleteChannelDialog channel={ch}>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => e.preventDefault()}
+                                        variant="destructive"
+                                      >
+                                        Delete channel
+                                      </DropdownMenuItem>
+                                    </DeleteChannelDialog>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
                             </SidebarMenuSubItem>
                           ))}
                       </SidebarMenuSub>
@@ -229,36 +229,38 @@ export function AppSidebar({
                 <CollapsibleContent>
                   <ScrollArea className="h-64">
                     <SidebarMenuSub className="flex gap-2">
-                      {members?.map((user) => (
+                      {members?.map((member) => (
                         <SidebarMenuSubItem
-                          key={user.id}
+                          key={member.id}
                           className="flex items-start gap-3 p-2 rounded-md hover:bg-accent truncate"
                         >
                           <UserImage
-                            name={user.name}
-                            image={user.image}
+                            name={member.name}
+                            image={member.image}
                             className="size-8 object-cover"
-                            isOnline={!!user.id && onlineUserIds.has(user.id)}
+                            isOnline={
+                              !!member.id && onlineUserIds.has(member.id)
+                            }
                             showOnline={true}
                           />
-                          <div className="flex flex-col flex-1 max-w-[15ch] gap-1">
-                            <span className="leading-none">
-                              {user.name}
-                              <Badge
-                                variant={
-                                  user.role === "owner"
-                                    ? "default"
-                                    : user.role === "admin"
-                                      ? "outline"
-                                      : "ghost"
-                                }
-                              >
-                                {user.role}
-                              </Badge>
-                            </span>
-                            <span className="text-sm leading-none truncate text-muted-foreground">
-                              {user.email}
-                            </span>
+                          <div className="flex flex-col flex-1 gap-1">
+                            <div className="flex items-center justify-between">
+                              <span className="leading-none max-w-[10ch]">
+                                {member.name}
+                              </span>
+                              <MemberRoleBadge role={member.role} />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-sm max-w-[10ch] leading-none truncate text-muted-foreground">
+                                {member.email}
+                              </span>
+                              {member.id !== user?.id && canManageWorkspace && (
+                                <MemberActionsDropdown
+                                  user={member}
+                                  organizationId={organizationId}
+                                />
+                              )}
+                            </div>
                           </div>
                         </SidebarMenuSubItem>
                       ))}
@@ -272,5 +274,35 @@ export function AppSidebar({
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+function MemberActionsDropdown({
+  user,
+  organizationId,
+}: {
+  user: MemberType;
+  organizationId: string;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="w-fit ml-auto px-1" variant="outline" size="sm">
+          <MoreVertical />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <UpdateMemberRoleDialog
+          userId={user.id}
+          currentRole={user.role}
+          organizationId={organizationId}
+          memberName={user.name}
+        >
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            Update Role
+          </DropdownMenuItem>
+        </UpdateMemberRoleDialog>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

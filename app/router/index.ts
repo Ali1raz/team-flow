@@ -18,6 +18,7 @@ import {
   listThreads,
   updateMessage,
 } from "./message";
+import { getCurrentUser } from "./user";
 import {
   createWorkspace,
   leaveWorkspace,
@@ -27,6 +28,9 @@ import {
 } from "./workspace";
 
 export const router = {
+  user: {
+    get: getCurrentUser,
+  },
   workspace: {
     list: listWorkspaces,
     create: createWorkspace,

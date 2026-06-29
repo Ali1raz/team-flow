@@ -77,10 +77,7 @@ export function RemoveMemberDialog({
 
         <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button
-              variant="outline"
-              disabled={removeMemberMutation.isPending}
-            >
+            <Button variant="outline" disabled={removeMemberMutation.isPending}>
               Cancel
             </Button>
           </DialogClose>

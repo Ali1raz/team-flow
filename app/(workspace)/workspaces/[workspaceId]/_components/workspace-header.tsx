@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { orpc } from "@/lib/orpc";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { InviteWorkspaceDialog } from "../../_components/invite-workspace-dialog";
 
@@ -16,8 +16,11 @@ export function WokrspaceHeader() {
     workspaceId: string;
   }>();
   const {
-    data: { user, currentWorkspace },
+    data: { currentWorkspace },
   } = useSuspenseQuery(orpc.workspace.list.queryOptions());
+
+  const userData = useQuery(orpc.user.get.queryOptions());
+  const user = userData.data;
 
   const {
     data: { channels },
@@ -44,23 +47,31 @@ export function WokrspaceHeader() {
         <span className="text-lg font-mono">TeamFlow</span>
       )}
       <div className="ml-auto flex items-center gap-4">
-        <div className="hidden sm:flex">
-          <InviteWorkspaceDialog
-            workspaceId={workspaceId}
-            workspaceName={currentWorkspace?.name}
-            channels={channels}
-            channelId={channelId}
-          >
-            <Button>Invite</Button>
-          </InviteWorkspaceDialog>
-        </div>
+        {user && user.role !== "member" && (
+          <div className="hidden sm:flex">
+            <InviteWorkspaceDialog
+              workspaceId={workspaceId}
+              workspaceName={currentWorkspace?.name}
+              channels={channels}
+              channelId={channelId}
+            >
+              <Button>Invite</Button>
+            </InviteWorkspaceDialog>
+          </div>
+        )}
 
         <ThemeToggle />
-        <UserAvatarDropdown
-          email={user.email}
-          image={user.image}
-          name={user.name}
-        />
+        {userData.isLoading ? (
+          <div className="bg-muted-50 rounded-full h-8 w-16"></div>
+        ) : (
+          user && (
+            <UserAvatarDropdown
+              email={user.email}
+              image={user.image}
+              name={user.name}
+            />
+          )
+        )}
       </div>
     </header>
   );

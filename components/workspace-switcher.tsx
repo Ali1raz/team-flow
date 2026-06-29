@@ -57,8 +57,11 @@ export function WorkspaceSwitcher() {
     }
 
     setActiveId(data.id);
+    queryClient.invalidateQueries({
+      queryKey: orpc.user.get.queryKey(),
+    });
     toast.success("Switched workspace successfully, Redirecting...");
-    await queryClient.invalidateQueries(orpc.workspace.list.queryOptions());
+    void queryClient.invalidateQueries(orpc.workspace.list.queryOptions());
     router.push(`/workspaces/${data.id}`);
   };
 
