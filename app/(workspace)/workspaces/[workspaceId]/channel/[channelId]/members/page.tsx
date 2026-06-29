@@ -60,7 +60,7 @@ export default function ChannelMembersPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-medium">Members</h1>
           <p className="text-sm text-muted-foreground">
-            Manage members in this channel
+            Members in this channel
           </p>
         </div>
         <AddMemberToChannel channelId={channelId} organizationId={workspaceId}>

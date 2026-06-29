@@ -3,29 +3,11 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Ban, Loader2, RefreshCcw } from "lucide-react";
+import { Ban, Check, Loader2, MoreHorizontal, RefreshCcw } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Controller, useForm } from "react-hook-form";
-import z from "zod/v3";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import {
   Empty,
   EmptyDescription,
@@ -34,11 +16,29 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const schema = z.object({
-  workspaceId: z.string().min(1, "Please select a workspace"),
-});
-type SchemaType = z.infer<typeof schema>;
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Image from "next/image";
+import { cn, getWorkspaceColor } from "@/lib/utils";
+import { MemberRoleBadge } from "@/components/general/member-role-badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DeleteWorkspaceDialog } from "@/components/delete-workspace-dialog";
+import { Badge } from "@/components/ui/badge";
 
 export function WorkspaceList() {
   const [isPending, startTransition] = useTransition();
@@ -49,29 +49,17 @@ export function WorkspaceList() {
     refetch,
   } = useSuspenseQuery(orpc.workspace.list.queryOptions());
 
-  const [activeId, setActiveId] = useState<string | null>(
-    currentWorkspace?.id ?? null
-  );
-
   const queryClient = useQueryClient();
 
-  // Always derive from state so UI updates immediately
   const activeWorkspace =
-    workspaces.find((w) => w.id === activeId) ?? currentWorkspace;
-
-  const form = useForm<SchemaType>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      workspaceId: activeWorkspace?.id ?? "",
-    },
-  });
+    workspaces.find((w) => w.id === currentWorkspace?.id) ?? currentWorkspace;
 
   const router = useRouter();
 
-  async function onSubmit(values: SchemaType) {
+  async function handleSwitch(workspaceId: string) {
     startTransition(async () => {
       const { data, error } = await authClient.organization.setActive({
-        organizationId: values.workspaceId,
+        organizationId: workspaceId,
       });
 
       if (error) {
@@ -81,7 +69,6 @@ export function WorkspaceList() {
         return;
       }
 
-      setActiveId(data.id);
       toast.success(`Switched to ${data.name} workspace successfully!`);
       await queryClient.invalidateQueries(orpc.workspace.list.queryOptions());
       router.push(`/workspaces/${data.id}`);
@@ -89,7 +76,7 @@ export function WorkspaceList() {
   }
 
   return (
-    <div className="flex w-full mx-auto mt-16 max-w-2xl flex-col gap-6">
+    <div className="flex w-full mx-auto mt-10 max-w-4xl flex-col gap-4">
       <Button
         onClick={() => refetch({})}
         disabled={isFetching || isPending}
@@ -130,61 +117,89 @@ export function WorkspaceList() {
           <Skeleton className="w-full h-10" />
         </div>
       ) : (
-        <>
-          <form
-            id="workspace-select-form"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
-            <FieldGroup className="flex flex-col gap-4">
-              <Controller
-                name="workspaceId"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Workspace</FieldLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) => field.onChange(value)}
-                    >
-                      <SelectTrigger disabled={isPending}>
-                        <SelectValue placeholder="Select a workspace" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Select a workspace</SelectLabel>
-                          {workspaces.map((ws) => (
-                            <SelectItem key={ws.id} value={ws.id}>
-                              {ws.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </FieldGroup>
-          </form>
-
-          <Field className="mt-4">
-            <Button
-              disabled={isPending}
-              type="submit"
-              form="workspace-select-form"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" /> Switching...
-                </>
-              ) : (
-                <>Select this workspace</>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {workspaces.map((ws) => (
+            <Card
+              key={ws.id}
+              className={cn(
+                "w-full",
+                ws.id === activeWorkspace?.id &&
+                  "outline-2 outline-offset-4 outline-primary/40"
               )}
-            </Button>
-          </Field>
-        </>
+            >
+              <CardHeader className="flex gap-2 items-start">
+                {ws.logo ? (
+                  <div className="size-8 relative overflow-hidden rounded-full">
+                    <Image
+                      alt={ws.name}
+                      src={ws.logo}
+                      width={20}
+                      height={20}
+                      unoptimized
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className={cn(
+                      "size-8 rounded-full transition-all duration-100",
+                      getWorkspaceColor(ws.id)
+                    )}
+                  />
+                )}
+                <div className="space-y-1">
+                  <CardTitle>
+                    <h1 className="line-clamp-1 truncate">{ws.name}</h1>
+                  </CardTitle>
+                  <CardDescription>
+                    <p>Total Members: {ws.totalMembers}</p>
+                    <p>Total Channels: {ws.totalChannels}</p>
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <MemberRoleBadge role={ws.role} />
+                  {ws.id === activeWorkspace?.id && (
+                    <Badge variant="secondary">
+                      <Check /> Active
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <CardAction>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon">
+                        <MoreHorizontal />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-52">
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel>Workspace options</DropdownMenuLabel>
+                        {ws.id !== activeWorkspace?.id && (
+                          <DropdownMenuItem onClick={() => handleSwitch(ws.id)}>
+                            Switch to this Workspace
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DeleteWorkspaceDialog workspaceId={ws.id}>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            variant="destructive"
+                          >
+                            Delete Workspace
+                          </DropdownMenuItem>
+                        </DeleteWorkspaceDialog>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardAction>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );

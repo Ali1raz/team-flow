@@ -30,6 +30,9 @@ export const listWorkspaces = base
           name: z.string(),
           slug: z.string(),
           logo: z.string().nullable().optional(),
+          role: z.enum([...Object.values(MembershipRole)]),
+          totalMembers: z.number(),
+          totalChannels: z.number(),
         })
       ),
       user: z.custom<User>(),
@@ -37,10 +40,31 @@ export const listWorkspaces = base
     })
   )
   .handler(async ({ context }) => {
-    const [data, currentWorkspace] = await Promise.all([
+    const [data, currentWorkspace, memberRoles, counts] = await Promise.all([
       auth.api.listOrganizations({ headers: await headers() }),
       auth.api.getFullOrganization({ headers: await headers() }),
+      prisma.member.findMany({
+        where: { userId: context.user.id },
+        select: { organizationId: true, role: true },
+      }),
+      prisma.organization.findMany({
+        where: {
+          members: { some: { userId: context.user.id } },
+        },
+        select: {
+          id: true,
+          _count: {
+            select: {
+              members: true,
+              teams: true,
+            },
+          },
+        },
+      }),
     ]);
+
+    const countMap = new Map(counts.map((o) => [o.id, o._count]));
+    const roleMap = new Map(memberRoles.map((m) => [m.organizationId, m.role]));
 
     return {
       workspaces: data.map((org) => ({
@@ -48,6 +72,9 @@ export const listWorkspaces = base
         name: org.name,
         slug: org.slug,
         logo: org.logo,
+        role: roleMap.get(org.id) ?? "member",
+        totalMembers: countMap.get(org.id)?.members ?? 0,
+        totalChannels: countMap.get(org.id)?.teams ?? 0,
       })),
       user: context.user,
       currentWorkspace: currentWorkspace,
