@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { WorkspaceHeader } from "./_components/header";
 import { CreateWorkspaceDialog } from "./_components/create-workspace-dialog";
 import { getQueryClient, HydrateClient } from "@/lib/query/hydration";
 import { WorkspaceList } from "./_components/workspace-list";
 import { orpc } from "@/lib/orpc";
+
+export const metadata: Metadata = {
+  title: "Workspaces",
+};
 
 export default async function Workspaces() {
   const queryClient = getQueryClient();

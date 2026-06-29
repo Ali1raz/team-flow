@@ -12,6 +12,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
+import { SITE } from "@/lib/app/site";
+import { USER } from "@/lib/app/data";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -26,8 +28,42 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Teamflow",
-  description: "AI ready platform for team communication.",
+  metadataBase: new URL(SITE.url),
+  title: {
+    template: `%s | ${SITE.name}`,
+    default: SITE.name,
+  },
+  description: SITE.description,
+  alternates: {
+    canonical: "/",
+  },
+  authors: [
+    {
+      name: USER.name,
+      url: USER.social["github"],
+    },
+  ],
+  creator: "Ali Raza",
+  openGraph: {
+    siteName: SITE.name,
+    url: "/",
+    type: "website",
+    locale: "en_US",
+    images: [
+      { url: "/og-default.png", width: 1200, height: 630, alt: SITE.name },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@ali1razdev",
+    creator: "@ali1razdev",
+    description: SITE.description,
+    images: ["/og-default.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { client } from "@/lib/orpc";
 import {
   Empty,
@@ -11,6 +12,19 @@ import { FolderCode } from "lucide-react";
 import { CreateTeamDialog } from "@/components/create-tem-dialog";
 import { ChannelCard } from "./_components/channel-card";
 import { LeaveWorkspaceDialog } from "./_components/leave-workspace-dialog";
+
+export async function generateMetadata(
+  props: PageProps<"/workspaces/[workspaceId]">
+): Promise<Metadata> {
+  const { params } = props;
+  const { workspaceId } = await params;
+  const { workspaces } = await client.workspace.list();
+  const workspace = workspaces.find((w) => w.id === workspaceId);
+
+  return {
+    title: workspace?.name ?? "Workspace",
+  };
+}
 
 export default async function Page(
   props: PageProps<"/workspaces/[workspaceId]">

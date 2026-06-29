@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import ProfileTabs from "./_components/profile-tabs";
 import { UserDetailsSection } from "./_components/user-details-section";
 import { requireSession } from "./data/require-session";
+
+export const metadata: Metadata = {
+  title: "Profile",
+};
 
 export default async function ProfilePage() {
   const { user } = await requireSession();
