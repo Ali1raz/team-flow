@@ -23,7 +23,7 @@ import {
 } from "./ui/collapsible";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
-import { ChevronRight, Hash, MoreHorizontal, MoreVertical } from "lucide-react";
+import { ChevronRight, Hash, MoreVertical } from "lucide-react";
 import { UserImage } from "./general/user-avatar";
 import Link from "next/link";
 import { ScrollArea } from "./ui/scroll-area";
@@ -105,9 +105,7 @@ export function AppSidebar({
                   channelId={channelId}
                   channels={channels}
                   workspaceName={currentWorkspace?.name || ""}
-                >
-                  <Button size="sm">Invite</Button>
-                </InviteWorkspaceDialog>
+                />
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}

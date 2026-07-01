@@ -20,8 +20,10 @@ import {
 } from "./message";
 import { getCurrentUser } from "./user";
 import {
+  cancelWorkspaceInvitation,
   createWorkspace,
   leaveWorkspace,
+  listWorkspaceInvitations,
   listWorkspaceMembers,
   listWorkspaces,
   updateWorkspace,
@@ -41,6 +43,10 @@ export const router = {
       invite: inviteMember,
       list: listWorkspaceMembers,
       updateRole: updateWorkspaceMemberRole,
+    },
+    invitations: {
+      list: listWorkspaceInvitations,
+      cancel: cancelWorkspaceInvitation,
     },
   },
   channel: {
