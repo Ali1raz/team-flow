@@ -69,11 +69,11 @@ export const auth = betterAuth({
           email,
           organization: { name },
           inviter: {
-            user: { name: inviterName },
+            user: { name: inviterName, email: inviterEmail },
           },
           role,
         } = data;
-        const message = `You have been invited to join ${name} as a ${role} by ${inviterName}. click the link below to accept.`;
+        const message = `You have been invited to join ${name} as a ${role} by ${inviterName} <${inviterEmail}>. click the link below to accept.`;
 
         await SendEmail({
           to: email,
