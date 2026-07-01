@@ -46,7 +46,7 @@ export function ImageUploadDialog({
             const url = res[0].ufsUrl;
             onUploadComplete?.(url);
             toast.success("File uploaded successfully!");
-            // setOpen(false);
+            setOpen(false);
           }}
           onUploadError={(error) => {
             toast.error("Error uploading file!", {
