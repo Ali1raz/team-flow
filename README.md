@@ -1,21 +1,17 @@
 # TeamFlow
 
-> An open-source, AI-powered team messaging platform. Self-hostable alternative to Slack — built for developers who want full control over their data.
+> An open-source, AI-powered real-time team messaging platform.
 
-<!--
-  💡 TIP: Add a screenshot here once you have one.
-  ![TeamFlow screenshot](./public/screenshot.png)
--->
 
 ## Features
 
-- **Workspaces (Orgs)** — Create isolated organizations for different teams or projects
-- **Channels** — Organize conversations into topic-based channels within each workspace
+- **Workspaces (Orgs)** — Create worspaces.
+- **Channels** — Organize conversations into topic-based channels within each workspace.
 - **Threaded Messages** — Reply to any message in a thread to keep conversations focused
 - **Image Uploads** — Share images directly in channels via UploadThing
-- **AI Message Rewrite** — Select any draft message and let AI rewrite it: adjust tone, fix grammar, or improve clarity
+- **AI Message Rewrite** — Let AI rewrite your message: adjust tone, fix grammar, or improve clarity
 - **AI Thread Summarization** — Summarize long threads to catch up instantly without reading every reply
-- **Email + OAuth Auth** — Sign in with email/password or GitHub via better-auth
+- **Email + OAuth Auth** — Sign in with GitHub
 - **Email Verification** — Nodemailer-powered email verification flow
 - **Rate Limiting** — Arcjet-powered rate limiting and bot protection on all API routes
 - **Dark / Light Mode** — Full theme support via next-themes
@@ -153,22 +149,10 @@ Open [http://localhost:8787](http://localhost:8787) for wrangler dev server
 
 TeamFlow integrates OpenAI-compatible models via OpenRouter and the Vercel AI SDK:
 
-- **Message Rewrite** — Highlight any message draft → click AI rewrite → choose tone (professional, concise, friendly). Each rewrite is a streaming API call.
+- **Message Rewrite** — Rewrite message → click AI rewrite → Each rewrite is a streaming API call.
 - **Thread Summarization** — Click "Summarize thread" on any message thread → receive a streamed summary of the conversation.
 
 You can configure which model is used by setting your `OPENROUTER_API_KEY` and choosing a model in `lib/ai.ts`.
-
-## Self-Hosting
-
-TeamFlow is designed to be self-hosted. You need:
-
-1. A PostgreSQL database (Supabase, Neon, Railway, or your own)
-2. An [Arcjet](https://arcjet.com) account (free tier works)
-3. An [UploadThing](https://uploadthing.com) account for file uploads
-4. An [OpenRouter](https://openrouter.ai) API key for AI features
-5. A Gmail account or SMTP server for email
-
-Deploy to Vercel, Railway, Fly.io, or any Node.js host.
 
 ## Contributing
 
