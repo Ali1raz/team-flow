@@ -12,9 +12,11 @@ import { requireworkspaceMiddleware } from "../middlewares/workspace";
 import { MembershipRole } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { requireMemberMiddleware } from "../middlewares/member";
+import { writesecurityMiddleware } from "../middlewares/arcjet/write";
 
 export const listWorkspaces = base
   .use(requireAuthMiddleware)
+  .use(standardsecurityMiddleware)
   .route({
     method: "GET",
     path: "/workspace",
@@ -197,6 +199,7 @@ export const updateWorkspace = base
 export const listWorkspaceMembers = base
   .use(requireAuthMiddleware)
   .use(requireworkspaceMiddleware)
+  .use(standardsecurityMiddleware)
   .route({
     method: "GET",
     path: "/workspace/:workspaceId/members",
@@ -261,7 +264,7 @@ export const updateWorkspaceMemberRole = base
   .use(requireworkspaceMiddleware)
   .use(requireMemberMiddleware)
   .use(standardsecurityMiddleware)
-  .use(heavyWritesecurityMiddleware)
+  .use(writesecurityMiddleware)
   .route({
     method: "POST",
     path: "/workspace/members/update-role",
@@ -316,6 +319,7 @@ export const updateWorkspaceMemberRole = base
 export const listWorkspaceInvitations = base
   .use(requireAuthMiddleware)
   .use(requireworkspaceMiddleware)
+  .use(standardsecurityMiddleware)
   .route({
     method: "GET",
     path: "/workspace/:workspaceId/invitations",
@@ -433,7 +437,7 @@ export const cancelWorkspaceInvitation = base
   .use(requireAuthMiddleware)
   .use(requireworkspaceMiddleware)
   .use(standardsecurityMiddleware)
-  .use(heavyWritesecurityMiddleware)
+  .use(writesecurityMiddleware)
   .route({
     method: "POST",
     path: "/workspace/invitations/cancel",
@@ -464,6 +468,67 @@ export const cancelWorkspaceInvitation = base
     } catch (error: unknown) {
       throw errors.INTERNAL_SERVER_ERROR({
         message: errorMessage(error, "Failed to cancel invitation"),
+      });
+    }
+  });
+
+export const removeWorkspaceMember = base
+  .use(requireAuthMiddleware)
+  .use(requireworkspaceMiddleware)
+  .use(requireMemberMiddleware)
+  .use(standardsecurityMiddleware)
+  .use(writesecurityMiddleware)
+  .route({
+    method: "POST",
+    path: "/workspace/members/remove",
+    summary: "Remove a member from the workspace",
+    tags: ["workspace"],
+  })
+  .input(
+    z.object({
+      userId: z.string(),
+      organizationId: z.string().optional(),
+    })
+  )
+  .output(z.void())
+  .handler(async ({ context, input, errors }) => {
+    if (!["owner", "admin"].includes(context.member.role)) {
+      throw errors.FORBIDDEN({
+        message: "Only admins and owners can remove members",
+      });
+    }
+
+    const orgId = input.organizationId ?? context.workspace.id;
+
+    const member = await prisma.member.findFirst({
+      where: {
+        userId: input.userId,
+        organizationId: orgId,
+      },
+      select: { id: true, role: true },
+    });
+
+    if (!member) {
+      throw errors.NOT_FOUND({ message: "Member not found in this workspace" });
+    }
+
+    if (member.role === "owner") {
+      throw errors.BAD_REQUEST({
+        message: "Cannot remove the owner of the workspace",
+      });
+    }
+
+    try {
+      await auth.api.removeMember({
+        body: {
+          memberIdOrEmail: member.id,
+          organizationId: orgId,
+        },
+        headers: await headers(),
+      });
+    } catch (error: unknown) {
+      throw errors.BAD_REQUEST({
+        message: errorMessage(error, "Failed to remove member"),
       });
     }
   });

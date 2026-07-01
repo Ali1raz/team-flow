@@ -43,10 +43,11 @@ import { DeleteChannelDialog } from "./delete-channel-dailog";
 import { AddMemberToChannel } from "./add-member-to-channel";
 import { usePresence } from "@/hooks/use-presence";
 import { UpdateMemberRoleDialog } from "@/components/update-member-role-dialog";
+import { RemoveMemberDialog } from "@/components/remove-member-dialog";
 
 import type { ClientOutputs } from "@/lib/orpc";
 import { MemberRoleBadge } from "./general/member-role-badge";
-import { MembershipRole } from "@/generated/prisma/enums";
+import { cn } from "@/lib/utils";
 
 type MembersListOutput = ClientOutputs["workspace"]["members"]["list"];
 type MemberType = MembersListOutput["members"][number];
@@ -133,7 +134,10 @@ export function AppSidebar({
                       <SidebarMenuSub>
                         {channels &&
                           channels.map((ch) => (
-                            <SidebarMenuSubItem key={ch.id}>
+                            <SidebarMenuSubItem
+                              key={ch.id}
+                              className="flex items-center justify-center flex-row"
+                            >
                               <SidebarMenuSubButton
                                 asChild
                                 isActive={channelId === ch.id}
@@ -152,19 +156,15 @@ export function AppSidebar({
 
                               {canManageWorkspace && (
                                 <DropdownMenu>
-                                  <DropdownMenuTrigger
-                                    className="flex items-center justify-center"
-                                    asChild
-                                  >
-                                    <SidebarMenuAction
-                                      className={buttonVariants({
-                                        variant: "ghost",
-                                        size: "sm",
-                                      })}
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="p-1"
                                     >
                                       <MoreVertical />
                                       <span className="sr-only">More</span>
-                                    </SidebarMenuAction>
+                                    </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent className="w-48">
                                     <UpdateChannelDialog channel={ch}>
@@ -255,9 +255,9 @@ export function AppSidebar({
                               </span>
                               {member.id !== user?.id && canManageWorkspace && (
                                 <MemberActionsDropdown
-                                  currentUserRole={user.role}
                                   user={member}
                                   organizationId={organizationId}
+                                  className="ml-auto px-1"
                                 />
                               )}
                             </div>
@@ -280,32 +280,44 @@ export function AppSidebar({
 function MemberActionsDropdown({
   user,
   organizationId,
-  currentUserRole,
+  className,
 }: {
   user: MemberType;
   organizationId: string;
-  currentUserRole: MembershipRole;
+  className?: React.ComponentProps<typeof Button>["className"];
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="w-fit ml-auto px-1" variant="outline" size="sm">
+        <Button className={cn(className)} variant="outline" size="sm">
           <MoreVertical />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        {currentUserRole !== "member" && (
-          <UpdateMemberRoleDialog
-            userId={user.id}
-            currentRole={user.role}
-            organizationId={organizationId}
-            memberName={user.name}
+        <UpdateMemberRoleDialog
+          userId={user.id}
+          currentRole={user.role}
+          organizationId={organizationId}
+          memberName={user.name}
+        >
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            Update Role
+          </DropdownMenuItem>
+        </UpdateMemberRoleDialog>
+        <DropdownMenuSeparator />
+        <RemoveMemberDialog
+          memberId={user.id}
+          organizationId={organizationId}
+          memberName={user.name}
+          memberEmail={user.email}
+        >
+          <DropdownMenuItem
+            onSelect={(e) => e.preventDefault()}
+            variant="destructive"
           >
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              Update Role
-            </DropdownMenuItem>
-          </UpdateMemberRoleDialog>
-        )}
+            Remove
+          </DropdownMenuItem>
+        </RemoveMemberDialog>
       </DropdownMenuContent>
     </DropdownMenu>
   );

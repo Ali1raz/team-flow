@@ -26,6 +26,7 @@ import {
   listWorkspaceInvitations,
   listWorkspaceMembers,
   listWorkspaces,
+  removeWorkspaceMember,
   updateWorkspace,
   updateWorkspaceMemberRole,
 } from "./workspace";
@@ -43,6 +44,7 @@ export const router = {
       invite: inviteMember,
       list: listWorkspaceMembers,
       updateRole: updateWorkspaceMemberRole,
+      remove: removeWorkspaceMember,
     },
     invitations: {
       list: listWorkspaceInvitations,
