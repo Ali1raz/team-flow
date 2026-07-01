@@ -2,7 +2,6 @@
 
 import { ThemeToggle } from "@/components/general/theme-toggle";
 import UserAvatarDropdown from "@/components/general/user-avatar-dropdown";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { orpc } from "@/lib/orpc";
@@ -12,7 +11,7 @@ import { InviteWorkspaceDialog } from "../../_components/invite-workspace-dialog
 
 export function WokrspaceHeader() {
   const { channelId, workspaceId } = useParams<{
-    channelId?: string;
+    channelId: string;
     workspaceId: string;
   }>();
   const {
@@ -54,9 +53,7 @@ export function WokrspaceHeader() {
               workspaceName={currentWorkspace?.name}
               channels={channels}
               channelId={channelId}
-            >
-              <Button>Invite</Button>
-            </InviteWorkspaceDialog>
+            />
           </div>
         )}
 

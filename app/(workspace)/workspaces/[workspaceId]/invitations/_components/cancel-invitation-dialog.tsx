@@ -1,0 +1,110 @@
+"use client";
+
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Loader2, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { orpc } from "@/lib/orpc";
+
+export function CancelInvitationDialog({
+  className,
+  invitationId,
+  workspaceId,
+  invitationEmail,
+  children,
+}: {
+  className?: React.ComponentProps<typeof Button>["className"];
+  invitationId: string;
+  workspaceId: string;
+  invitationEmail: string;
+  children?: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  const cancelInvitationMutation = useMutation(
+    orpc.workspace.invitations.cancel.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: orpc.workspace.invitations.list.queryKey({
+            input: { workspaceId },
+          }),
+        });
+
+        toast.success(`Invitation canceled successfully!`);
+
+        setOpen(false);
+      },
+      onError: (error) => {
+        toast.error("Failed to cancel invitation", {
+          description: error.message,
+        });
+      },
+    })
+  );
+
+  function onSubmit() {
+    cancelInvitationMutation.mutate({
+      invitationId,
+      workspaceId,
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children || (
+          <Button className={cn(className)} variant="destructive" size="sm">
+            <XCircle className="size-4" /> Cancel Invitation
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-100">
+        <DialogHeader className="text-xs text-muted-foreground">
+          <DialogTitle>Cancel Invitation</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to cancel the invitation for{" "}
+            <span className="font-medium text-foreground">
+              {invitationEmail}
+            </span>
+            ?
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter className="mt-4 gap-2">
+          <DialogClose asChild disabled={cancelInvitationMutation.isPending}>
+            <Button variant="outline">No, keep it</Button>
+          </DialogClose>
+          <Button
+            disabled={cancelInvitationMutation.isPending}
+            type="submit"
+            variant="destructive"
+            onClick={onSubmit}
+          >
+            {cancelInvitationMutation.isPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" /> Cancelling
+                invitation...
+              </>
+            ) : (
+              <>Yes, cancel invitation</>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

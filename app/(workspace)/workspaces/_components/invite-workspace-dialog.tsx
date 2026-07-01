@@ -9,7 +9,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InfoIcon, Loader2 } from "lucide-react";
+import { ChevronDownIcon, InfoIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,6 +40,15 @@ import {
   HoverCardContent,
   HoverCard,
 } from "@/components/ui/hover-card";
+import { ButtonGroup } from "@/components/ui/button-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 export function InviteWorkspaceDialog({
   children,
@@ -49,10 +58,10 @@ export function InviteWorkspaceDialog({
   channelId,
 }: {
   children?: ReactNode;
-  workspaceId: string | undefined;
+  workspaceId: string;
   workspaceName: string | undefined;
   channels: Awaited<ReturnType<typeof client.channel.list>>["channels"];
-  channelId: string | undefined;
+  channelId?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -83,8 +92,6 @@ export function InviteWorkspaceDialog({
     })
   );
 
-  if (!workspaceId || !channels) return null;
-
   function onSubmit(values: InviteMemberSchemaType) {
     createInviteMutation.mutate(values);
   }
@@ -92,13 +99,22 @@ export function InviteWorkspaceDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {children ?? <Button>Invite a member</Button>}
+        {children ?? (
+          <InviteButtonGroup
+            workspaceId={workspaceId}
+            onInviteClick={() => setOpen(true)}
+          />
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Invite a member</DialogTitle>
           <DialogDescription>
-            Invite a member to your workspace.
+            Invite a member to{" "}
+            <span className="text-primary font-bold">
+              {workspaceName ?? "this"}
+            </span>{" "}
+            workspace.
           </DialogDescription>
         </DialogHeader>
         <form id="invite-form" onSubmit={form.handleSubmit(onSubmit)}>
@@ -286,5 +302,35 @@ export function InviteWorkspaceDialog({
         </Field>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface InviteButtonGroupProps {
+  onInviteClick: () => void;
+  workspaceId: string;
+}
+
+function InviteButtonGroup({
+  onInviteClick,
+  workspaceId,
+}: InviteButtonGroupProps) {
+  return (
+    <ButtonGroup>
+      <Button onClick={onInviteClick}>Invite</Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>
+            <ChevronDownIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuGroup>
+            <Link href={`/workspaces/${workspaceId}/invitations`}>
+              <DropdownMenuItem>See All invitations</DropdownMenuItem>
+            </Link>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </ButtonGroup>
   );
 }
