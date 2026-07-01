@@ -55,10 +55,10 @@ export default function ChannelMembersPage() {
   );
 
   return (
-    <div className="p-4 sm:px-6 sm:max-w-xl w-full space-x-2">
+    <div className="p-4 sm:px-6 sm:max-w-4xl w-full space-x-2">
       <div className="flex sm:items-baseline gap-2 sm:justify-between flex-col sm:flex-row">
         <div className="space-y-1">
-          <h1 className="text-2xl font-medium">Members</h1>
+          <h1 className="text-2xl font-bold">Members</h1>
           <p className="text-sm text-muted-foreground">
             Members in this channel
           </p>

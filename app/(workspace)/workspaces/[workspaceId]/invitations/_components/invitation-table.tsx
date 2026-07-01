@@ -25,7 +25,6 @@ import { InvitationTableActionsDropdown } from "./invitation-table-actions-dropd
 import { UserImage } from "@/components/general/user-avatar";
 import { MemberRoleBadge } from "@/components/general/member-role-badge";
 import { formatLocalDateTime } from "@/lib/utils";
-import { formatDynamicAPIAccesses } from "next/dist/server/app-render/dynamic-rendering";
 
 const statusVariant: Record<
   string,
