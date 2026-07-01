@@ -1,9 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { AcceptButton } from "./_components/accept-button";
+import { Button } from "@/components/ui/button";
+import { useConfetti } from "@/hooks/use-confetti";
+import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/lib/orpc";
-import { useParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useParams, useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -19,15 +23,61 @@ import Link from "next/link";
 import { formatLocalDateTime } from "@/lib/utils";
 import Error from "@/app/error";
 import { Loader2 } from "lucide-react";
-import { RejectButton } from "./_components/reject-button";
 
 export default function AcceptInvitePage() {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, error } = useQuery(
     orpc.invitation.get.queryOptions({ input: { invitationId: id } })
   );
+  const router = useRouter();
+  const { triggerConfetti } = useConfetti();
+  const [isPending, startTransition] = useTransition();
+  const [isRejecting, startRejectTransition] = useTransition();
+  const queryClient = useQueryClient();
 
   const inv = data?.invitation;
+
+  function accept() {
+    startTransition(async () => {
+      const { data, error } = await authClient.organization.acceptInvitation({
+        invitationId: id,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      triggerConfetti();
+      queryClient.invalidateQueries({
+        queryKey: orpc.workspace.invitations.list.queryKey({
+          input: { workspaceId: data.invitation.organizationId },
+        }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: orpc.workspace.members.list.queryKey(),
+      });
+      toast.success(
+        "Invitation accepted, you are now a member in the workspace!"
+      );
+      router.push(`/workspaces/${data.invitation.organizationId}`);
+    });
+  }
+
+  function reject() {
+    startRejectTransition(async () => {
+      const { error } = await authClient.organization.rejectInvitation({
+        invitationId: id,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("Invitation rejected successfully!");
+      router.push("/");
+    });
+  }
 
   if (isLoading)
     return (
@@ -108,8 +158,28 @@ export default function AcceptInvitePage() {
               </div>
             </div>
             <div className="flex items-center justify-between w-full">
-              <AcceptButton id={id} />
-              <RejectButton id={id} />
+              <Button onClick={accept} disabled={isPending || isRejecting}>
+                {isPending ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" /> Accepting...
+                  </>
+                ) : (
+                  "Accept"
+                )}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={reject}
+                disabled={isRejecting || isPending}
+              >
+                {isRejecting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" /> Rejecting...
+                  </>
+                ) : (
+                  "Reject"
+                )}
+              </Button>
             </div>
           </CardContent>
         </Card>
