@@ -43,3 +43,10 @@ export const updateMessageSchema = z.object({
 });
 
 export type UpdateMessageSchemaType = z.infer<typeof updateMessageSchema>;
+
+export const updateWorkspaceSchema = z.object({
+  name: z.string().trim().min(1, "Workspace name is required"),
+  logo: z.string().nullable().optional(),
+});
+
+export type UpdateWorkspaceType = z.infer<typeof updateWorkspaceSchema>;

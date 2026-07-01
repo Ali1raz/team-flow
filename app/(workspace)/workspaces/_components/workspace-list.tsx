@@ -45,6 +45,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DeleteWorkspaceDialog } from "@/components/delete-workspace-dialog";
+import { UpdateWorkspaceDialog } from "./update-workspace-dialog";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
@@ -77,9 +78,11 @@ export function WorkspaceList() {
         return;
       }
 
-      toast.success(`Switched to ${data.name} workspace successfully!`);
-      await queryClient.invalidateQueries(orpc.workspace.list.queryOptions());
+      toast.success(
+        `Switched to ${data.name} workspace successfully, Redirecting please wait...`
+      );
       router.push(`/workspaces/${data.id}`);
+      await queryClient.invalidateQueries(orpc.workspace.list.queryOptions());
     });
   }
 
@@ -205,6 +208,17 @@ export function WorkspaceList() {
                         )}
                         {ws.role !== "member" && (
                           <>
+                            <UpdateWorkspaceDialog
+                              workspaceId={ws.id}
+                              currentName={ws.name}
+                              currentLogo={ws.logo}
+                            >
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                Update Workspace
+                              </DropdownMenuItem>
+                            </UpdateWorkspaceDialog>
                             <DropdownMenuSeparator />
                             <DeleteWorkspaceDialog workspaceId={ws.id}>
                               <DropdownMenuItem

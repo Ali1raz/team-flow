@@ -133,6 +133,67 @@ export const createWorkspace = base
     };
   });
 
+export const updateWorkspace = base
+  .use(requireAuthMiddleware)
+  .use(standardsecurityMiddleware)
+  .use(heavyWritesecurityMiddleware)
+  .route({
+    method: "POST",
+    path: "/workspace/update",
+    summary: "Update a workspace",
+    tags: ["Workspace"],
+  })
+  .input(
+    z.object({
+      workspaceId: z.string(),
+      name: z.string().trim().min(1, "Workspace name is required"),
+      logo: z.string().nullable().optional(),
+    })
+  )
+  .output(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      slug: z.string(),
+      logo: z.string().nullable().optional(),
+    })
+  )
+  .handler(async ({ input, errors }) => {
+    const slug = createSlug(input.name);
+
+    let data;
+    try {
+      data = await auth.api.updateOrganization({
+        body: {
+          data: {
+            name: input.name,
+            slug,
+            logo: input.logo ?? undefined,
+          },
+          organizationId: input.workspaceId,
+        },
+        headers: await headers(),
+      });
+    } catch (error: unknown) {
+      throw errors.BAD_REQUEST({
+        message: errorMessage(error, "Failed to update workspace"),
+      });
+    }
+
+    if (!data) {
+      throw errors.NOT_FOUND({
+        message: "Workspace not found",
+      });
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      slug: data.slug,
+      logo: data.logo,
+    };
+  });
+
 export const listWorkspaceMembers = base
   .use(requireAuthMiddleware)
   .use(requireworkspaceMiddleware)
