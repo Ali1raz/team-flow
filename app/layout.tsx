@@ -14,6 +14,7 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
 import { SITE } from "@/lib/app/site";
 import { USER } from "@/lib/app/data";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -102,6 +103,7 @@ export default function RootLayout({
           </Providers>
         </ThemeProvider>
         <Toaster closeButton duration={5000} position="top-center" richColors />
+        <Analytics />
       </body>
     </html>
   );
