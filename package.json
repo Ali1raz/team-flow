@@ -46,6 +46,7 @@
     "@tiptap/starter-kit": "^3.23.6",
     "@tiptap/static-renderer": "^3.23.6",
     "@uploadthing/react": "^7.3.3",
+    "@vercel/analytics": "^2.0.1",
     "ai": "^6.0.191",
     "better-auth": "^1.6.11",
     "canvas-confetti": "^1.9.4",
