@@ -3,7 +3,6 @@ name: tanstack-query
 description: Powerful asynchronous state management, server-state utilities, and data fetching for TS/JS, React, Vue, Solid, Svelte & Angular.
 ---
 
-
 ## Overview
 
 TanStack Query (formerly React Query) manages server state - data that lives on the server and needs to be fetched, cached, synchronized, and updated. It provides automatic caching, background refetching, stale-while-revalidate patterns, pagination, infinite scrolling, and optimistic updates out of the box.
@@ -22,8 +21,8 @@ npm install -D @tanstack/react-query-devtools  # Optional
 ## Setup
 
 ```tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,7 +34,7 @@ const queryClient = new QueryClient({
       refetchOnReconnect: true,
     },
   },
-})
+});
 
 function App() {
   return (
@@ -43,7 +42,7 @@ function App() {
       <YourApp />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-  )
+  );
 }
 ```
 
@@ -55,14 +54,17 @@ Query keys uniquely identify cached data. They must be serializable arrays:
 
 ```tsx
 // Simple key
-useQuery({ queryKey: ['todos'], queryFn: fetchTodos })
+useQuery({ queryKey: ["todos"], queryFn: fetchTodos });
 
 // With variables (dependency array pattern)
-useQuery({ queryKey: ['todos', { status, page }], queryFn: fetchTodos })
+useQuery({ queryKey: ["todos", { status, page }], queryFn: fetchTodos });
 
 // Hierarchical keys for invalidation
-useQuery({ queryKey: ['todos', todoId], queryFn: () => fetchTodo(todoId) })
-useQuery({ queryKey: ['todos', todoId, 'comments'], queryFn: () => fetchComments(todoId) })
+useQuery({ queryKey: ["todos", todoId], queryFn: () => fetchTodo(todoId) });
+useQuery({
+  queryKey: ["todos", todoId, "comments"],
+  queryFn: () => fetchComments(todoId),
+});
 
 // Invalidation matches prefixes:
 // queryClient.invalidateQueries({ queryKey: ['todos'] })
@@ -74,23 +76,23 @@ useQuery({ queryKey: ['todos', todoId, 'comments'], queryFn: () => fetchComments
 ```tsx
 // Query function receives a QueryFunctionContext
 useQuery({
-  queryKey: ['todos', todoId],
+  queryKey: ["todos", todoId],
   queryFn: async ({ queryKey, signal, meta }) => {
-    const [_key, id] = queryKey
-    const response = await fetch(`/api/todos/${id}`, { signal })
-    if (!response.ok) throw new Error('Failed to fetch')
-    return response.json()
+    const [_key, id] = queryKey;
+    const response = await fetch(`/api/todos/${id}`, { signal });
+    if (!response.ok) throw new Error("Failed to fetch");
+    return response.json();
   },
-})
+});
 
 // Using the signal for automatic cancellation
 useQuery({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: async ({ signal }) => {
-    const response = await fetch('/api/todos', { signal })
-    return response.json()
+    const response = await fetch("/api/todos", { signal });
+    return response.json();
   },
-})
+});
 ```
 
 ### queryOptions Helper
@@ -98,25 +100,25 @@ useQuery({
 Create reusable, type-safe query configurations:
 
 ```tsx
-import { queryOptions } from '@tanstack/react-query'
+import { queryOptions } from "@tanstack/react-query";
 
 export const todosQueryOptions = queryOptions({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: fetchTodos,
   staleTime: 5000,
-})
+});
 
 export const todoQueryOptions = (todoId: string) =>
   queryOptions({
-    queryKey: ['todos', todoId],
+    queryKey: ["todos", todoId],
     queryFn: () => fetchTodo(todoId),
     enabled: !!todoId,
-  })
+  });
 
 // Usage
-const { data } = useQuery(todosQueryOptions)
-const { data } = useSuspenseQuery(todoQueryOptions(id))
-await queryClient.prefetchQuery(todosQueryOptions)
+const { data } = useQuery(todosQueryOptions);
+const { data } = useSuspenseQuery(todoQueryOptions(id));
+await queryClient.prefetchQuery(todosQueryOptions);
 ```
 
 ## Queries (useQuery)
@@ -124,32 +126,32 @@ await queryClient.prefetchQuery(todosQueryOptions)
 ### Basic Usage
 
 ```tsx
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from "@tanstack/react-query";
 
 function Todos() {
   const {
     data,
     error,
-    isLoading,      // First load, no data yet
-    isFetching,     // Any fetch in progress (including background)
+    isLoading, // First load, no data yet
+    isFetching, // Any fetch in progress (including background)
     isError,
     isSuccess,
-    isPending,      // No data yet (same as isLoading in most cases)
-    status,         // 'pending' | 'error' | 'success'
-    fetchStatus,    // 'fetching' | 'paused' | 'idle'
+    isPending, // No data yet (same as isLoading in most cases)
+    status, // 'pending' | 'error' | 'success'
+    fetchStatus, // 'fetching' | 'paused' | 'idle'
     refetch,
     isStale,
     isPlaceholderData,
     dataUpdatedAt,
     errorUpdatedAt,
   } = useQuery({
-    queryKey: ['todos'],
+    queryKey: ["todos"],
     queryFn: fetchTodos,
-  })
+  });
 
-  if (isLoading) return <Spinner />
-  if (isError) return <Error message={error.message} />
-  return <TodoList todos={data} />
+  if (isLoading) return <Spinner />;
+  if (isError) return <Error message={error.message} />;
+  return <TodoList todos={data} />;
 }
 ```
 
@@ -157,26 +159,26 @@ function Todos() {
 
 ```tsx
 useQuery({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: fetchTodos,
 
   // Freshness
-  staleTime: 5000,            // ms data stays fresh (default: 0)
-  gcTime: 300000,             // ms unused data stays in cache (default: 5 min)
+  staleTime: 5000, // ms data stays fresh (default: 0)
+  gcTime: 300000, // ms unused data stays in cache (default: 5 min)
 
   // Refetching
-  refetchInterval: 10000,     // Poll every 10s
+  refetchInterval: 10000, // Poll every 10s
   refetchIntervalInBackground: false, // Don't poll when tab hidden
-  refetchOnMount: true,       // Refetch on component mount if stale
+  refetchOnMount: true, // Refetch on component mount if stale
   refetchOnWindowFocus: true, // Refetch on window focus if stale
-  refetchOnReconnect: true,   // Refetch on network reconnect
+  refetchOnReconnect: true, // Refetch on network reconnect
 
   // Retry
-  retry: 3,                   // Number of retries (or function)
+  retry: 3, // Number of retries (or function)
   retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 
   // Conditional
-  enabled: !!userId,          // Only run when truthy
+  enabled: !!userId, // Only run when truthy
 
   // Initial/placeholder data
   initialData: () => cachedData,
@@ -185,17 +187,17 @@ useQuery({
   placeholderData: initialTodos,
 
   // Transform
-  select: (data) => data.filter(todo => !todo.done),
+  select: (data) => data.filter((todo) => !todo.done),
 
   // Structural sharing (default: true)
   structuralSharing: true,
 
   // Network mode
-  networkMode: 'online', // 'online' | 'always' | 'offlineFirst'
+  networkMode: "online", // 'online' | 'always' | 'offlineFirst'
 
   // Meta (accessible in query function context)
-  meta: { purpose: 'user-facing' },
-})
+  meta: { purpose: "user-facing" },
+});
 ```
 
 ## Mutations (useMutation)
@@ -203,46 +205,46 @@ useQuery({
 ### Basic Usage
 
 ```tsx
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 function AddTodo() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (newTodo: { title: string }) => {
-      return fetch('/api/todos', {
-        method: 'POST',
+      return fetch("/api/todos", {
+        method: "POST",
         body: JSON.stringify(newTodo),
-      }).then(res => res.json())
+      }).then((res) => res.json());
     },
     // Lifecycle callbacks
     onMutate: async (variables) => {
       // Called before mutationFn
       // Good for optimistic updates
-      return { previousTodos } // context for onError
+      return { previousTodos }; // context for onError
     },
     onSuccess: (data, variables, context) => {
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ['todos'] })
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
     onError: (error, variables, context) => {
       // Rollback optimistic updates
-      queryClient.setQueryData(['todos'], context.previousTodos)
+      queryClient.setQueryData(["todos"], context.previousTodos);
     },
     onSettled: (data, error, variables, context) => {
       // Always runs (success or error)
-      queryClient.invalidateQueries({ queryKey: ['todos'] })
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
-  })
+  });
 
   return (
     <button
-      onClick={() => mutation.mutate({ title: 'New Todo' })}
+      onClick={() => mutation.mutate({ title: "New Todo" })}
       disabled={mutation.isPending}
     >
-      {mutation.isPending ? 'Adding...' : 'Add Todo'}
+      {mutation.isPending ? "Adding..." : "Add Todo"}
     </button>
-  )
+  );
 }
 ```
 
@@ -271,26 +273,26 @@ const mutation = useMutation({
   mutationFn: updateTodo,
   onMutate: async (newTodo) => {
     // 1. Cancel outgoing refetches
-    await queryClient.cancelQueries({ queryKey: ['todos', newTodo.id] })
+    await queryClient.cancelQueries({ queryKey: ["todos", newTodo.id] });
 
     // 2. Snapshot previous value
-    const previousTodo = queryClient.getQueryData(['todos', newTodo.id])
+    const previousTodo = queryClient.getQueryData(["todos", newTodo.id]);
 
     // 3. Optimistically update
-    queryClient.setQueryData(['todos', newTodo.id], newTodo)
+    queryClient.setQueryData(["todos", newTodo.id], newTodo);
 
     // 4. Return context for rollback
-    return { previousTodo }
+    return { previousTodo };
   },
   onError: (err, newTodo, context) => {
     // Rollback on error
-    queryClient.setQueryData(['todos', newTodo.id], context.previousTodo)
+    queryClient.setQueryData(["todos", newTodo.id], context.previousTodo);
   },
   onSettled: () => {
     // Always refetch to sync with server
-    queryClient.invalidateQueries({ queryKey: ['todos'] })
+    queryClient.invalidateQueries({ queryKey: ["todos"] });
   },
-})
+});
 ```
 
 ### Optimistic Updates on Lists
@@ -312,37 +314,37 @@ onError: (err, newTodo, context) => {
 ## Query Invalidation
 
 ```tsx
-const queryClient = useQueryClient()
+const queryClient = useQueryClient();
 
 // Invalidate all queries
-queryClient.invalidateQueries()
+queryClient.invalidateQueries();
 
 // Invalidate by prefix
-queryClient.invalidateQueries({ queryKey: ['todos'] })
+queryClient.invalidateQueries({ queryKey: ["todos"] });
 
 // Invalidate exact match
-queryClient.invalidateQueries({ queryKey: ['todos', 1], exact: true })
+queryClient.invalidateQueries({ queryKey: ["todos", 1], exact: true });
 
 // Invalidate with predicate
 queryClient.invalidateQueries({
   predicate: (query) =>
-    query.queryKey[0] === 'todos' && query.queryKey[1]?.status === 'done',
-})
+    query.queryKey[0] === "todos" && query.queryKey[1]?.status === "done",
+});
 
 // Invalidate and refetch immediately
-queryClient.refetchQueries({ queryKey: ['todos'] })
+queryClient.refetchQueries({ queryKey: ["todos"] });
 
 // Remove from cache entirely
-queryClient.removeQueries({ queryKey: ['todos', 1] })
+queryClient.removeQueries({ queryKey: ["todos", 1] });
 
 // Reset to initial state
-queryClient.resetQueries({ queryKey: ['todos'] })
+queryClient.resetQueries({ queryKey: ["todos"] });
 ```
 
 ## Infinite Queries
 
 ```tsx
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 function InfiniteList() {
   const {
@@ -354,20 +356,20 @@ function InfiniteList() {
     isFetchingNextPage,
     isFetchingPreviousPage,
   } = useInfiniteQuery({
-    queryKey: ['projects'],
+    queryKey: ["projects"],
     queryFn: async ({ pageParam }) => {
-      const res = await fetch(`/api/projects?cursor=${pageParam}`)
-      return res.json()
+      const res = await fetch(`/api/projects?cursor=${pageParam}`);
+      return res.json();
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages, lastPageParam) => {
-      return lastPage.nextCursor ?? undefined // undefined = no more pages
+      return lastPage.nextCursor ?? undefined; // undefined = no more pages
     },
     getPreviousPageParam: (firstPage, allPages, firstPageParam) => {
-      return firstPage.prevCursor ?? undefined
+      return firstPage.prevCursor ?? undefined;
     },
     maxPages: 3, // Keep max 3 pages in cache (for performance)
-  })
+  });
 
   return (
     <div>
@@ -378,10 +380,14 @@ function InfiniteList() {
         onClick={() => fetchNextPage()}
         disabled={!hasNextPage || isFetchingNextPage}
       >
-        {isFetchingNextPage ? 'Loading...' : hasNextPage ? 'Load More' : 'No more'}
+        {isFetchingNextPage
+          ? "Loading..."
+          : hasNextPage
+            ? "Load More"
+            : "No more"}
       </button>
     </div>
-  )
+  );
 }
 ```
 
@@ -390,8 +396,11 @@ function InfiniteList() {
 ```tsx
 // Multiple independent queries run in parallel automatically
 function Dashboard() {
-  const usersQuery = useQuery({ queryKey: ['users'], queryFn: fetchUsers })
-  const projectsQuery = useQuery({ queryKey: ['projects'], queryFn: fetchProjects })
+  const usersQuery = useQuery({ queryKey: ["users"], queryFn: fetchUsers });
+  const projectsQuery = useQuery({
+    queryKey: ["projects"],
+    queryFn: fetchProjects,
+  });
 
   // Both fetch simultaneously
 }
@@ -400,14 +409,14 @@ function Dashboard() {
 function UserProjects({ userIds }) {
   const queries = useQueries({
     queries: userIds.map((id) => ({
-      queryKey: ['user', id],
+      queryKey: ["user", id],
       queryFn: () => fetchUser(id),
     })),
     combine: (results) => ({
-      data: results.map(r => r.data),
-      pending: results.some(r => r.isPending),
+      data: results.map((r) => r.data),
+      pending: results.some((r) => r.isPending),
     }),
-  })
+  });
 }
 ```
 
@@ -417,15 +426,15 @@ function UserProjects({ userIds }) {
 // Sequential queries using enabled
 function UserPosts({ userId }) {
   const userQuery = useQuery({
-    queryKey: ['user', userId],
+    queryKey: ["user", userId],
     queryFn: () => fetchUser(userId),
-  })
+  });
 
   const postsQuery = useQuery({
-    queryKey: ['posts', userId],
+    queryKey: ["posts", userId],
     queryFn: () => fetchPostsByUser(userId),
     enabled: !!userQuery.data, // Only run when user is loaded
-  })
+  });
 }
 ```
 
@@ -433,41 +442,52 @@ function UserPosts({ userId }) {
 
 ```tsx
 function PaginatedList() {
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(1);
 
   const { data, isPlaceholderData } = useQuery({
-    queryKey: ['todos', page],
+    queryKey: ["todos", page],
     queryFn: () => fetchTodos(page),
     placeholderData: (previousData) => previousData, // Keep showing old data
-  })
+  });
 
   return (
     <div style={{ opacity: isPlaceholderData ? 0.5 : 1 }}>
-      {data.items.map(item => <Item key={item.id} item={item} />)}
+      {data.items.map((item) => (
+        <Item key={item.id} item={item} />
+      ))}
       <button
-        onClick={() => setPage(p => p + 1)}
+        onClick={() => setPage((p) => p + 1)}
         disabled={isPlaceholderData || !data.hasMore}
       >
         Next
       </button>
     </div>
-  )
+  );
 }
 ```
 
 ## Suspense Integration
 
 ```tsx
-import { useSuspenseQuery, useSuspenseInfiniteQuery } from '@tanstack/react-query'
+import {
+  useSuspenseQuery,
+  useSuspenseInfiniteQuery,
+} from "@tanstack/react-query";
 
 // Component will suspend until data is loaded
 function TodoList() {
   const { data } = useSuspenseQuery({
-    queryKey: ['todos'],
+    queryKey: ["todos"],
     queryFn: fetchTodos,
-  })
+  });
   // data is guaranteed to be defined here
-  return <ul>{data.map(todo => <li key={todo.id}>{todo.title}</li>)}</ul>
+  return (
+    <ul>
+      {data.map((todo) => (
+        <li key={todo.id}>{todo.title}</li>
+      ))}
+    </ul>
+  );
 }
 
 // Wrap with Suspense boundary
@@ -478,55 +498,55 @@ function App() {
         <TodoList />
       </Suspense>
     </ErrorBoundary>
-  )
+  );
 }
 
 // Multiple suspense queries (fetch in parallel)
 function Dashboard() {
   const [{ data: users }, { data: projects }] = useSuspenseQueries({
     queries: [
-      { queryKey: ['users'], queryFn: fetchUsers },
-      { queryKey: ['projects'], queryFn: fetchProjects },
+      { queryKey: ["users"], queryFn: fetchUsers },
+      { queryKey: ["projects"], queryFn: fetchProjects },
     ],
-  })
+  });
 }
 ```
 
 ## Prefetching
 
 ```tsx
-const queryClient = useQueryClient()
+const queryClient = useQueryClient();
 
 // Prefetch on hover
 function TodoLink({ todoId }) {
   const prefetch = () => {
     queryClient.prefetchQuery({
-      queryKey: ['todo', todoId],
+      queryKey: ["todo", todoId],
       queryFn: () => fetchTodo(todoId),
       staleTime: 5000, // Only prefetch if data older than 5s
-    })
-  }
+    });
+  };
 
   return (
     <Link to={`/todos/${todoId}`} onMouseEnter={prefetch}>
       Todo {todoId}
     </Link>
-  )
+  );
 }
 
 // Prefetch in route loader (TanStack Router integration)
-export const Route = createFileRoute('/todos/$todoId')({
+export const Route = createFileRoute("/todos/$todoId")({
   loader: ({ context: { queryClient }, params: { todoId } }) =>
     queryClient.ensureQueryData(todoQueryOptions(todoId)),
-})
+});
 
 // Prefetch infinite queries
 queryClient.prefetchInfiniteQuery({
-  queryKey: ['projects'],
+  queryKey: ["projects"],
   queryFn: fetchProjects,
   initialPageParam: 0,
   pages: 3, // Prefetch first 3 pages
-})
+});
 ```
 
 ## SSR & Hydration
@@ -535,21 +555,25 @@ queryClient.prefetchInfiniteQuery({
 
 ```tsx
 // Server component or loader
-import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 
 async function getServerSideProps() {
-  const queryClient = new QueryClient()
+  const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: ['todos'],
+    queryKey: ["todos"],
     queryFn: fetchTodos,
-  })
+  });
 
   return {
     props: {
       dehydratedState: dehydrate(queryClient),
     },
-  }
+  };
 }
 
 function Page({ dehydratedState }) {
@@ -557,85 +581,85 @@ function Page({ dehydratedState }) {
     <HydrationBoundary state={dehydratedState}>
       <Todos />
     </HydrationBoundary>
-  )
+  );
 }
 ```
 
 ### Streaming SSR (React Server Components)
 
 ```tsx
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query'
-import { makeQueryClient } from './query-client'
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { makeQueryClient } from "./query-client";
 
 export default async function Page() {
-  const queryClient = makeQueryClient()
+  const queryClient = makeQueryClient();
 
   // Prefetch on server
   await queryClient.prefetchQuery({
-    queryKey: ['todos'],
+    queryKey: ["todos"],
     queryFn: fetchTodos,
-  })
+  });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <TodoList />
     </HydrationBoundary>
-  )
+  );
 }
 ```
 
 ## QueryClient API
 
 ```tsx
-const queryClient = useQueryClient()
+const queryClient = useQueryClient();
 
 // Get cached data
-queryClient.getQueryData(['todos'])
+queryClient.getQueryData(["todos"]);
 
 // Set cached data
-queryClient.setQueryData(['todos'], updatedTodos)
-queryClient.setQueryData(['todos'], (old) => [...old, newTodo])
+queryClient.setQueryData(["todos"], updatedTodos);
+queryClient.setQueryData(["todos"], (old) => [...old, newTodo]);
 
 // Get query state
-queryClient.getQueryState(['todos'])
+queryClient.getQueryState(["todos"]);
 
 // Check if fetching
-queryClient.isFetching({ queryKey: ['todos'] })
-queryClient.isMutating()
+queryClient.isFetching({ queryKey: ["todos"] });
+queryClient.isMutating();
 
 // Cancel queries
-queryClient.cancelQueries({ queryKey: ['todos'] })
+queryClient.cancelQueries({ queryKey: ["todos"] });
 
 // Invalidate (marks stale, refetches active)
-queryClient.invalidateQueries({ queryKey: ['todos'] })
+queryClient.invalidateQueries({ queryKey: ["todos"] });
 
 // Refetch (force refetch even if fresh)
-queryClient.refetchQueries({ queryKey: ['todos'] })
+queryClient.refetchQueries({ queryKey: ["todos"] });
 
 // Remove from cache
-queryClient.removeQueries({ queryKey: ['todos'] })
+queryClient.removeQueries({ queryKey: ["todos"] });
 
 // Reset to initial state
-queryClient.resetQueries({ queryKey: ['todos'] })
+queryClient.resetQueries({ queryKey: ["todos"] });
 
 // Clear entire cache
-queryClient.clear()
+queryClient.clear();
 
 // Prefetch
-queryClient.prefetchQuery({ queryKey: ['todos'], queryFn: fetchTodos })
-queryClient.ensureQueryData({ queryKey: ['todos'], queryFn: fetchTodos })
+queryClient.prefetchQuery({ queryKey: ["todos"], queryFn: fetchTodos });
+queryClient.ensureQueryData({ queryKey: ["todos"], queryFn: fetchTodos });
 
 // Get/set defaults
-queryClient.setQueryDefaults(['todos'], { staleTime: 10000 })
-queryClient.getQueryDefaults(['todos'])
-queryClient.setMutationDefaults(['addTodo'], { mutationFn: addTodo })
+queryClient.setQueryDefaults(["todos"], { staleTime: 10000 });
+queryClient.getQueryDefaults(["todos"]);
+queryClient.setMutationDefaults(["addTodo"], { mutationFn: addTodo });
 ```
 
 ## Testing
 
 ```tsx
-import { renderHook, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -645,37 +669,39 @@ function createWrapper() {
         gcTime: Infinity, // Prevent garbage collection during tests
       },
     },
-  })
+  });
   return ({ children }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  )
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
 }
 
-test('fetches todos', async () => {
-  const { result } = renderHook(() => useQuery({
-    queryKey: ['todos'],
-    queryFn: fetchTodos,
-  }), { wrapper: createWrapper() })
+test("fetches todos", async () => {
+  const { result } = renderHook(
+    () =>
+      useQuery({
+        queryKey: ["todos"],
+        queryFn: fetchTodos,
+      }),
+    { wrapper: createWrapper() }
+  );
 
-  await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  expect(result.current.data).toEqual(expectedTodos)
-})
+  await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  expect(result.current.data).toEqual(expectedTodos);
+});
 
 // Mock with setQueryData for component tests
-test('renders todos', () => {
-  const queryClient = new QueryClient()
-  queryClient.setQueryData(['todos'], mockTodos)
+test("renders todos", () => {
+  const queryClient = new QueryClient();
+  queryClient.setQueryData(["todos"], mockTodos);
 
   render(
     <QueryClientProvider client={queryClient}>
       <TodoList />
     </QueryClientProvider>
-  )
+  );
 
-  expect(screen.getByText('Todo 1')).toBeInTheDocument()
-})
+  expect(screen.getByText("Todo 1")).toBeInTheDocument();
+});
 ```
 
 ## TypeScript Patterns
@@ -684,27 +710,27 @@ test('renders todos', () => {
 
 ```tsx
 interface Todo {
-  id: number
-  title: string
-  completed: boolean
+  id: number;
+  title: string;
+  completed: boolean;
 }
 
 // Type is inferred from queryFn return type
 const { data } = useQuery({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: async (): Promise<Todo[]> => {
-    const res = await fetch('/api/todos')
-    return res.json()
+    const res = await fetch("/api/todos");
+    return res.json();
   },
-})
+});
 // data: Todo[] | undefined
 
 // With select
 const { data } = useQuery({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: fetchTodos,
-  select: (data): string[] => data.map(t => t.title),
-})
+  select: (data): string[] => data.map((t) => t.title),
+});
 // data: string[] | undefined
 ```
 
@@ -713,14 +739,14 @@ const { data } = useQuery({
 ```tsx
 // Default error type is Error
 const { error } = useQuery<Todo[], AxiosError>({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: fetchTodos,
-})
+});
 
 // Or register globally
-declare module '@tanstack/react-query' {
+declare module "@tanstack/react-query" {
   interface Register {
-    defaultError: AxiosError
+    defaultError: AxiosError;
   }
 }
 ```
@@ -728,26 +754,26 @@ declare module '@tanstack/react-query' {
 ### Query Options Pattern (Recommended)
 
 ```tsx
-import { queryOptions, infiniteQueryOptions } from '@tanstack/react-query'
+import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 export const todosOptions = queryOptions({
-  queryKey: ['todos'] as const,
+  queryKey: ["todos"] as const,
   queryFn: fetchTodos,
   staleTime: 5000,
-})
+});
 
 export const todoOptions = (id: string) =>
   queryOptions({
-    queryKey: ['todos', id] as const,
+    queryKey: ["todos", id] as const,
     queryFn: () => fetchTodo(id),
     enabled: !!id,
-  })
+  });
 
 // Full type inference everywhere
-const { data } = useQuery(todosOptions)
-const { data } = useSuspenseQuery(todoOptions('123'))
-await queryClient.ensureQueryData(todosOptions)
-queryClient.invalidateQueries({ queryKey: todosOptions.queryKey })
+const { data } = useQuery(todosOptions);
+const { data } = useSuspenseQuery(todoOptions("123"));
+await queryClient.ensureQueryData(todosOptions);
+queryClient.invalidateQueries({ queryKey: todosOptions.queryKey });
 ```
 
 ## Advanced Patterns
@@ -760,64 +786,64 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: { refetchOnWindowFocus: false },
   },
-})
+});
 
 // Custom focus manager
-import { focusManager } from '@tanstack/react-query'
+import { focusManager } from "@tanstack/react-query";
 
 // For React Native
 focusManager.setEventListener((handleFocus) => {
-  const subscription = AppState.addEventListener('change', (state) => {
-    handleFocus(state === 'active')
-  })
-  return () => subscription.remove()
-})
+  const subscription = AppState.addEventListener("change", (state) => {
+    handleFocus(state === "active");
+  });
+  return () => subscription.remove();
+});
 ```
 
 ### Network Mode
 
 ```tsx
 useQuery({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: fetchTodos,
   // 'online' (default): only fetch when online
   // 'always': always fetch (useful for local-first)
   // 'offlineFirst': try fetch, use cache if offline
-  networkMode: 'offlineFirst',
-})
+  networkMode: "offlineFirst",
+});
 ```
 
 ### Query Cancellation
 
 ```tsx
 useQuery({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: async ({ signal }) => {
     // signal is AbortSignal - automatically cancelled on unmount or key change
-    const res = await fetch('/api/todos', { signal })
-    return res.json()
+    const res = await fetch("/api/todos", { signal });
+    return res.json();
   },
-})
+});
 
 // Manual cancellation
-queryClient.cancelQueries({ queryKey: ['todos'] })
+queryClient.cancelQueries({ queryKey: ["todos"] });
 ```
 
 ### Persistence
 
 ```tsx
-import { persistQueryClient } from '@tanstack/react-query-persist-client'
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 
 const persister = createSyncStoragePersister({
   storage: window.localStorage,
-})
+});
 
 persistQueryClient({
   queryClient,
   persister,
   maxAge: 1000 * 60 * 60 * 24, // 24 hours
-})
+});
 ```
 
 ## Best Practices

@@ -4,7 +4,7 @@ description: Helps coding agents integrate and work with the Tiptap rich text ed
 compatibility: Requires git
 metadata:
   author: tiptap
-  version: '1.0'
+  version: "1.0"
 ---
 
 # Tiptap Integration Skill

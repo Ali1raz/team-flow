@@ -106,7 +106,9 @@ function ThreadItem({
           threadsQueryOptions.queryKey
         );
         const prevMessageListData =
-          queryClient.getQueryData<InfiniteData<MessageListPage>>(messageListKey);
+          queryClient.getQueryData<InfiniteData<MessageListPage>>(
+            messageListKey
+          );
 
         queryClient.setQueryData<ThreadsData>(
           threadsQueryOptions.queryKey,
@@ -121,26 +123,29 @@ function ThreadItem({
           }
         );
 
-        queryClient.setQueryData<InfiniteData<MessageListPage>>(messageListKey, (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              messages: page.messages.map((message) =>
-                message.id === threadId
-                  ? {
-                      ...message,
-                      _count: {
-                        ...message._count,
-                        replies: Math.max(0, message._count.replies - 1),
-                      },
-                    }
-                  : message
-              ),
-            })),
-          };
-        });
+        queryClient.setQueryData<InfiniteData<MessageListPage>>(
+          messageListKey,
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                messages: page.messages.map((message) =>
+                  message.id === threadId
+                    ? {
+                        ...message,
+                        _count: {
+                          ...message._count,
+                          replies: Math.max(0, message._count.replies - 1),
+                        },
+                      }
+                    : message
+                ),
+              })),
+            };
+          }
+        );
 
         return { prevThreadData, prevMessageListData };
       },
@@ -206,10 +211,7 @@ function ThreadItem({
             image={thread.user.image}
             name={thread.user.name}
             className="size-8 rounded-full object-cover object-center"
-            isOnline={
-              !!thread.user.id &&
-              onlineUserIds.has(thread.user.id)
-            }
+            isOnline={!!thread.user.id && onlineUserIds.has(thread.user.id)}
             showOnline={true}
           />
           <div className="flex flex-col gap-2">
@@ -250,7 +252,7 @@ export function RightSidebar({
 }: ComponentProps<typeof Sidebar> & { width?: string }) {
   const { threadId } = useThread();
   const { setOpen, isMobile, setOpenMobile } = useSidebarWithSide("right");
-  const { channelId, workspaceId } = useParams<{
+  const { workspaceId } = useParams<{
     channelId: string;
     workspaceId: string;
   }>();

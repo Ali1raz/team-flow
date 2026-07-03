@@ -122,7 +122,7 @@ Key guard-specific notes: all rate limit rules require a `key` parameter at call
 
 ### Prompt injection detection
 
-Use `DetectPromptInjection()` on any untrusted text before it reaches a model or is used as a tool argument. Also useful on tool call *results* when the tool fetches content from untrusted sources.
+Use `DetectPromptInjection()` on any untrusted text before it reaches a model or is used as a tool argument. Also useful on tool call _results_ when the tool fetches content from untrusted sources.
 
 ### Sensitive information detection
 
@@ -151,6 +151,7 @@ if decision.conclusion == "DENY":
 ## Async vs Sync
 
 The package provides both variants:
+
 - `launch_arcjet` / `await arcjet.guard(...)` — async, use in `async def` functions
 - `launch_arcjet_sync` / `arcjet.guard(...)` — sync, use in regular `def` functions
 

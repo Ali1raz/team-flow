@@ -137,9 +137,7 @@ export const RealtimeChannelProvider = ({
                 ...old,
                 pages: old.pages.map((page) => ({
                   ...page,
-                  messages: page.messages.filter(
-                    (msg) => msg.id !== messageId
-                  ),
+                  messages: page.messages.filter((msg) => msg.id !== messageId),
                 })),
               };
             }
