@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import arcjet, {
   detectBot,
   detectPromptInjection,
@@ -19,7 +20,7 @@ export {
 };
 
 export default arcjet({
-  key: process.env.ARCJET_KEY!,
+  key: env.ARCJET_KEY,
   characteristics: ["userId"],
   rules: [
     shield({

@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
@@ -32,7 +33,7 @@ export const auth = betterAuth({
   },
   baseURL: {
     allowedHosts: [
-      process.env.NEXT_PUBLIC_BETTER_AUTH_URL!,
+      env.NEXT_PUBLIC_BETTER_AUTH_URL,
       "*.vercel.app", // All Vercel previews
       "localhost:*", // Local development all ports
     ],
@@ -42,8 +43,8 @@ export const auth = betterAuth({
 
   socialProviders: {
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
       prompt: "select_account",
     },
   },
@@ -80,7 +81,7 @@ export const auth = betterAuth({
           subject: `Invitation to join ${name}`,
           meta: {
             description: message,
-            link: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invite/${data.id}`,
+            link: `${env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invite/${data.id}`,
           },
         });
       },

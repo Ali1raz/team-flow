@@ -1,6 +1,8 @@
+import { env } from "@/lib/env";
+
 export const SITE = {
   name: "Teamflow",
-  url: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
+  url: env.NEXT_PUBLIC_BETTER_AUTH_URL,
   description: "AI ready platform for team communication.",
   keywords: [
     "Teamflow",
