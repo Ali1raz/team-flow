@@ -319,7 +319,7 @@ function InviteButtonGroup({
       <Button onClick={onInviteClick}>Invite</Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button>
+          <Button className="p-1">
             <ChevronDownIcon />
           </Button>
         </DropdownMenuTrigger>
