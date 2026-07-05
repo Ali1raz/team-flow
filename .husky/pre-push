@@ -1,0 +1,5 @@
+echo "-------------------"
+echo "Running Pre Push hook"
+echo "-------------------"
+
+pnpm lint
