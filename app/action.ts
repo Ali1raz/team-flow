@@ -1,4 +1,5 @@
 "use server";
+import { env } from "@/lib/env";
 import { transporter } from "@/lib/nodemailer";
 
 const styles = {
@@ -28,7 +29,7 @@ export async function SendEmail({
   }
 
   const mailOptions = {
-    from: process.env.NODEMAILER_USER,
+    from: env.NODEMAILER_USER,
     to,
     subject,
     html: `

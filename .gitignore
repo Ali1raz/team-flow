@@ -44,3 +44,7 @@ next-env.d.ts
 generated/
 
 .wrangler
+
+worker-configuration.d.ts
+
+.eslintcache

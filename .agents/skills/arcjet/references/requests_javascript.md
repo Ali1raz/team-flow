@@ -12,20 +12,20 @@ Pick the adapter for the project's framework, then install it with whichever pac
 
 > _Version info last verified against `@arcjet/*` v1.4.0 on **2026-05-20**. Numbers below may drift — before relying on them, check the current `package.json` of the relevant `@arcjet/*` package at https://github.com/arcjet/arcjet-js (or the latest release at https://github.com/arcjet/arcjet-js/releases). Minimums tend to creep upward over time._
 
-| Framework         | Package                                                   | Min framework version                                |
-| ----------------- | --------------------------------------------------------- | ---------------------------------------------------- |
-| Next.js           | `@arcjet/next`                                            | Next.js ≥ 15                                         |
-| Express / Node.js | `@arcjet/node`                                            | Node ≥ 20 (no framework peer)                        |
-| Fastify           | `@arcjet/fastify`                                         | Fastify ≥ 5                                          |
-| NestJS            | `@arcjet/nest`                                            | `@nestjs/common` ^10 \|\| ^11                        |
-| SvelteKit         | `@arcjet/sveltekit`                                       | Svelte ^3.54 \|\| ^4 \|\| ^5                         |
+| Framework         | Package                                                   | Min framework version                                                    |
+| ----------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Next.js           | `@arcjet/next`                                            | Next.js ≥ 15                                                             |
+| Express / Node.js | `@arcjet/node`                                            | Node ≥ 20 (no framework peer)                                            |
+| Fastify           | `@arcjet/fastify`                                         | Fastify ≥ 5                                                              |
+| NestJS            | `@arcjet/nest`                                            | `@nestjs/common` ^10 \|\| ^11                                            |
+| SvelteKit         | `@arcjet/sveltekit`                                       | Svelte ^3.54 \|\| ^4 \|\| ^5                                             |
 | Remix             | `@arcjet/remix`                                           | Remix v2 (v3 was renamed to React Router 7 — use `@arcjet/react-router`) |
-| React Router      | `@arcjet/react-router`                                    | react-router ≥ 7                                     |
-| Astro             | `@arcjet/astro`                                           | Astro ^5.9.3 \|\| ^6                                 |
-| Nuxt              | `@arcjet/nuxt`                                            | `@nuxt/kit` ≥ 4, `@nuxt/schema` ≥ 4                  |
-| Bun               | `@arcjet/bun`                                             | Bun ≥ 1.3.0                                          |
-| Deno              | `@arcjet/deno` (install with `deno add npm:@arcjet/deno`) | Deno `stable` / `lts`                                |
-| Hono              | `@arcjet/node` (on Node) or `@arcjet/bun` (on Bun)        | runtime-dependent (see Node/Bun rows)                |
+| React Router      | `@arcjet/react-router`                                    | react-router ≥ 7                                                         |
+| Astro             | `@arcjet/astro`                                           | Astro ^5.9.3 \|\| ^6                                                     |
+| Nuxt              | `@arcjet/nuxt`                                            | `@nuxt/kit` ≥ 4, `@nuxt/schema` ≥ 4                                      |
+| Bun               | `@arcjet/bun`                                             | Bun ≥ 1.3.0                                                              |
+| Deno              | `@arcjet/deno` (install with `deno add npm:@arcjet/deno`) | Deno `stable` / `lts`                                                    |
+| Hono              | `@arcjet/node` (on Node) or `@arcjet/bun` (on Bun)        | runtime-dependent (see Node/Bun rows)                                    |
 
 If the project is below a listed minimum, warn the user and stop — installing anyway produces confusing errors.
 
@@ -62,7 +62,9 @@ Use `withRule()` to add route-specific rules without modifying the shared instan
 import aj from "@/lib/arcjet";
 import { slidingWindow } from "@arcjet/next";
 
-const protect = aj.withRule(slidingWindow({ mode: "LIVE", interval: 60, max: 100 }));
+const protect = aj.withRule(
+  slidingWindow({ mode: "LIVE", interval: 60, max: 100 })
+);
 ```
 
 ### protect() in route handlers, not middleware
@@ -175,13 +177,18 @@ Bun.serve({
 // Deno
 import arcjet, { shield } from "npm:@arcjet/deno";
 
-const aj = arcjet({ key: Deno.env.get("ARCJET_KEY")!, rules: [shield({ mode: "LIVE" })] });
+const aj = arcjet({
+  key: Deno.env.get("ARCJET_KEY")!,
+  rules: [shield({ mode: "LIVE" })],
+});
 
-Deno.serve(aj.handler(async (request) => {
-  const decision = await aj.protect(request);
-  // ...
-  return new Response("ok");
-}));
+Deno.serve(
+  aj.handler(async (request) => {
+    const decision = await aj.protect(request);
+    // ...
+    return new Response("ok");
+  })
+);
 ```
 
 On Deno, imports use the `npm:` prefix (`npm:@arcjet/deno`, `npm:@arcjet/inspect`). On Bun, env comes from `import { env } from "bun"` rather than `process.env`.
@@ -197,7 +204,10 @@ import arcjet, { shield } from "@arcjet/node";
 import { serve, type HttpBindings } from "@hono/node-server";
 import { Hono } from "hono";
 
-const aj = arcjet({ key: process.env.ARCJET_KEY!, rules: [shield({ mode: "LIVE" })] });
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [shield({ mode: "LIVE" })],
+});
 const app = new Hono<{ Bindings: HttpBindings }>();
 
 app.get("/", async (c) => {
@@ -225,20 +235,20 @@ See the "Choosing the Right Rules" section in the main skill for rule selection 
 
 The request object to pass differs by framework:
 
-| Framework                           | What to pass to `protect()`                                       |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| Express / Node.js                   | `req` (IncomingMessage)                                           |
-| Next.js App Router                  | `req` (Request)                                                   |
-| Next.js Server Components / actions | `await request()` from `@arcjet/next`                             |
-| Fastify                             | `request` (Fastify request, not raw Node)                         |
-| NestJS                              | `req` (`@Req() req: Request`)                                     |
-| SvelteKit                           | `event`                                                           |
-| Remix / React Router                | `args` (the loader/action args)                                   |
-| Nuxt                                | `event` (H3 event)                                                |
-| Astro                               | `request` (the Web `Request`)                                     |
-| Hono on Node.js                     | `c.env.incoming` (requires `Hono<{ Bindings: HttpBindings }>`)    |
-| Hono on Bun                         | `c.req.raw`                                                       |
-| Bun                                 | `request` (Web `Request`), wrap `fetch` with `aj.handler()`       |
+| Framework                           | What to pass to `protect()`                                           |
+| ----------------------------------- | --------------------------------------------------------------------- |
+| Express / Node.js                   | `req` (IncomingMessage)                                               |
+| Next.js App Router                  | `req` (Request)                                                       |
+| Next.js Server Components / actions | `await request()` from `@arcjet/next`                                 |
+| Fastify                             | `request` (Fastify request, not raw Node)                             |
+| NestJS                              | `req` (`@Req() req: Request`)                                         |
+| SvelteKit                           | `event`                                                               |
+| Remix / React Router                | `args` (the loader/action args)                                       |
+| Nuxt                                | `event` (H3 event)                                                    |
+| Astro                               | `request` (the Web `Request`)                                         |
+| Hono on Node.js                     | `c.env.incoming` (requires `Hono<{ Bindings: HttpBindings }>`)        |
+| Hono on Bun                         | `c.req.raw`                                                           |
+| Bun                                 | `request` (Web `Request`), wrap `fetch` with `aj.handler()`           |
 | Deno                                | `request` (Web `Request`), wrap `Deno.serve` body with `aj.handler()` |
 
 `aj.handler()` on Bun and Deno wraps the user's fetch handler so Arcjet has access to the underlying socket / connection info for accurate IP detection — Bun and Deno don't expose that on the `Request` object alone. The wrapping is for IP detection only; you still need to call `aj.protect(request)` yourself inside the handler.

@@ -28,7 +28,7 @@ For request-based protection, rate limits default to keying by IP. Use `characte
 
 Jailbreaks, role-play escapes, and instruction overrides allow attackers to manipulate AI behavior. Arcjet scores incoming messages for injection patterns before they reach the model.
 
-**Rules:** `detectPromptInjection` (request-based and guard). Use on any untrusted text before it reaches a model or tool argument — and on tool call *results* when the tool fetches content from untrusted sources.
+**Rules:** `detectPromptInjection` (request-based and guard). Use on any untrusted text before it reaches a model or tool argument — and on tool call _results_ when the tool fetches content from untrusted sources.
 
 ## Data loss prevention
 

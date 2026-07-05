@@ -8,7 +8,6 @@ import {
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -29,7 +28,7 @@ import Link from "next/link";
 import { ScrollArea } from "./ui/scroll-area";
 import { useParams } from "next/navigation";
 import { CreateTeamDialog } from "./create-tem-dialog";
-import { Button, buttonVariants } from "./ui/button";
+import { Button } from "./ui/button";
 import { InviteWorkspaceDialog } from "@/app/(workspace)/workspaces/_components/invite-workspace-dialog";
 import {
   DropdownMenu,
