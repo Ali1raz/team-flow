@@ -2,7 +2,7 @@ import { env } from "@/lib/env";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
-import { organization } from "better-auth/plugins";
+import { organization, lastLoginMethod } from "better-auth/plugins";
 import { ac, roles } from "./permissions";
 import { SendEmail } from "@/app/action";
 import { createSlug } from "./utils";
@@ -47,8 +47,18 @@ export const auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
       prompt: "select_account",
     },
+    google: {
+      prompt: "select_account",
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
   },
   plugins: [
+    lastLoginMethod({
+      cookieName: "teamflow.last_used_login_method",
+      maxAge: 60 * 60 * 24 * 30,
+      storeInDatabase: false,
+    }),
     organization({
       schema: {
         team: {
