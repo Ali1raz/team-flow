@@ -225,7 +225,7 @@ function ThreadItem({
             </div>
             <RenderJSONtoHTML
               content={JSON.parse(thread.content)}
-              className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
+              className="text-sm wrap-break-word prose dark:prose-invert leading-relaxed w-full marker:text-primary"
             />
 
             {thread.imageUrl && (
@@ -355,7 +355,7 @@ export function RightSidebar({
                         </div>
                         <RenderJSONtoHTML
                           content={JSON.parse(data.parent.content)}
-                          className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
+                          className="text-sm wrap-break-word prose leading-relaxed dark:prose-invert max-w-[32ch] marker:text-primary"
                         />
 
                         {data.parent.imageUrl && (
