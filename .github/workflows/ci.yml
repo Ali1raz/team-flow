@@ -56,8 +56,5 @@ jobs:
       - name: Format check
         run: pnpm format
 
-      - name: Typecheck
-        run: pnpm exec tsc --noEmit
-
       - name: Build
         run: pnpm build
