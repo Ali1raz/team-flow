@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      # i need dummy values because i have t3env, that needs values for build command
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/team-flow?schema=public"
+      BETTER_AUTH_SECRET: "ci-dummy-secret-value-not-real"
+      NEXT_PUBLIC_BETTER_AUTH_URL: "http://localhost:3000"
+      NODEMAILER_USER: "ci@example.com"
+      NODEMAILER_APP_PASSWORD: "ci-dummy-password"
+      GITHUB_CLIENT_ID: "ci-dummy-id"
+      GITHUB_CLIENT_SECRET: "ci-dummy-secret"
+      ARCJET_KEY: "ci-dummy-key"
+      ARCJET_ENV: "development"
+      UPLOADTHING_TOKEN: "ci-dummy-token"
+      UPLOADTHING_SECRET_KEY: "ci-dummy-secret"
+      OPENROUTER_API_KEY: "ci-dummy-key"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format
+
+      - name: Build
+        run: pnpm build

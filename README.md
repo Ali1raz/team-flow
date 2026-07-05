@@ -2,7 +2,6 @@
 
 > An open-source, AI-powered real-time team messaging platform.
 
-
 ## Features
 
 - **Workspaces (Orgs)** — Create worspaces.
@@ -18,19 +17,19 @@
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript |
-| Database | PostgreSQL + Prisma ORM |
-| Auth | better-auth (organizations plugin) |
-| API | oRPC + TanStack Query |
-| AI | Vercel AI SDK + OpenRouter |
-| Rich Text | Tiptap editor |
-| File Uploads | UploadThing |
-| Rate Limiting | Arcjet |
-| UI | shadcn/ui + Tailwind CSS v4 |
-| Animations | Motion |
+| Layer         | Technology                         |
+| ------------- | ---------------------------------- |
+| Framework     | Next.js 16 (App Router)            |
+| Language      | TypeScript                         |
+| Database      | PostgreSQL + Prisma ORM            |
+| Auth          | better-auth (organizations plugin) |
+| API           | oRPC + TanStack Query              |
+| AI            | Vercel AI SDK + OpenRouter         |
+| Rich Text     | Tiptap editor                      |
+| File Uploads  | UploadThing                        |
+| Rate Limiting | Arcjet                             |
+| UI            | shadcn/ui + Tailwind CSS v4        |
+| Animations    | Motion                             |
 
 ## Getting Started
 
@@ -107,12 +106,11 @@ login to wrangler cli to your cloudflare account:
 pnpm dlx wrangler login
 ```
 
-generate wrangler types: 
+generate wrangler types:
 
 ```bash
 pnpm wrangler:types
 ```
-
 
 run wrangler to serve the worker locally (because local dev server has to run in parallel):
 
@@ -125,14 +123,14 @@ Open [http://localhost:8787](http://localhost:8787) for wrangler dev server
 
 ## Database Scripts
 
-| Command | Description |
-|---|---|
-| `pnpm db:migrate` | Run Prisma migrations |
-| `pnpm db:push` | Push schema changes without migration |
-| `pnpm db:generate` | Regenerate Prisma client |
-| `pnpm db:sync` | Push + generate in one step |
-| `pnpm db:studio` | Open Prisma Studio |
-| `pnpm db:seed` | Seed the database |
+| Command            | Description                           |
+| ------------------ | ------------------------------------- |
+| `pnpm db:migrate`  | Run Prisma migrations                 |
+| `pnpm db:push`     | Push schema changes without migration |
+| `pnpm db:generate` | Regenerate Prisma client              |
+| `pnpm db:sync`     | Push + generate in one step           |
+| `pnpm db:studio`   | Open Prisma Studio                    |
+| `pnpm db:seed`     | Seed the database                     |
 
 ## Project Structure
 

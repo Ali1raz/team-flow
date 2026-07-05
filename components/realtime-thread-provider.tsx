@@ -109,9 +109,7 @@ export function RealtimeThreadPRovider({
               if (!old) return old;
               return {
                 ...old,
-                threads: old.threads.filter(
-                  (thread) => thread.id !== replyId
-                ),
+                threads: old.threads.filter((thread) => thread.id !== replyId),
               };
             }
           );

@@ -65,12 +65,12 @@ Once you know which SDK you need (Step 3 below), install it via the package mana
 
 Determine which protection type applies:
 
-| | **Request-based** | **Guard** |
-|---|---|---|
+|                 | **Request-based**                                                                           | **Guard**                                                                               |
+| --------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | **When to use** | Code has an HTTP request object (Express `req`, Next.js `Request`, FastAPI `Request`, etc.) | No HTTP request (tool calls, MCP handlers, queue workers, background jobs, agent loops) |
-| **JS/TS SDK** | `@arcjet/next`, `@arcjet/node`, `@arcjet/fastify`, etc. | `@arcjet/guard` (>= 1.4.0) |
-| **Python SDK** | `arcjet` (with `arcjet()` / `arcjet_sync()`) | `arcjet` (with `launch_arcjet()` / `launch_arcjet_sync()`) |
-| **Entry point** | `protect(request)` | `guard(label, rules)` |
+| **JS/TS SDK**   | `@arcjet/next`, `@arcjet/node`, `@arcjet/fastify`, etc.                                     | `@arcjet/guard` (>= 1.4.0)                                                              |
+| **Python SDK**  | `arcjet` (with `arcjet()` / `arcjet_sync()`)                                                | `arcjet` (with `launch_arcjet()` / `launch_arcjet_sync()`)                              |
+| **Entry point** | `protect(request)`                                                                          | `guard(label, rules)`                                                                   |
 
 A single project can use both — e.g. request-based on API routes and guard on agent tool calls.
 
@@ -78,7 +78,7 @@ A single project can use both — e.g. request-based on API routes and guard on 
 
 - **MCP servers**: the word "server" is misleading. MCP tools don't receive HTTP requests — they're invoked by an MCP client over stdio or SSE. Use **Guard**, not request-based.
 - **Background jobs / queue consumers**: no HTTP request at the protection site. Use **Guard**.
-- **Server actions / RPC over HTTP** (Next.js server actions, tRPC, etc.): there *is* an HTTP request underneath. Use **request-based**.
+- **Server actions / RPC over HTTP** (Next.js server actions, tRPC, etc.): there _is_ an HTTP request underneath. Use **request-based**.
 - **Agent tool calls inside a request handler**: if you want to limit per-user-per-route, request-based is fine. If you want per-tool budgets independent of any HTTP boundary, use Guard at the tool call site.
 
 Read the appropriate reference:
@@ -95,19 +95,21 @@ These references explain architectural decisions and patterns that can't be infe
 Follow the patterns in the reference file from Step 3. Key principles:
 
 #### Request-based (HTTP routes):
+
 - Shared Arcjet client in its own file with `shield()` as a base rule.
 - `withRule()` to layer route-specific rules.
 - Call `protect()` inside each route handler (not in app-level middleware), once per request.
-- Map `decision.isDenied()` reasons to HTTP responses. Only branch on reasons that produce a *different* response — there's no point in an `else if (reason.isShield())` arm that returns the same status as the default 403.
+- Map `decision.isDenied()` reasons to HTTP responses. Only branch on reasons that produce a _different_ response — there's no point in an `else if (reason.isShield())` arm that returns the same status as the default 403.
 - Put `characteristics: ["userId"]` (or similar) on the specific rule that needs it, not on the global client.
 
 #### Guard (non-HTTP code):
+
 - Client at module scope with `launchArcjet()` (JS) or `launch_arcjet()` / `launch_arcjet_sync()` (Python — pick async vs sync to match the function you're protecting).
 - Rules declared at module scope. Give each rule a meaningful `label` so they show up usefully in the dashboard.
 - **One `guard()` call per specific operation, with a hardcoded `label`** like `"tools.get-weather"` or `"queue.summarize"`. Put it wherever you already know exactly what's happening — that can be inside the tool/task function itself, or right before calling it from a dispatch arm. Both work; pick whichever makes error propagation cleaner. What to avoid is the generic-dispatcher pattern (`handleToolCall(name, args)` calling `guard(label=f"tools.{name}")`) — interpolated labels break grep and produce messy dashboard groupings.
 - **Label naming rules**: labels are validated server-side as slugs — **lowercase letters, digits, dash (`-`), and dot (`.`) only**, must start and end with a letter or digit, max 256 bytes. Underscores, uppercase, and slashes are rejected even though some SDK TSDoc comments claim otherwise. Use `tools.get-weather`, not `tools.get_weather` or `Tools.GetWeather`.
 - **Pass `metadata` on the `guard()` call** when you have useful auditing context (`metadata={"user_id": user_id, "request_id": ...}`). It appears in the dashboard alongside the decision.
-- **Branch on which rule denied**, not just on `DENY`. Use the per-rule accessors (e.g. `userLimit.deniedResult(decision)` for retry-after info) or the flat reason string (`decision.reason === "PROMPT_INJECTION"` in JS, `decision.reason == "PROMPT_INJECTION"` in Python) so the error you surface to the caller tells them *why* — "rate limited, retry in 12s" vs "input flagged as prompt injection" — instead of a generic "blocked." Note: guard's `decision.reason` is a flat string literal, unlike the request-based SDK's tagged-helper API.
+- **Branch on which rule denied**, not just on `DENY`. Use the per-rule accessors (e.g. `userLimit.deniedResult(decision)` for retry-after info) or the flat reason string (`decision.reason === "PROMPT_INJECTION"` in JS, `decision.reason == "PROMPT_INJECTION"` in Python) so the error you surface to the caller tells them _why_ — "rate limited, retry in 12s" vs "input flagged as prompt injection" — instead of a generic "blocked." Note: guard's `decision.reason` is a flat string literal, unlike the request-based SDK's tagged-helper API.
 - Every rate-limit rule needs a `key` and a `bucket`:
   - **Per-user context** (agent tool calls inside a logged-in session, queue jobs with a `user_id`): use the user/session id as the key.
   - **No user context** (stdio MCP server, single-tenant worker): use a stable identifier you control — instance id, deployment name, or a literal like `"default"`. Just be explicit.
@@ -115,7 +117,7 @@ Follow the patterns in the reference file from Step 3. Key principles:
 
 #### Conventions outside the Arcjet flow
 
-For everything that *isn't* an Arcjet-specific decision — dev scripts, file/module layout, named-vs-default exports, comment style, env-file naming, type hints, error class patterns — match the project's existing conventions. If the project has no convention yet, default to modern best practice for the language. This skill is opinionated about *where Arcjet goes* and *how its API is used*; it shouldn't reach further than that.
+For everything that _isn't_ an Arcjet-specific decision — dev scripts, file/module layout, named-vs-default exports, comment style, env-file naming, type hints, error class patterns — match the project's existing conventions. If the project has no convention yet, default to modern best practice for the language. This skill is opinionated about _where Arcjet goes_ and _how its API is used_; it shouldn't reach further than that.
 
 ### Step 5: Verify Decisions
 

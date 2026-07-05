@@ -10,7 +10,9 @@ export const env = createEnv({
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     ARCJET_KEY: z.string().min(1),
-    ARCJET_ENV: z.enum(["development", "production", "staging"]),
+    ARCJET_ENV: z
+      .enum(["development", "production", "staging"])
+      .default("development"),
     UPLOADTHING_TOKEN: z.string().min(1),
     UPLOADTHING_SECRET_KEY: z.string().min(1),
     OPENROUTER_API_KEY: z.string().min(1),
