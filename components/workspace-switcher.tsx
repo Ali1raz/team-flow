@@ -83,7 +83,7 @@ export function WorkspaceSwitcher() {
                   width={20}
                   height={20}
                   unoptimized
-                  className="w-full object-cover rounded"
+                  className="w-full h-full object-cover rounded"
                 />
               </div>
               <span className="truncate font-medium line-clamp-1">
@@ -108,7 +108,7 @@ export function WorkspaceSwitcher() {
                 key={org.id}
                 onClick={() => handleChange(org.id)}
                 className={cn(
-                  "flex items-center gap-2 justify-between p-2",
+                  "flex items-center gap-2 justify-between p-2 group",
                   org.id === activeId && "bg-accent"
                 )}
               >
@@ -120,12 +120,16 @@ export function WorkspaceSwitcher() {
                       width={20}
                       height={20}
                       unoptimized
-                      className="w-full object-cover rounded"
+                      className="w-full h-full object-cover rounded"
                     />
                   </div>
                   {org.name}
                 </div>
-                {org.id === activeId && <Badge>Active</Badge>}
+                {org.id === activeId && (
+                  <Badge className="bg-primary text-primary-foreground group-hover:text-primary-foreground!">
+                    Active
+                  </Badge>
+                )}
               </DropdownMenuItem>
             ))}
 
