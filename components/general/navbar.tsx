@@ -12,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
-import Logo from "@/public/team-flow.png";
+import Logo from "@/public/team-comms.png";
 import { authClient } from "@/lib/auth-client";
 import { useSignOut } from "@/hooks/use-signout";
 import { Skeleton } from "../ui/skeleton";
@@ -84,7 +84,7 @@ const Navbar = () => {
           transition={{ duration: 0.3 }}
         >
           <div className="flex flex-row items-center gap-2 font-bold text-lg">
-            <Image src={Logo} alt="Logo" width={40} height={40} /> Teamflow
+            <Image src={Logo} alt="Logo" width={40} height={40} /> TeamComms
           </div>
 
           <section className="hidden flex-row items-center gap-2 lg:flex">
@@ -94,7 +94,7 @@ const Navbar = () => {
               <div className="flex flex-row gap-2">
                 {data?.session ? (
                   <>
-                    <Link href="/workspaces" className={buttonVariants()}>
+                    <Link href="/organizations" className={buttonVariants()}>
                       Dasboard
                     </Link>
                     <Button variant="outline" onClick={handleSignOut}>
@@ -171,7 +171,7 @@ const Navbar = () => {
                   ) : data?.session ? (
                     <>
                       <Link
-                        href={"/workspaces"}
+                        href={"/organizations"}
                         className="flex flex-row items-center justify-between rounded px-4 py-3 font-medium transition-colors hover:bg-muted"
                       >
                         Dasboard

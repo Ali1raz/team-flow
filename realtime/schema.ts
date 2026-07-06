@@ -44,7 +44,7 @@ export const RealtimeMessageSchema = z.object({
 
 export type RealtimeMessageSchemaType = z.infer<typeof RealtimeMessageSchema>;
 
-export const RealtimechannelEventSchema = z.union([
+export const RealtimeTeamEventSchema = z.union([
   z.object({
     type: z.literal("message:created"),
     payload: z.object({ message: RealtimeMessageSchema }),
@@ -63,8 +63,8 @@ export const RealtimechannelEventSchema = z.union([
   }),
 ]);
 
-export type RealtimechannelEventSchemaType = z.infer<
-  typeof RealtimechannelEventSchema
+export type RealtimeTeamEventSchemaType = z.infer<
+  typeof RealtimeTeamEventSchema
 >;
 
 export const RealtimeReplySchema = z.object({

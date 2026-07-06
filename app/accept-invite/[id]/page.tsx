@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { notFound } from "next/navigation";
-import Logo from "@/public/team-flow.png";
+import Logo from "@/public/team-comms.png";
 import Image from "next/image";
 import Link from "next/link";
 import { formatLocalDateTime } from "@/lib/utils";
@@ -49,17 +49,17 @@ export default function AcceptInvitePage() {
       }
       triggerConfetti();
       queryClient.invalidateQueries({
-        queryKey: orpc.workspace.invitations.list.queryKey({
-          input: { workspaceId: data.invitation.organizationId },
+        queryKey: orpc.organization.invitations.list.queryKey({
+          input: { organizationId: data.invitation.organizationId },
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: orpc.workspace.members.list.queryKey(),
+        queryKey: orpc.organization.members.list.queryKey(),
       });
       toast.success(
-        "Invitation accepted, you are now a member in the workspace!"
+        "Invitation accepted, you are now a member in the organization!"
       );
-      router.push(`/workspaces/${data.invitation.organizationId}`);
+      router.push(`/organizations/${data.invitation.organizationId}`);
     });
   }
 
@@ -101,12 +101,12 @@ export default function AcceptInvitePage() {
         >
           <Image
             src={Logo}
-            alt="TeamFlow Logo"
+            alt="TeamComms Logo"
             width={40}
             height={40}
             className="object-cover"
           />
-          <p className="text-primary">TeamFlow</p>
+          <p className="text-primary">TeamComms</p>
         </Link>
         <Card className="w-full max-w-2xl">
           <CardHeader className="text-center space-y-3">
@@ -122,7 +122,7 @@ export default function AcceptInvitePage() {
                 <span className="font-medium text-primary underline underline-offset-4">
                   {inv.organizationName}
                 </span>{" "}
-                in TeamFlow.
+                in TeamComms.
               </p>
             </CardDescription>
           </CardHeader>

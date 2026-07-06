@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
-import Logo from "@/public/team-flow.png";
+import Logo from "@/public/team-comms.png";
 
 const Footer = () => {
   return (
@@ -16,7 +16,7 @@ const Footer = () => {
       <Image src={Logo} alt="Logo" width={50} height={50} />
 
       <p className="text-muted-foreground">
-        &copy; {new Date().getFullYear()} TeamFlow. All rights reserved.
+        &copy; {new Date().getFullYear()} TeamComms. All rights reserved.
       </p>
     </motion.div>
   );

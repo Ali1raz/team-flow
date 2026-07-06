@@ -3,7 +3,7 @@ import arcjet, { createMiddleware, detectBot } from "@arcjet/next";
 import { getSessionCookie } from "better-auth/cookies";
 import { NextRequest, NextResponse } from "next/server";
 
-const protectedRoutes = ["/workspaces", "/accept-invite"];
+const protectedRoutes = ["/organizations", "/accept-invite"];
 
 async function authMiddleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

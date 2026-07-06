@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getWorkspaceColor(id: string) {
+export function getOrganizationColor(id: string) {
   const charsum = id
     .split("")
     .reduce((sum, char) => sum + char.charCodeAt(0), 0);
@@ -22,7 +22,7 @@ export function getWorkspaceColor(id: string) {
 }
 
 export function createSlug(input: string) {
-  // Derive a safe workspace slug from user input and strip edge dashes.
+  // Derive a safe organization slug from user input and strip edge dashes.
   return input
     .trim()
     .toLowerCase()

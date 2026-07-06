@@ -1,7 +1,7 @@
 import z from "zod/v3";
 import { requireAuthMiddleware } from "../middlewares/auth";
 import { base } from "../middlewares/bast";
-import { requireworkspaceMiddleware } from "../middlewares/workspace";
+import { requireOrganizationMiddleware } from "../middlewares/organization";
 import { prisma } from "@/lib/prisma";
 import { formatLocalDateTime, jsonToMarkdown } from "@/lib/utils";
 import { streamText } from "ai";
@@ -12,7 +12,7 @@ import { sensitiveInfoAj } from "@/lib/arcjet-helpers";
 
 export const generateThreadSummary = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .use(aiMiddleware)
   .route({
     method: "GET",
@@ -30,7 +30,7 @@ export const generateThreadSummary = base
       where: {
         threadId: input.threadId,
         team: {
-          organizationId: context.workspace.id,
+          organizationId: context.organization.id,
         },
       },
       select: {
@@ -50,7 +50,7 @@ export const generateThreadSummary = base
       where: {
         id: threadId,
         team: {
-          organizationId: context.workspace.id,
+          organizationId: context.organization.id,
         },
       },
       select: {
@@ -153,7 +153,7 @@ export const generateThreadSummary = base
 
 export const generateCompose = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .use(aiMiddleware)
   .route({
     method: "GET",

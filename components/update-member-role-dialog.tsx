@@ -44,10 +44,10 @@ export function UpdateMemberRoleDialog({
   const queryClient = useQueryClient();
 
   const updateRoleMutation = useMutation(
-    orpc.workspace.members.updateRole.mutationOptions({
+    orpc.organization.members.updateRole.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: orpc.workspace.members.list.queryKey(),
+          queryKey: orpc.organization.members.list.queryKey(),
         });
         queryClient.invalidateQueries({
           queryKey: orpc.user.get.queryKey(),
@@ -93,7 +93,7 @@ export function UpdateMemberRoleDialog({
         <DialogTitle>Update Role</DialogTitle>
         <DialogDescription>
           Change the role of <span className="font-bold">{memberName}</span> in
-          this workspace. Current role:{" "}
+          this organization. Current role:{" "}
           <span className="font-medium">{currentRole}</span>.
         </DialogDescription>
 

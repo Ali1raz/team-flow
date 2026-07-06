@@ -33,12 +33,12 @@ export function RemoveMemberDialog({
   const queryClient = useQueryClient();
 
   const removeMemberMutation = useMutation(
-    orpc.workspace.members.remove.mutationOptions({
+    orpc.organization.members.remove.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: orpc.workspace.members.list.queryKey(),
+          queryKey: orpc.organization.members.list.queryKey(),
         });
-        toast.success(`${memberName} has been removed from the workspace`);
+        toast.success(`${memberName} has been removed from the organization`);
         setOpen(false);
       },
       onError: (error) => {
@@ -69,7 +69,7 @@ export function RemoveMemberDialog({
           Are you sure you want to remove{" "}
           <span className="font-bold">{memberName}</span>{" "}
           <span className="text-muted-foreground">{memberEmail}</span> from this
-          workspace? This action cannot be undone.
+          organization? This action cannot be undone.
         </DialogDescription>
 
         <DialogFooter className="gap-2">

@@ -20,7 +20,7 @@ import { Session } from "@/lib/auth";
 import { UpdateProfileType, updateProfileSchema } from "../schema";
 import { updateProfileAction } from "../actions";
 import { tryCatch } from "@/lib/try-catch";
-import { ImageUploadDialog } from "@/app/(workspace)/workspaces/[workspaceId]/_components/image-dialog";
+import { ImageUploadDialog } from "@/app/(organization)/organizations/[organizationId]/_components/image-dialog";
 
 export function UpdateProfileForm({ session }: { session: Session }) {
   const [isPending, startTransition] = useTransition();

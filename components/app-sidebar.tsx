@@ -1,7 +1,7 @@
 "use client";
 import { useMemo } from "react";
 
-import { WorkspaceSwitcher } from "@/components/workspace-switcher";
+import { OrganizationSwitcher } from "@/components/organization-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -29,7 +29,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { useParams } from "next/navigation";
 import { CreateTeamDialog } from "./create-tem-dialog";
 import { Button } from "./ui/button";
-import { InviteWorkspaceDialog } from "@/app/(workspace)/workspaces/_components/invite-workspace-dialog";
+import { InviteOrganizationDialog } from "@/app/(organization)/organizations/_components/invite-organization-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,9 +37,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { UpdateChannelDialog } from "./update-channel-dialog";
-import { DeleteChannelDialog } from "./delete-channel-dailog";
-import { AddMemberToChannel } from "./add-member-to-channel";
+import { UpdateTeamDialog } from "./update-team-dialog";
 import { usePresence } from "@/hooks/use-presence";
 import { UpdateMemberRoleDialog } from "@/components/update-member-role-dialog";
 import { RemoveMemberDialog } from "@/components/remove-member-dialog";
@@ -47,8 +45,10 @@ import { RemoveMemberDialog } from "@/components/remove-member-dialog";
 import type { ClientOutputs } from "@/lib/orpc";
 import { MemberRoleBadge } from "./general/member-role-badge";
 import { cn } from "@/lib/utils";
+import { AddMemberToTeam } from "./add-member-to-team";
+import { DeleteTeamDialog } from "./delete-team-dialog";
 
-type MembersListOutput = ClientOutputs["workspace"]["members"]["list"];
+type MembersListOutput = ClientOutputs["organization"]["members"]["list"];
 type MemberType = MembersListOutput["members"][number];
 
 export function AppSidebar({
@@ -56,13 +56,13 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { organizationId: string }) {
   const {
-    data: { channels },
+    data: { teams },
   } = useSuspenseQuery(
-    orpc.channel.list.queryOptions({ input: { organizationId } })
+    orpc.team.list.queryOptions({ input: { organizationId } })
   );
   const {
     data: { members },
-  } = useSuspenseQuery(orpc.workspace.members.list.queryOptions());
+  } = useSuspenseQuery(orpc.organization.members.list.queryOptions());
 
   const { data: user } = useQuery(orpc.user.get.queryOptions());
 
@@ -77,19 +77,19 @@ export function AppSidebar({
   );
 
   const {
-    data: { currentWorkspace },
-  } = useSuspenseQuery(orpc.workspace.list.queryOptions());
+    data: { currentOrganization },
+  } = useSuspenseQuery(orpc.organization.list.queryOptions());
 
-  const { channelId } = useParams<{ channelId: string }>();
+  const { teamId } = useParams<{ teamId: string }>();
 
-  const canManageWorkspace = !!user && user.role !== "member";
+  const canManageOrganization = !!user && user.role !== "member";
 
   return (
     <Sidebar {...props}>
       <SidebarHeader className="space-y-4">
-        <WorkspaceSwitcher />
+        <OrganizationSwitcher />
         <SidebarMenu className="flex items-center gap-2 w-full flex-row">
-          {canManageWorkspace && (
+          {canManageOrganization && (
             <SidebarMenuItem className="flex-1 min-w-0">
               <SidebarMenuButton asChild>
                 <CreateTeamDialog className="w-full" />
@@ -97,14 +97,14 @@ export function AppSidebar({
             </SidebarMenuItem>
           )}
 
-          {canManageWorkspace && (
+          {canManageOrganization && (
             <SidebarMenuItem className="flex sm:hidden">
               <SidebarMenuButton asChild className="shrink-0">
-                <InviteWorkspaceDialog
-                  workspaceId={organizationId}
-                  channelId={channelId}
-                  channels={channels}
-                  workspaceName={currentWorkspace?.name || ""}
+                <InviteOrganizationDialog
+                  organizationId={organizationId}
+                  teamId={teamId}
+                  teams={teams}
+                  organizationName={currentOrganization?.name || ""}
                 />
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -112,7 +112,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="flex flex-col overflow-hidden h-full">
-        {/* Channels */}
+        {/* Teams */}
         <SidebarGroup className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <SidebarMenu className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <Collapsible
@@ -121,7 +121,7 @@ export function AppSidebar({
             >
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
-                  Channels
+                  Teams
                   <ChevronRight className="ml-auto transition-transform duration-100 group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
@@ -131,19 +131,19 @@ export function AppSidebar({
                   <CollapsibleContent className="h-full overflow-hidden">
                     <ScrollArea className="h-full">
                       <SidebarMenuSub>
-                        {channels &&
-                          channels.map((ch) => (
+                        {teams &&
+                          teams.map((ch) => (
                             <SidebarMenuSubItem
                               key={ch.id}
                               className="flex items-center justify-center flex-row"
                             >
                               <SidebarMenuSubButton
                                 asChild
-                                isActive={channelId === ch.id}
+                                isActive={teamId === ch.id}
                                 className="text-muted-foreground flex-1"
                               >
                                 <Link
-                                  href={`/workspaces/${organizationId}/channel/${ch.id}`}
+                                  href={`/organizations/${organizationId}/team/${ch.id}`}
                                   title={ch.name}
                                 >
                                   <Hash className="size-4 shrink-0" />
@@ -153,7 +153,7 @@ export function AppSidebar({
                                 </Link>
                               </SidebarMenuSubButton>
 
-                              {canManageWorkspace && (
+                              {canManageOrganization && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button
@@ -166,39 +166,39 @@ export function AppSidebar({
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent className="w-48">
-                                    <UpdateChannelDialog channel={ch}>
+                                    <UpdateTeamDialog team={ch}>
                                       <DropdownMenuItem
                                         onSelect={(e) => e.preventDefault()}
                                       >
                                         Edit
                                       </DropdownMenuItem>
-                                    </UpdateChannelDialog>
-                                    <AddMemberToChannel
+                                    </UpdateTeamDialog>
+                                    <AddMemberToTeam
                                       organizationId={organizationId}
-                                      channelId={ch.id}
+                                      teamId={ch.id}
                                     >
                                       <DropdownMenuItem
                                         onSelect={(e) => e.preventDefault()}
                                       >
                                         Add Member
                                       </DropdownMenuItem>
-                                    </AddMemberToChannel>
+                                    </AddMemberToTeam>
                                     <DropdownMenuItem asChild>
                                       <Link
-                                        href={`/workspaces/${organizationId}/channel/${ch.id}/members`}
+                                        href={`/organizations/${organizationId}/team/${ch.id}/members`}
                                       >
                                         Manage Members
                                       </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DeleteChannelDialog channel={ch}>
+                                    <DeleteTeamDialog team={ch}>
                                       <DropdownMenuItem
                                         onSelect={(e) => e.preventDefault()}
                                         variant="destructive"
                                       >
-                                        Delete channel
+                                        Delete team
                                       </DropdownMenuItem>
-                                    </DeleteChannelDialog>
+                                    </DeleteTeamDialog>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               )}
@@ -252,13 +252,14 @@ export function AppSidebar({
                               <span className="text-sm max-w-[10ch] leading-none truncate text-muted-foreground">
                                 {member.email}
                               </span>
-                              {member.id !== user?.id && canManageWorkspace && (
-                                <MemberActionsDropdown
-                                  user={member}
-                                  organizationId={organizationId}
-                                  className="ml-auto px-1"
-                                />
-                              )}
+                              {member.id !== user?.id &&
+                                canManageOrganization && (
+                                  <MemberActionsDropdown
+                                    user={member}
+                                    organizationId={organizationId}
+                                    className="ml-auto px-1"
+                                  />
+                                )}
                             </div>
                           </div>
                         </SidebarMenuSubItem>

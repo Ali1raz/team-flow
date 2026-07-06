@@ -1,14 +1,14 @@
 import { generateCompose, generateThreadSummary } from "./ai";
 import {
-  addMembersToChannel,
-  createChannel,
-  deleteChannel,
-  getChannel,
-  listChannelMembers,
-  listChannels,
-  removeMemberFromChannel,
-  updateChannel,
-} from "./channel";
+  addMembersToTeam,
+  createTeam,
+  deleteTeam,
+  getTeam,
+  listTeamMembers,
+  listTeams,
+  removeMemberFromTeam,
+  updateTeam,
+} from "./team";
 import { getInvitionDEtails } from "./invitations";
 import { inviteMember } from "./members";
 import {
@@ -20,47 +20,47 @@ import {
 } from "./message";
 import { getCurrentUser } from "./user";
 import {
-  cancelWorkspaceInvitation,
-  createWorkspace,
-  leaveWorkspace,
-  listWorkspaceInvitations,
-  listWorkspaceMembers,
-  listWorkspaces,
-  removeWorkspaceMember,
-  updateWorkspace,
-  updateWorkspaceMemberRole,
-} from "./workspace";
+  cancelOrganizationInvitation,
+  createOrganization,
+  leaveOrganization,
+  listOrganizationInvitations,
+  listOrganizationMembers,
+  listOrganizations,
+  removeOrganizationMember,
+  updateOrganization,
+  updateOrganizationMemberRole,
+} from "./organization";
 
 export const router = {
   user: {
     get: getCurrentUser,
   },
-  workspace: {
-    list: listWorkspaces,
-    create: createWorkspace,
-    update: updateWorkspace,
-    leave: leaveWorkspace,
+  organization: {
+    list: listOrganizations,
+    create: createOrganization,
+    update: updateOrganization,
+    leave: leaveOrganization,
     members: {
       invite: inviteMember,
-      list: listWorkspaceMembers,
-      updateRole: updateWorkspaceMemberRole,
-      remove: removeWorkspaceMember,
+      list: listOrganizationMembers,
+      updateRole: updateOrganizationMemberRole,
+      remove: removeOrganizationMember,
     },
     invitations: {
-      list: listWorkspaceInvitations,
-      cancel: cancelWorkspaceInvitation,
+      list: listOrganizationInvitations,
+      cancel: cancelOrganizationInvitation,
     },
   },
-  channel: {
-    create: createChannel,
-    list: listChannels,
-    get: getChannel,
-    update: updateChannel,
-    delete: deleteChannel,
+  team: {
+    create: createTeam,
+    list: listTeams,
+    get: getTeam,
+    update: updateTeam,
+    delete: deleteTeam,
     members: {
-      list: listChannelMembers,
-      add: addMembersToChannel,
-      remove: removeMemberFromChannel,
+      list: listTeamMembers,
+      add: addMembersToTeam,
+      remove: removeMemberFromTeam,
     },
   },
   message: {

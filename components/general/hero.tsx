@@ -26,18 +26,18 @@ const Hero = () => {
         </p>
         <section className="flex flex-col gap-8 items-center lg:items-start">
           <p className="text-md md:text-xl max-w-xl lg:max-w-md text-center lg:text-left">
-            TeamFlow organizes conversations into channels and threads and uses
-            AI to keep teams in sync.
+            TeamComms organizes conversations into teams and threads and uses AI
+            to keep teams in sync.
           </p>
 
           {isPending ? (
-            <Skeleton className="w-full h-10 bg-muted rounded-sm" />
+            <Skeleton className="w-24 h-10 bg-muted rounded-sm" />
           ) : data ? (
             <Link
               className={buttonVariants({
                 className: "rounded-sm w-fit",
               })}
-              href="/workspaces"
+              href="/organizations"
             >
               Dashboard
             </Link>
