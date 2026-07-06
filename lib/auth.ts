@@ -109,12 +109,10 @@ export const auth = betterAuth({
             console.log("[afterCreateTeam]: Team or user not found");
             return;
           }
-          await prisma.teamMember.create({
-            data: {
-              teamId: team.id,
-              userId: user.id,
-              createdAt: new Date(),
-            },
+          await prisma.teamMember.upsert({
+            where: { teamId_userId: { teamId: team.id, userId: user.id } },
+            update: {},
+            create: { teamId: team.id, userId: user.id, createdAt: new Date() },
           });
         },
       },
