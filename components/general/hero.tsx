@@ -6,8 +6,12 @@ import { motion } from "motion/react";
 import DashboardImage from "@/public/image.png";
 import DashboardImageLight from "@/public/image-light.png";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { Skeleton } from "../ui/skeleton";
 
 const Hero = () => {
+  const { data, isPending } = authClient.useSession();
+
   return (
     <motion.div
       className="flex flex-col gap-16 items-center justify-center py-2 lg:pt-8"
@@ -20,20 +24,33 @@ const Hero = () => {
         <p className="max-md:font-medium text-3xl md:text-5xl lg:text-6xl xl:text-7xl lg:max-w-lg xl:max-w-2xl tracking-tighter text-center lg:text-left">
           The AI-ready platform for team communication
         </p>
-        <section className="flex flex-col gap-8">
+        <section className="flex flex-col gap-8 items-center lg:items-start">
           <p className="text-md md:text-xl max-w-xl lg:max-w-md text-center lg:text-left">
             TeamFlow organizes conversations into channels and threads and uses
             AI to keep teams in sync.
           </p>
 
-          <Link
-            className={buttonVariants({
-              className: "rounded-sm w-fit",
-            })}
-            href="/login"
-          >
-            Get Started
-          </Link>
+          {isPending ? (
+            <Skeleton className="w-full h-10 bg-muted rounded-sm" />
+          ) : data ? (
+            <Link
+              className={buttonVariants({
+                className: "rounded-sm w-fit",
+              })}
+              href="/workspaces"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <Link
+              className={buttonVariants({
+                className: "rounded-sm w-fit",
+              })}
+              href="/login"
+            >
+              Get Started
+            </Link>
+          )}
         </section>
       </section>
       <div className="relative my-18 pointer-events-none">
@@ -42,7 +59,7 @@ const Hero = () => {
           alt="Hero"
           width={1200}
           height={800}
-          className="w-full max-w-7xl aspect-video object-fill object-top-left rounded-x dark:flex hidden"
+          className="w-auto h-auto max-w-7xl aspect-video object-fill object-top-left rounded-x dark:flex hidden"
           priority
           // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
         />
@@ -51,7 +68,7 @@ const Hero = () => {
           alt="Hero"
           width={1200}
           height={800}
-          className="w-full max-w-7xl aspect-video object-fill object-top-left rounded-x flex dark:hidden"
+          className="w-auto h-auto max-w-7xl aspect-video object-fill object-top-left rounded-x flex dark:hidden"
           priority
           // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
         />

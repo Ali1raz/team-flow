@@ -15,6 +15,7 @@ import { ThemeToggle } from "./theme-toggle";
 import Logo from "@/public/team-flow.png";
 import { authClient } from "@/lib/auth-client";
 import { useSignOut } from "@/hooks/use-signout";
+import { Skeleton } from "../ui/skeleton";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +51,7 @@ const Navbar = () => {
     };
   }, [isOpen]);
 
-  const { data } = authClient.useSession();
+  const { data, isPending } = authClient.useSession();
   const handleSignOut = useSignOut();
 
   return (
@@ -86,26 +87,29 @@ const Navbar = () => {
             <Image src={Logo} alt="Logo" width={40} height={40} /> Teamflow
           </div>
 
-          <section className="hidden flex-row items-center gap-4 lg:flex">
-            <div className="flex flex-row gap-4">
-              {data?.session && (
-                <>
-                  <Link href="/workspaces" className={buttonVariants()}>
-                    Dasboard
+          <section className="hidden flex-row items-center gap-2 lg:flex">
+            {isPending ? (
+              <Skeleton className="w-20 h-10 bg-muted rounded-sm" />
+            ) : (
+              <div className="flex flex-row gap-2">
+                {data?.session ? (
+                  <>
+                    <Link href="/workspaces" className={buttonVariants()}>
+                      Dasboard
+                    </Link>
+                    <Button variant="outline" onClick={handleSignOut}>
+                      <LogOut /> Logout
+                    </Button>
+                  </>
+                ) : (
+                  <Link
+                    className={buttonVariants({ variant: "default" })}
+                    href="/login"
+                  >
+                    Log In
                   </Link>
-                  <Button variant="outline" onClick={handleSignOut}>
-                    <LogOut /> Logout
-                  </Button>
-                </>
-              )}
-            </div>
-            {!data?.session && (
-              <Link
-                className={buttonVariants({ variant: "default" })}
-                href="/login"
-              >
-                Log In
-              </Link>
+                )}
+              </div>
             )}
             <ThemeToggle />
           </section>
@@ -162,7 +166,9 @@ const Navbar = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.2, delay: 0.05 }}
                 >
-                  {data?.session ? (
+                  {isPending ? (
+                    <Skeleton className="w-full h-10 bg-muted rounded-sm" />
+                  ) : data?.session ? (
                     <>
                       <Link
                         href={"/workspaces"}
