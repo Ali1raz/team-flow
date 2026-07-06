@@ -3,11 +3,11 @@ import { base } from "./bast";
 
 export const requireMemberMiddleware = base
   .$context<{
-    workspace: FullOrg;
+    organization: FullOrg;
     user: User;
   }>()
   .middleware(async ({ context, next, errors }) => {
-    const member = context.workspace.members.find(
+    const member = context.organization.members.find(
       (m) => m.userId === context.user.id
     );
     if (!member) {

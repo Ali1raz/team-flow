@@ -70,7 +70,7 @@ export default function UserAvatarDropdown({
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/workspaces">
+            <Link href="/organizations">
               <User className="h-4 w-4" />
               <span>Dashboard</span>
             </Link>

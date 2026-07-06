@@ -1,5 +1,5 @@
 import { LoginForm } from "../_components/login-form";
-import Logo from "@/public/team-flow.png";
+import Logo from "@/public/team-comms.png";
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
@@ -9,7 +9,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Login",
-  description: "Login to your TeamFlow account",
+  description: "Login to your TeamComms account",
   robots: { index: false, follow: false },
 };
 
@@ -30,12 +30,12 @@ export default async function LoginPage() {
         >
           <Image
             src={Logo}
-            alt="TeamFlow Logo"
+            alt="TeamComms Logo"
             width={40}
             height={40}
             className="object-cover"
           />
-          <p className="text-primary">TeamFlow</p>
+          <p className="text-primary">TeamComms</p>
         </Link>
         <LoginForm />
       </div>

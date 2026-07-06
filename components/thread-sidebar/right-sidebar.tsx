@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 import { usePresence } from "@/hooks/use-presence";
 import { RealtimeUserSchemaType } from "@/realtime/schema";
 import { RealtimeThreadPRovider } from "../realtime-thread-provider";
-import { useRealtimeChannel } from "../channel-realtime-provider";
+import { useRealtimeTeam } from "../team-realtime-provider";
 import { useRealtimeThread } from "../realtime-thread-provider";
 
 type ThreadsData = Awaited<ReturnType<typeof client.message.threads.list>>;
@@ -69,7 +69,7 @@ function ThreadItem({
   deletingThreadId,
   setDeletingThreadId,
   onlineUserIds,
-  workspaceUserId,
+  organizationUserId,
 }: {
   thread: ThreadsData["threads"][number];
   threadId: string;
@@ -78,21 +78,21 @@ function ThreadItem({
   deletingThreadId: string | null;
   setDeletingThreadId: (id: string | null) => void;
   onlineUserIds: Set<string>;
-  workspaceUserId: string | undefined;
+  organizationUserId: string | undefined;
 }) {
-  const { channelId } = useParams<{
-    channelId: string;
-    workspaceId: string;
+  const { teamId } = useParams<{
+    teamId: string;
+    organizationId: string;
   }>();
   const queryClient = useQueryClient();
-  const { send } = useRealtimeChannel();
+  const { send } = useRealtimeTeam();
   const { send: sendThread } = useRealtimeThread();
 
   const threadsQueryOptions = orpc.message.threads.list.queryOptions({
     input: { threadId },
   });
 
-  const messageListKey = ["message.list", channelId];
+  const messageListKey = ["message.list", teamId];
 
   const deleteThreadMutation = useMutation(
     orpc.message.delete.mutationOptions({
@@ -195,7 +195,7 @@ function ThreadItem({
       <CardContent className="relative">
         <CardAction className="absolute -top-2 right-2">
           <ThreadActionsDropdown
-            canEdit={workspaceUserId === thread.user.id}
+            canEdit={organizationUserId === thread.user.id}
             isDeleting={deletingThreadId === thread.id}
             onEdit={() => setEditingThreadId(thread.id)}
             onDelete={async () => {
@@ -252,9 +252,9 @@ export function RightSidebar({
 }: ComponentProps<typeof Sidebar> & { width?: string }) {
   const { threadId } = useThread();
   const { setOpen, isMobile, setOpenMobile } = useSidebarWithSide("right");
-  const { workspaceId } = useParams<{
-    channelId: string;
-    workspaceId: string;
+  const { organizationId } = useParams<{
+    teamId: string;
+    organizationId: string;
   }>();
   const [editingThreadId, setEditingThreadId] = useState<string | null>(null);
   const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
@@ -268,19 +268,23 @@ export function RightSidebar({
     enabled: !!threadId,
   });
 
-  const { data: workspace } = useQuery(orpc.workspace.list.queryOptions());
+  const { data: organization } = useQuery(
+    orpc.organization.list.queryOptions()
+  );
   const selectedEditingThread = data
     ? (data.threads.find((thread) => thread.id === editingThreadId) ?? null)
     : null;
 
-  const { data: workspacedata } = useQuery(orpc.workspace.list.queryOptions());
+  const { data: organizationdata } = useQuery(
+    orpc.organization.list.queryOptions()
+  );
 
-  const currentUser = workspacedata?.user
-    ? ({ id: workspacedata.user.id } satisfies RealtimeUserSchemaType)
+  const currentUser = organizationdata?.user
+    ? ({ id: organizationdata.user.id } satisfies RealtimeUserSchemaType)
     : null;
 
   const { onlineusers } = usePresence({
-    room: workspaceId,
+    room: organizationId,
     user: currentUser,
   });
 
@@ -391,7 +395,7 @@ export function RightSidebar({
                     deletingThreadId={deletingThreadId}
                     setDeletingThreadId={setDeletingThreadId}
                     onlineUserIds={onlineUserIds}
-                    workspaceUserId={workspace?.user.id}
+                    organizationUserId={organization?.user.id}
                   />
                 ))}
               </>

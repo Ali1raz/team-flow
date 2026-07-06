@@ -1,7 +1,7 @@
 import { MembershipRole } from "@/generated/prisma/enums";
 import { requireAuthMiddleware } from "../middlewares/auth";
 import { base } from "../middlewares/bast";
-import { requireworkspaceMiddleware } from "../middlewares/workspace";
+import { requireOrganizationMiddleware } from "../middlewares/organization";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { errorMessage } from "@/lib/error-message";
@@ -9,7 +9,7 @@ import z from "zod";
 
 export const getCurrentUser = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .route({
     method: "GET",
     path: "/user/get",

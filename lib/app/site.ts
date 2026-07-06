@@ -1,15 +1,15 @@
 import { env } from "@/lib/env";
 
 export const SITE = {
-  name: "Teamflow",
+  name: "TeamComms",
   url: env.NEXT_PUBLIC_BETTER_AUTH_URL,
   description: "AI ready platform for team communication.",
   keywords: [
-    "Teamflow",
-    "team-flow",
-    "team flow",
+    "TeamComms",
+    "team-comms",
+    "team comms",
     "team communication",
-    "team flow communication",
+    "team comms communication",
     "ai team communication",
   ],
 };

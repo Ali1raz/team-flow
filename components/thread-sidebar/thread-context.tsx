@@ -1,6 +1,6 @@
 "use client";
 
-// Provides a shared threadId state across the workspace layout tree,
+// Provides a shared threadId state across the organization layout tree,
 // allowing MessageItem to set the active thread and RightSidebar to read it
 // without prop-drilling through the layout.
 import { createContext, useContext, useState } from "react";

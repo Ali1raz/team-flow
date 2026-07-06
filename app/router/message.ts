@@ -3,19 +3,19 @@ import { standardsecurityMiddleware } from "../middlewares/arcjet/standard";
 import { writesecurityMiddleware } from "../middlewares/arcjet/write";
 import { requireAuthMiddleware } from "../middlewares/auth";
 import { base } from "../middlewares/bast";
-import { requireworkspaceMiddleware } from "../middlewares/workspace";
+import { requireOrganizationMiddleware } from "../middlewares/organization";
 import { prisma } from "@/lib/prisma";
 import {
   createMessageSchema,
   updateMessageSchema,
-} from "../(workspace)/workspaces/schema";
+} from "../(organization)/organizations/schema";
 import { Message } from "@/generated/prisma/client";
 import { readsecurityMiddleware } from "../middlewares/arcjet/read";
 import { sensitiveInfoAj } from "@/lib/arcjet-helpers";
 
 export const createMessage = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .use(standardsecurityMiddleware)
   .use(writesecurityMiddleware)
   .route({
@@ -55,7 +55,7 @@ export const createMessage = base
           id: input.threadId,
           team: {
             organization: {
-              id: context.workspace.id,
+              id: context.organization.id,
             },
           },
         },
@@ -63,17 +63,17 @@ export const createMessage = base
 
       if (
         !prentMessage ||
-        prentMessage.teamId !== input.channelId ||
+        prentMessage.teamId !== input.teamId ||
         prentMessage.threadId !== null
       ) {
         throw errors.BAD_REQUEST();
       }
     }
 
-    const channel = await prisma.team.findFirst({
+    const team = await prisma.team.findFirst({
       where: {
-        id: input.channelId,
-        organizationId: context.workspace.id,
+        id: input.teamId,
+        organizationId: context.organization.id,
       },
       select: {
         id: true,
@@ -81,17 +81,17 @@ export const createMessage = base
       },
     });
 
-    if (!channel) {
+    if (!team) {
       throw errors.FORBIDDEN();
     }
 
-    if (channel.organizationId !== context.workspace.id) {
+    if (team.organizationId !== context.organization.id) {
       throw errors.FORBIDDEN();
     }
 
     console.log(
-      "Creating message in channel:",
-      channel.id,
+      "Creating message in team:",
+      team.id,
       "by user:",
       context.user.name
     );
@@ -100,7 +100,7 @@ export const createMessage = base
       data: {
         content: input.content,
         imageUrl: input.imageUrl,
-        teamId: input.channelId,
+        teamId: input.teamId,
         userId: context.user.id,
         threadId: input.threadId,
       },
@@ -113,7 +113,7 @@ export const createMessage = base
 
 export const listMessages = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .use(standardsecurityMiddleware)
   .use(readsecurityMiddleware)
   .route({
@@ -124,7 +124,7 @@ export const listMessages = base
   })
   .input(
     z.object({
-      channelId: z.string(),
+      teamId: z.string(),
       limit: z.number().min(1).max(100).default(30).optional(),
       cursor: z.string().optional(),
     })
@@ -152,17 +152,17 @@ export const listMessages = base
     })
   )
   .handler(async ({ context, errors, input }) => {
-    const channel = await prisma.team.findFirst({
+    const team = await prisma.team.findFirst({
       where: {
-        id: input.channelId,
-        organizationId: context.workspace.id,
+        id: input.teamId,
+        organizationId: context.organization.id,
       },
       select: {
         id: true,
       },
     });
 
-    if (!channel) {
+    if (!team) {
       throw errors.FORBIDDEN();
     }
 
@@ -172,7 +172,7 @@ export const listMessages = base
 
     const messages = await prisma.message.findMany({
       where: {
-        teamId: channel.id,
+        teamId: team.id,
         threadId: null,
       },
       ...(input.cursor
@@ -218,7 +218,7 @@ export const listMessages = base
 
 export const updateMessage = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .use(standardsecurityMiddleware)
   .use(writesecurityMiddleware)
   .route({
@@ -261,7 +261,7 @@ export const updateMessage = base
       where: {
         id: input.messageId,
         team: {
-          organization: { id: context.workspace.id },
+          organization: { id: context.organization.id },
         },
       },
       select: {
@@ -297,7 +297,7 @@ export const updateMessage = base
 
 export const deleteMessage = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .use(standardsecurityMiddleware)
   .use(writesecurityMiddleware)
   .route({
@@ -317,13 +317,13 @@ export const deleteMessage = base
     })
   )
   .handler(async ({ context, input, errors }) => {
-    // Verify the message exists and belongs to the current workspace
+    // Verify the message exists and belongs to the current organization
     console.log(`[deleteMessage]:${input.messageId}`);
     const message = await prisma.message.findUnique({
       where: {
         id: input.messageId,
         team: {
-          organization: { id: context.workspace.id },
+          organization: { id: context.organization.id },
         },
       },
       select: {
@@ -352,7 +352,7 @@ export const deleteMessage = base
 
 export const listThreads = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .use(standardsecurityMiddleware)
   .use(readsecurityMiddleware)
   .route({
@@ -401,7 +401,7 @@ export const listThreads = base
       where: {
         id: input.threadId,
         team: {
-          organization: { id: context.workspace.id },
+          organization: { id: context.organization.id },
         },
       },
       select: {

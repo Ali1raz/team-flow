@@ -24,9 +24,9 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
-  createChannelSchema,
-  CreateChannelType,
-} from "@/app/(workspace)/workspaces/schema";
+  createTeamSchema,
+  CreateTeamType,
+} from "@/app/(organization)/organizations/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { useRouter } from "next/navigation";
@@ -40,35 +40,35 @@ export function CreateTeamDialog({
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const form = useForm<CreateChannelType>({
-    resolver: zodResolver(createChannelSchema),
+  const form = useForm<CreateTeamType>({
+    resolver: zodResolver(createTeamSchema),
     defaultValues: {
       name: "",
     },
     mode: "onChange",
   });
 
-  const channelName = useWatch({
+  const teamName = useWatch({
     control: form.control,
     name: "name",
   });
 
-  const slug = createSlug(channelName ?? "");
+  const slug = createSlug(teamName ?? "");
   const queryClient = useQueryClient();
 
-  const createChannelMutation = useMutation(
-    orpc.channel.create.mutationOptions({
-      onSuccess: (newChannel) => {
-        toast.success(`Channel ${newChannel.name} created successfully!`);
+  const createTeamMutation = useMutation(
+    orpc.team.create.mutationOptions({
+      onSuccess: (newTeam) => {
+        toast.success(`Team ${newTeam.name} created successfully!`);
         form.reset();
         queryClient.invalidateQueries({
-          queryKey: orpc.channel.list.queryKey({
-            input: { organizationId: newChannel.organizationId },
+          queryKey: orpc.team.list.queryKey({
+            input: { organizationId: newTeam.organizationId },
           }),
         });
         setOpen(false);
         router.push(
-          `/workspaces/${newChannel.organizationId}/channel/${newChannel.id}`
+          `/organizations/${newTeam.organizationId}/team/${newTeam.id}`
         );
       },
       onError: (error) => {
@@ -79,8 +79,8 @@ export function CreateTeamDialog({
     })
   );
 
-  function onSubmit(values: CreateChannelType) {
-    createChannelMutation.mutate(values);
+  function onSubmit(values: CreateTeamType) {
+    createTeamMutation.mutate(values);
   }
 
   return (
@@ -88,18 +88,16 @@ export function CreateTeamDialog({
       <DialogTrigger asChild>
         {children ?? (
           <Button className={cn(className)} variant="outline" size="sm">
-            <Plus className="size-4" /> Create Channel
+            <Plus className="size-4" /> Create Team
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-100">
         <DialogHeader className="text-xs text-muted-foreground">
-          <DialogTitle>Create Channel</DialogTitle>
-          <DialogDescription>
-            Create new channel to get started
-          </DialogDescription>
+          <DialogTitle>Create Team</DialogTitle>
+          <DialogDescription>Create new team to get started</DialogDescription>
         </DialogHeader>
-        <form id="channel-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="team-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup className="flex flex-col gap-4">
             <Controller
               name="name"
@@ -133,16 +131,16 @@ export function CreateTeamDialog({
 
         <Field className="mt-4">
           <Button
-            disabled={createChannelMutation.isPending}
+            disabled={createTeamMutation.isPending}
             type="submit"
-            form="channel-form"
+            form="team-form"
           >
-            {createChannelMutation.isPending ? (
+            {createTeamMutation.isPending ? (
               <>
-                <Loader2 className="size-4 animate-spin" /> Creating Channel...
+                <Loader2 className="size-4 animate-spin" /> Creating Team...
               </>
             ) : (
-              <>Create Channel</>
+              <>Create Team</>
             )}
           </Button>
         </Field>

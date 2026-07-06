@@ -1,10 +1,10 @@
 "use client";
 
-import { Messagecomponser } from "@/app/(workspace)/workspaces/[workspaceId]/_components/message-omposer";
+import { Messagecomponser } from "@/app/(organization)/organizations/[organizationId]/_components/message-omposer";
 import {
   createMessageSchema,
   CreateMessageType,
-} from "@/app/(workspace)/workspaces/schema";
+} from "@/app/(organization)/organizations/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useMutation,
@@ -18,8 +18,8 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import { Field, FieldError, FieldGroup } from "../ui/field";
-import { InfiniteMessages } from "@/app/(workspace)/workspaces/[workspaceId]/_components/message-item";
-import { useRealtimeChannel } from "../channel-realtime-provider";
+import { InfiniteMessages } from "@/app/(organization)/organizations/[organizationId]/_components/message-item";
+import { useRealtimeTeam } from "../team-realtime-provider";
 import { useRealtimeThread } from "../realtime-thread-provider";
 
 type ThreadsData = Awaited<ReturnType<typeof client.message.threads.list>>;
@@ -37,13 +37,13 @@ export function ThreadsForm({
   onCancelEdit,
 }: ThreadsFormProps) {
   const [composerVersion, setComposerVersion] = useState(0);
-  const { channelId } = useParams<{
-    channelId: string;
-    workspaceId: string;
+  const { teamId } = useParams<{
+    teamId: string;
+    organizationId: string;
   }>();
   const queryClient = useQueryClient();
 
-  const { send } = useRealtimeChannel();
+  const { send } = useRealtimeTeam();
 
   const { send: sendThread } = useRealtimeThread();
 
@@ -51,17 +51,17 @@ export function ThreadsForm({
     input: { threadId },
   });
 
-  const messageListKey = ["message.list", channelId];
+  const messageListKey = ["message.list", teamId];
 
   const {
     data: { user: currentUser },
-  } = useSuspenseQuery(orpc.workspace.list.queryOptions());
+  } = useSuspenseQuery(orpc.organization.list.queryOptions());
 
   const form = useForm<CreateMessageType>({
     resolver: zodResolver(createMessageSchema),
     defaultValues: {
       content: editingThread?.content ?? "",
-      channelId,
+      teamId,
       imageUrl: editingThread?.imageUrl ?? undefined,
       threadId,
     },
@@ -75,12 +75,12 @@ export function ThreadsForm({
   useEffect(() => {
     form.reset({
       content: editingThread?.content ?? "",
-      channelId,
+      teamId,
       imageUrl: editingThread?.imageUrl ?? undefined,
       threadId,
     });
     // Keep the composer inputs synced with whichever reply is currently focused.
-  }, [editingThread, channelId, threadId, form]);
+  }, [editingThread, teamId, threadId, form]);
 
   const createThreadMutation = useMutation(
     orpc.message.create.mutationOptions({
@@ -151,7 +151,7 @@ export function ThreadsForm({
       onSuccess: (data) => {
         form.reset({
           content: "",
-          channelId,
+          teamId,
           imageUrl: undefined,
           threadId,
         });
@@ -255,7 +255,7 @@ export function ThreadsForm({
         onCancelEdit();
         form.reset({
           content: "",
-          channelId,
+          teamId,
           imageUrl: undefined,
           threadId,
         });
@@ -311,7 +311,7 @@ export function ThreadsForm({
                 onCancelEdit();
                 form.reset({
                   content: "",
-                  channelId,
+                  teamId,
                   imageUrl: undefined,
                   threadId,
                 });

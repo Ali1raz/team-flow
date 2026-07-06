@@ -1,23 +1,23 @@
 import z from "zod/v3";
-import { inviteMemberSchema } from "../(workspace)/workspaces/schema";
+import { inviteMemberSchema } from "../(organization)/organizations/schema";
 import { heavyWritesecurityMiddleware } from "../middlewares/arcjet/heavy-write-middleware";
 import { standardsecurityMiddleware } from "../middlewares/arcjet/standard";
 import { requireAuthMiddleware } from "../middlewares/auth";
 import { base } from "../middlewares/bast";
-import { requireworkspaceMiddleware } from "../middlewares/workspace";
+import { requireOrganizationMiddleware } from "../middlewares/organization";
 import { auth } from "@/lib/auth";
 import { errorMessage } from "@/lib/error-message";
 import { headers } from "next/headers";
 
 export const inviteMember = base
   .use(requireAuthMiddleware)
-  .use(requireworkspaceMiddleware)
+  .use(requireOrganizationMiddleware)
   .use(standardsecurityMiddleware)
   .use(heavyWritesecurityMiddleware)
   .route({
     method: "POST",
-    path: "/workspace/members/invite",
-    summary: "Invite members to the workspace",
+    path: "/organization/members/invite",
+    summary: "Invite members to the organization",
     tags: ["members"],
   })
   .input(inviteMemberSchema)

@@ -55,7 +55,7 @@ export const auth = betterAuth({
   },
   plugins: [
     lastLoginMethod({
-      cookieName: "teamflow.last_used_login_method",
+      cookieName: "teamcomms.last_used_login_method",
       maxAge: 60 * 60 * 24 * 30,
       storeInDatabase: false,
     }),

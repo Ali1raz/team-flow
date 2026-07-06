@@ -1,13 +1,13 @@
-# TeamFlow
+# TeamComms
 
 > An open-source, AI-powered real-time team messaging platform.
 
 ## Features
 
-- **Workspaces (Orgs)** — Create worspaces.
-- **Channels** — Organize conversations into topic-based channels within each workspace.
+- **Organizations (Orgs)** — Create organization.
+- **Teams** — Organize conversations into topic-based teams within each organization.
 - **Threaded Messages** — Reply to any message in a thread to keep conversations focused
-- **Image Uploads** — Share images directly in channels via UploadThing
+- **Image Uploads** — Share images directly in teams via UploadThing
 - **AI Message Rewrite** — Let AI rewrite your message: adjust tone, fix grammar, or improve clarity
 - **AI Thread Summarization** — Summarize long threads to catch up instantly without reading every reply
 - **Email + OAuth Auth** — Sign in with GitHub
@@ -42,8 +42,8 @@
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Ali1raz/team-flow.git
-cd team-flow
+git clone https://github.com/Ali1raz/team-comms.git
+cd team-comms
 ```
 
 ### 2. Install dependencies
@@ -62,7 +62,7 @@ Fill in your `.env`:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/team-flow?schema=public"
+DATABASE_URL="postgresql://user:password@localhost:5432/team-comms?schema=public"
 
 # Auth
 BETTER_AUTH_SECRET=your_secret_here
@@ -145,7 +145,7 @@ Open [http://localhost:8787](http://localhost:8787) for wrangler dev server
 
 ## AI Features
 
-TeamFlow integrates OpenAI-compatible models via OpenRouter and the Vercel AI SDK:
+TeamComms integrates OpenAI-compatible models via OpenRouter and the Vercel AI SDK:
 
 - **Message Rewrite** — Rewrite message → click AI rewrite → Each rewrite is a streaming API call.
 - **Thread Summarization** — Click "Summarize thread" on any message thread → receive a streamed summary of the conversation.

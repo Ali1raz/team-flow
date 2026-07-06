@@ -1,6 +1,6 @@
 import { Connection, routePartykitRequest, Server } from "partyserver";
 import {
-  RealtimechannelEventSchema,
+  RealtimeTeamEventSchema,
   RealtimePresenceSchema,
   RealtimePresenceSchemaType,
   RealtimeReplyEventSchema,
@@ -58,7 +58,7 @@ export class ChatServer extends Server {
         }
       }
 
-      const event = RealtimechannelEventSchema.safeParse(parsed);
+      const event = RealtimeTeamEventSchema.safeParse(parsed);
       if (event.success) {
         const payload = JSON.stringify(event.data);
 
