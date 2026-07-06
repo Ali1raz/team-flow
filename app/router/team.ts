@@ -96,7 +96,7 @@ export const updateTeam = base
     try {
       data = await auth.api.updateTeam({
         body: {
-          teamId: input.chanelId,
+          teamId: input.teamId,
           data: {
             name: input.name,
             slug,
