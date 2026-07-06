@@ -1,17 +1,6 @@
 import type { Metadata } from "next";
 import { client } from "@/lib/orpc";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { FolderCode } from "lucide-react";
-import { CreateTeamDialog } from "@/components/create-tem-dialog";
-import { ChannelCard } from "./_components/channel-card";
-import { LeaveWorkspaceDialog } from "./_components/leave-workspace-dialog";
+import { ChannelList } from "./_components/channel-list";
 
 export async function generateMetadata(
   props: PageProps<"/workspaces/[workspaceId]">
@@ -31,55 +20,6 @@ export default async function Page(
 ) {
   const { params } = props;
   const { workspaceId } = await params;
-  const { channels } = await client.channel.list({
-    organizationId: workspaceId,
-  });
 
-  const user = await client.user.get();
-
-  return (
-    <div className="p-4 sm:p-6 max-w-4xl h-full w-full">
-      <div className="flex gap-2 sm:flex-row sm:justify-between sm:items-baseline items-start flex-col">
-        <div className="space-y-1">
-          <h1 className="font-bold text-2xl">Channels</h1>
-          <p className="text-muted-foreground text-sm">
-            Channels in this workspace
-          </p>
-        </div>
-        <LeaveWorkspaceDialog workspaceId={workspaceId} />
-      </div>
-      {channels.length === 0 ? (
-        <Empty className="h-120 mt-4 bg-muted/40">
-          <EmptyHeader>
-            <EmptyMedia
-              variant="icon"
-              className="bg-muted rounded-full size-28"
-            >
-              <FolderCode className="size-14" />
-            </EmptyMedia>
-            <EmptyTitle className="sm:text-4xl text-2xl sm:mt-8 mt-4">
-              No channel found!
-            </EmptyTitle>
-            <EmptyDescription className="text-pretty">
-              No channel found in this workspace, once created channels will
-              appear here.
-            </EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            {user.role !== "member" && <CreateTeamDialog />}
-          </EmptyContent>
-        </Empty>
-      ) : (
-        <div className="mt-4 space-y-2">
-          {channels.map((channel) => (
-            <ChannelCard
-              key={channel.id}
-              channel={channel}
-              workspaceId={workspaceId}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return <ChannelList workspaceId={workspaceId} />;
 }
