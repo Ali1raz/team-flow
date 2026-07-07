@@ -92,7 +92,7 @@ export function OrganizationList() {
   return (
     <div className="flex w-full mx-auto mt-10 max-w-4xl flex-col gap-4">
       <Button
-        onClick={() => refetch({})}
+        onClick={() => refetch()}
         disabled={isFetching || isPending}
         className="w-fit"
       >

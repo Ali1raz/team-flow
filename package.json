@@ -25,6 +25,7 @@
   "dependencies": {
     "@ai-sdk/react": "^3.0.193",
     "@arcjet/next": "^1.4.0",
+    "@bprogress/next": "^3.2.12",
     "@hookform/resolvers": "^5.2.2",
     "@openrouter/ai-sdk-provider": "^2.9.0",
     "@orpc/client": "^1.14.3",
