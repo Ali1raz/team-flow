@@ -25,6 +25,7 @@ import { InvitationTableActionsDropdown } from "./invitation-table-actions-dropd
 import { UserImage } from "@/components/general/user-avatar";
 import { MemberRoleBadge } from "@/components/general/member-role-badge";
 import { formatLocalDateTime } from "@/lib/utils";
+import { InviteOrganizationDialog } from "../../../_components/invite-organization-dialog";
 
 const statusVariant: Record<
   string,
@@ -47,20 +48,48 @@ export function InvitationList({ organizationId }: { organizationId: string }) {
     })
   );
 
+  const {
+    data: { currentOrganization },
+  } = useSuspenseQuery(orpc.organization.list.queryOptions());
+
+  const {
+    data: { teams },
+  } = useSuspenseQuery(
+    orpc.team.list.queryOptions({ input: { organizationId: organizationId } })
+  );
+
   return (
-    <div className="flex w-full mt-10 max-w-6xl flex-col gap-4">
-      <Button
-        onClick={() => refetch({})}
-        disabled={isFetching}
-        className="w-fit"
-      >
-        {isFetching ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <RefreshCcw className="size-4" />
-        )}{" "}
-        {isFetching ? "Refreshing..." : "Refresh"}
-      </Button>
+    <div className="flex w-full flex-col gap-4">
+      <div className="flex gap-2 sm:flex-row sm:justify-between sm:items-baseline items-start flex-col mb-4">
+        <div className="space-y-1">
+          <h1 className="font-bold text-2xl">Invitations</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage invitations for this organization
+          </p>
+        </div>
+        <div className="flex gap-2 sm:mt-0 mt-4">
+          <Button
+            onClick={() => refetch({})}
+            disabled={isFetching}
+            className="w-fit"
+          >
+            {isFetching ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <RefreshCcw className="size-4" />
+            )}
+            {isFetching ? "Refreshing..." : "Refresh"}
+          </Button>
+          <InviteOrganizationDialog
+            organizationName={currentOrganization?.name}
+            teams={teams}
+            organizationId={organizationId}
+          >
+            <Button>Invite new Member</Button>
+          </InviteOrganizationDialog>
+        </div>
+      </div>
+
       {(!invitations || invitations.length === 0) && !isFetching ? (
         <div className="flex items-center justify-center h-full">
           <Empty className="h-full bg-muted/40 py-24">

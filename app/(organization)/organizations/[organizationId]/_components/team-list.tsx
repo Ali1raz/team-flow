@@ -30,14 +30,14 @@ export function TeamList({ organizationId }: { organizationId: string }) {
 
   return (
     <div className="p-4 sm:p-6 max-w-4xl h-full w-full">
-      <div className="flex gap-2 sm:flex-row sm:justify-between sm:items-baseline items-start flex-col">
+      <div className="flex gap-2 sm:flex-row sm:justify-between sm:items-baseline items-start flex-col mb-4">
         <div className="space-y-1">
           <h1 className="font-bold text-2xl">Teams</h1>
           <p className="text-muted-foreground text-sm">
             Teams in this organization
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 sm:mt-0 mt-4">
           <Button
             onClick={() => refetch({})}
             disabled={isFetching}

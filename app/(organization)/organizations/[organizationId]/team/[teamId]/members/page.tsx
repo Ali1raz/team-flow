@@ -59,12 +59,12 @@ export default function TeamMembersPage() {
 
   return (
     <div className="p-4 sm:px-6 sm:max-w-4xl w-full space-x-2">
-      <div className="flex sm:items-baseline gap-2 sm:justify-between flex-col sm:flex-row">
+      <div className="flex gap-2 sm:flex-row sm:justify-between sm:items-baseline items-start flex-col mb-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">Members</h1>
           <p className="text-sm text-muted-foreground">Members in this team</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 sm:mt-0 mt-4">
           <Button
             onClick={() => refetch({})}
             disabled={isFetching}
@@ -85,6 +85,7 @@ export default function TeamMembersPage() {
 
       {isFetching ? (
         <div className="space-y-3 mt-4">
+          <Skeleton className="w-full h-22" />
           <Skeleton className="w-full h-22" />
         </div>
       ) : (

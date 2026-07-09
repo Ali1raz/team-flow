@@ -14,13 +14,6 @@ export default async function InvitationsPage(
 
   return (
     <div className="p-4 sm:px-6 w-full max-w-6xl space-x-2">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-medium">Invitations</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage invitations for this organization
-        </p>
-      </div>
-
       <InvitationList organizationId={organizationId} />
     </div>
   );
