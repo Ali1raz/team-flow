@@ -11,6 +11,25 @@ export const extensions = [
   StarterKit.configure({
     codeBlock: false,
     blockquote: false,
+    link: {
+      openOnClick: false,
+      linkOnPaste: true,
+      defaultProtocol: "https",
+      protocols: [
+        "https",
+        "mailto",
+        {
+          scheme: "tel",
+          optionalSlashes: true,
+        },
+      ],
+      autolink: true,
+      HTMLAttributes: {
+        rel: "noopener noreferrer nofollow",
+        target: "_blank",
+        class: "text-primary underline cursor-pointer hover:text-primary/80",
+      },
+    },
     undoRedo: {
       depth: 10,
     },
