@@ -70,6 +70,10 @@ export function Editor({ field, sendButton, footerLeft }: iAppProps) {
     editor.commands.setContent(nextContent);
   }, [editor, field]);
 
+  if (!editor) {
+    return null;
+  }
+
   return (
     <div className="relative w-full border border-input rounded-md overflow-hidden dark:bg-input/30 flex flex-col">
       <Menubar editor={editor} />
