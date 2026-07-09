@@ -58,6 +58,17 @@ export function MessageInput({ teamId }: IAppPops) {
     data: { user: currentUser },
   } = useSuspenseQuery(orpc.organization.list.queryOptions());
 
+  const { data: membersData } = useSuspenseQuery(
+    orpc.team.members.list.queryOptions({ input: { teamId } })
+  );
+
+  const members = membersData.members.map((member) => ({
+    id: member.id,
+    name: member.name,
+    email: member.email,
+    image: member.image ?? undefined,
+  }));
+
   const createMessageMutation = useMutation(
     orpc.message.create.mutationOptions({
       onMutate: async (variables) => {
@@ -201,6 +212,7 @@ export function MessageInput({ teamId }: IAppPops) {
               <Messagecomponser
                 key={editorKey}
                 field={field}
+                members={members}
                 imageUrl={imageUrl}
                 onImageChange={(url) => form.setValue("imageUrl", url)}
                 onSubmit={form.handleSubmit(onSubmit)}

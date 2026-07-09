@@ -4,6 +4,7 @@ import { all, createLowlight } from "lowlight";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { Placeholder } from "@tiptap/extensions";
 import Blockquote from "@tiptap/extension-blockquote";
+import { Mention } from "@tiptap/extension-mention";
 
 const lowlight = createLowlight(all);
 
@@ -53,6 +54,11 @@ export const extensions = [
 
 export const baseExtensions = [
   ...extensions,
+  Mention.configure({
+    HTMLAttributes: {
+      class: "mention",
+    },
+  }),
   Placeholder.configure({
     placeholder: "Type a message...",
   }),

@@ -13,11 +13,14 @@ import { ImageUploadDialog } from "./image-dialog";
 import {
   InfiniteData,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import { useRealtimeTeam } from "@/components/team-realtime-provider";
+import { useCallback } from "react";
+import type { MentionUser } from "@/components/editor/mentions";
 
 interface EditMessageFormProps {
   message: messageType;
@@ -52,6 +55,35 @@ export function EditMessageForm({
   });
 
   const queryClient = useQueryClient();
+
+  const { data: membersData } = useQuery(
+    orpc.team.members.list.queryOptions({ input: { teamId } })
+  );
+
+  const mentionsQuery = useCallback(
+    (query: string) => {
+      const members = membersData?.members;
+      if (!members?.length) {
+        return [];
+      }
+
+      const normalizedQuery = query.toLowerCase();
+      return members
+        .filter(
+          (member) =>
+            member.name.toLowerCase().includes(normalizedQuery) ||
+            (member.email?.toLowerCase().includes(normalizedQuery) ?? false)
+        )
+        .slice(0, 8)
+        .map((member): MentionUser => ({
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          image: member.image ?? undefined,
+        }));
+    },
+    [membersData]
+  );
 
   // The raw key that MessageList.tsx registers its infinite query under.
   // Must stay in sync with the `queryKey` option passed to infiniteOptions there.
@@ -160,6 +192,7 @@ export function EditMessageForm({
                 <Field data-invalid={fieldState.invalid}>
                   <Editor
                     field={{ value: field.value, onChange: field.onChange }}
+                    mentionsQuery={mentionsQuery}
                     footerLeft={
                       imageField.value ? (
                         <AttachmentChip

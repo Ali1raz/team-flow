@@ -2,8 +2,10 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import { baseExtensions } from "./extensions";
 import { Menubar } from "./menubar";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { Mention } from "@tiptap/extension-mention";
+import { MentionSuggestions, type MentionUser } from "./mentions";
 
 interface iAppProps {
   field: {
@@ -12,11 +14,33 @@ interface iAppProps {
   } | null;
   sendButton: ReactNode;
   footerLeft?: ReactNode;
+  mentionsQuery?: (query: string) => MentionUser[] | Promise<MentionUser[]>;
 }
 
-export function Editor({ field, sendButton, footerLeft }: iAppProps) {
+export function Editor({
+  field,
+  sendButton,
+  footerLeft,
+  mentionsQuery,
+}: iAppProps) {
+  const editorExtensions = useMemo(() => {
+    if (!mentionsQuery) {
+      return baseExtensions;
+    }
+
+    return [
+      ...baseExtensions.filter((extension) => extension.name !== "mention"),
+      Mention.configure({
+        HTMLAttributes: {
+          class: "mention",
+        },
+        suggestion: MentionSuggestions(mentionsQuery),
+      }),
+    ];
+  }, [mentionsQuery]);
+
   const editor = useEditor({
-    extensions: baseExtensions,
+    extensions: editorExtensions,
     content: (() => {
       if (!field?.value) {
         return "";
