@@ -68,8 +68,6 @@ export function ThreadsForm({
     image: member.image ?? undefined,
   }));
 
-  console.log("====>", members.length);
-
   const form = useForm<CreateMessageType>({
     resolver: zodResolver(createMessageSchema),
     defaultValues: {

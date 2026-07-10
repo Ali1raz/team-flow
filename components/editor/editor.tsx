@@ -59,7 +59,7 @@ export function Editor({
     editorProps: {
       attributes: {
         class:
-          "max-w-none sm:min-h-[125px] min-h-[70px] focus:outline-none prose prose-sm sm:prose lg:prose-lg marker:text-primary dark:prose-invert",
+          "max-w-none sm:min-h-[125px] min-w-full min-h-[70px] focus:outline-none prose prose-sm sm:prose lg:prose-lg marker:text-primary dark:prose-invert",
       },
     },
     immediatelyRender: false,

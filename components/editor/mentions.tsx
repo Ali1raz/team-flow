@@ -6,9 +6,9 @@ import {
   type SuggestionProps,
   type SuggestionKeyDownProps,
 } from "@tiptap/suggestion";
+import { type EditorView } from "@tiptap/pm/view";
 import { Component } from "react";
 import { Loader2 } from "lucide-react";
-import { type Editor } from "@tiptap/react";
 import { type MentionNodeAttrs } from "@tiptap/extension-mention";
 import { UserImage } from "@/components/general/user-avatar";
 import { cn } from "@/lib/utils";
@@ -21,8 +21,7 @@ import { cn } from "@/lib/utils";
  * editor instance and dispatch on its key. This avoids leaving the plugin in
  * a stuck "active" state and prevents duplicate dropdowns on the next "@".
  */
-function closeSuggestion(editor: Editor) {
-  const view = editor.view;
+function closeSuggestion(view: EditorView) {
   const suggestionPlugin = view.state.plugins.find((plugin) => {
     const state = plugin.getState(view.state) as
       { active?: boolean; decorationId?: string | null } | null | undefined;
@@ -91,6 +90,7 @@ class MentionList extends Component<
   }
 
   upHandler() {
+    if (!this.props.items.length) return;
     this.setState({
       selectedIndex:
         (this.state.selectedIndex + this.props.items.length - 1) %
@@ -99,11 +99,9 @@ class MentionList extends Component<
   }
 
   downHandler() {
+    if (!this.props.items.length) return;
     this.setState({
-      selectedIndex:
-        this.state.selectedIndex === null
-          ? 0
-          : (this.state.selectedIndex + 1) % this.props.items.length,
+      selectedIndex: (this.state.selectedIndex + 1) % this.props.items.length,
     });
   }
 
@@ -230,7 +228,7 @@ export function MentionSuggestions(
               if (!target || !(target instanceof Node)) return;
               if (popup?.contains(target)) return;
               if (props.editor.view.dom.contains(target)) return;
-              closeSuggestion(props.editor);
+              closeSuggestion(props.editor.view);
             };
             document.addEventListener("mousedown", onOutsidePointerDown);
           }
@@ -239,8 +237,9 @@ export function MentionSuggestions(
           component.updateProps(props);
           position(props);
         },
-        onKeyDown: ({ event }: SuggestionKeyDownProps) => {
+        onKeyDown: ({ event, view }: SuggestionKeyDownProps) => {
           if (event.key === "Escape") {
+            closeSuggestion(view);
             return true;
           }
           return component.ref?.onKeyDown(event) ?? false;
