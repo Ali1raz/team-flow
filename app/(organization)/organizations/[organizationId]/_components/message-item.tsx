@@ -98,7 +98,7 @@ export function MessageItem({
           <>
             <RenderJSONtoHTML
               content={JSON.parse(message.content)}
-              className="text-sm wrap-break-word prose dark:prose-invert max-w-none marker:text-primary"
+              className="text-sm wrap-break-word prose dark:prose-invert leading-relaxed max-w-none w-full marker:text-primary"
             />
 
             {message.imageUrl && (
