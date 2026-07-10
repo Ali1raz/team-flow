@@ -57,6 +57,17 @@ export function ThreadsForm({
     data: { user: currentUser },
   } = useSuspenseQuery(orpc.organization.list.queryOptions());
 
+  const { data: membersData } = useSuspenseQuery(
+    orpc.team.members.list.queryOptions({ input: { teamId } })
+  );
+
+  const members = membersData.members.map((member) => ({
+    id: member.id,
+    name: member.name,
+    email: member.email,
+    image: member.image ?? undefined,
+  }));
+
   const form = useForm<CreateMessageType>({
     resolver: zodResolver(createMessageSchema),
     defaultValues: {
@@ -334,6 +345,7 @@ export function ThreadsForm({
                   <Messagecomponser
                     key={composerKey}
                     field={field}
+                    members={members}
                     imageUrl={imageField.value}
                     onImageChange={(url) => imageField.onChange(url)}
                     onClearImage={() => imageField.onChange(null)}
