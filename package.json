@@ -20,7 +20,12 @@
     "wrangler:dev": "wrangler dev",
     "wrangler:deploy": "wrangler deploy",
     "postinstall": "pnpm db:generate",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "graph:build": "graphify extract . --mode deep",
+    "graph:update": "graphify update .",
+    "graph:query": "graphify query",
+    "graph:cluster": "graphify cluster-only .",
+    "graph:path": "graphify path"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.193",

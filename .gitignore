@@ -48,3 +48,6 @@ generated/
 worker-configuration.d.ts
 
 .eslintcache
+
+# graphify
+graphify-out/
