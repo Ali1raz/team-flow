@@ -4,6 +4,11 @@ import { all, createLowlight } from "lowlight";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { Placeholder } from "@tiptap/extensions";
 import Blockquote from "@tiptap/extension-blockquote";
+import {
+  Details,
+  DetailsContent,
+  DetailsSummary,
+} from "@tiptap/extension-details";
 
 const lowlight = createLowlight(all);
 
@@ -47,6 +52,22 @@ export const extensions = [
   Blockquote.configure({
     HTMLAttributes: {
       class: "border-l-4 pl-4 italic text-muted-foreground",
+    },
+  }),
+  Details.configure({
+    persist: true,
+    HTMLAttributes: {
+      class: "message-details",
+    },
+  }),
+  DetailsSummary.configure({
+    HTMLAttributes: {
+      class: "message-details-summary",
+    },
+  }),
+  DetailsContent.configure({
+    HTMLAttributes: {
+      class: "message-details-content",
     },
   }),
 ];

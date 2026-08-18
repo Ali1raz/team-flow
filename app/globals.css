@@ -221,6 +221,31 @@
   }
 }
 
+.message-details {
+  border-left: 2px solid var(--border);
+  margin: 0.4rem 0;
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+
+  .message-details-summary {
+    cursor: pointer;
+    font-weight: 500;
+    outline: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::marker {
+      display: none;
+    }
+  }
+
+  .message-details-content {
+    margin-top: 0.5rem;
+  }
+}
+
 .bprogress {
   width: 0;
   height: 0;
