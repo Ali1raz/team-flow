@@ -18,3 +18,43 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+### Contributor Workflow
+
+**After pulling changes:**
+
+```bash
+pnpm graph:update    # Incremental update (fast, no LLM cost)
+```
+
+**Before starting work on a feature:**
+
+```bash
+pnpm graph:query "How does X work?"   # Orient yourself first
+```
+
+**After making significant changes:**
+
+```bash
+pnpm graph:update    # Rebuilds only changed files
+# OR if you refactored heavily:
+pnpm graph:build     # Full rebuild with deep mode
+```
+
+**Key principles:**
+
+1. Never commit `graphify-out/` - it's in `.gitignore`
+2. Run `graph:update` after `git pull` - keeps graph fresh
+3. Query before grep - `graph:query` returns scoped subgraph, not 200 files
+4. `graph:build` = deep mode - use when adding new patterns/libraries
+
+### Available Scripts
+
+```bash
+pnpm graph:build      # Full rebuild with deep mode
+pnpm graph:update     # Incremental update after code changes
+pnpm graph:query "question"  # Query the graph
+pnpm graph:cluster    # Re-cluster and regenerate report
+pnpm graph:path "A" "B"    # Shortest path between nodes
+pnpm graph:explain "concept"  # Explain a node
+```

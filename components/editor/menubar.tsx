@@ -81,9 +81,7 @@ export function Menubar({ editor }: iAppProps) {
         content: [
           {
             type: "detailsSummary",
-            content: detailsTitle
-              ? [{ type: "text", text: detailsTitle }]
-              : [],
+            content: detailsTitle ? [{ type: "text", text: detailsTitle }] : [],
           },
           {
             type: "detailsContent",
@@ -213,11 +211,7 @@ export function Menubar({ editor }: iAppProps) {
                 }
               }}
             />
-            <Button
-              size="sm"
-              className="w-full"
-              onClick={insertDetails}
-            >
+            <Button size="sm" className="w-full" onClick={insertDetails}>
               Insert
             </Button>
           </PopoverContent>
